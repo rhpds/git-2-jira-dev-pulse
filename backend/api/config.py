@@ -11,6 +11,18 @@ class Settings(BaseSettings):
     max_commits_default: int = 30
     since_days_default: int = 30
 
+    # Database settings
+    db_path: str = str(Path.home() / ".git2jira.db")
+
+    # Cache settings
+    cache_ttl_seconds: int = 300
+
+    # Performance settings
+    max_parallel_workers: int = 10
+
+    # Logging settings
+    log_level: str = "INFO"
+
     model_config = {
         "env_file": str(Path.home() / ".rh-jira-mcp.env"),
         "env_file_encoding": "utf-8",

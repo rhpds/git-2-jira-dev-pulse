@@ -6,9 +6,12 @@ import subprocess
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from pathlib import Path
+from threading import Lock
 
 from git import Repo
+from cachetools import TTLCache
 
+from ..config import settings
 from ..models.git_models import (
     BranchInfo,
     CommitInfo,
@@ -17,14 +20,23 @@ from ..models.git_models import (
     UncommittedChanges,
     WorkSummary,
 )
+from ..logging_config import get_logger
 
 JIRA_REF_PATTERN = re.compile(r"[A-Z][A-Z0-9]+-\d+")
+
+# Module-level cache for work summaries
+# Cache key format: "{repo_path}:{max_commits}:{since_days}"
+_cache: TTLCache = TTLCache(maxsize=100, ttl=settings.cache_ttl_seconds)
+_cache_lock = Lock()
+
+logger = get_logger(__name__)
 
 
 class GitAnalyzer:
     def get_work_summary(
         self, repo_path: str, max_commits: int = 30, since_days: int = 30
     ) -> WorkSummary:
+        """Get work summary without caching."""
         path = Path(repo_path).expanduser()
         repo = Repo(path)
 
@@ -37,6 +49,55 @@ class GitAnalyzer:
             branches=self._get_branches(repo),
             pull_requests=GitAnalyzer._get_pull_requests(path),
         )
+
+    def get_work_summary_cached(
+        self, repo_path: str, max_commits: int = 30, since_days: int = 30
+    ) -> WorkSummary:
+        """
+        Get work summary with caching.
+
+        Args:
+            repo_path: Path to git repository
+            max_commits: Maximum number of commits to retrieve
+            since_days: Only get commits from last N days
+
+        Returns:
+            Work summary (possibly from cache)
+        """
+        cache_key = f"{repo_path}:{max_commits}:{since_days}"
+
+        with _cache_lock:
+            if cache_key in _cache:
+                logger.debug(f"Cache hit for {repo_path}")
+                return _cache[cache_key]
+
+        logger.debug(f"Cache miss for {repo_path}, analyzing...")
+        summary = self.get_work_summary(repo_path, max_commits, since_days)
+
+        with _cache_lock:
+            _cache[cache_key] = summary
+
+        return summary
+
+    @staticmethod
+    def clear_cache(repo_path: str | None = None):
+        """
+        Clear the analysis cache.
+
+        Args:
+            repo_path: If provided, only clear cache for this repo.
+                      If None, clear entire cache.
+        """
+        with _cache_lock:
+            if repo_path is None:
+                _cache.clear()
+                logger.info("Cleared entire analysis cache")
+            else:
+                # Clear all cache entries for this repo
+                keys_to_delete = [k for k in _cache.keys() if k.startswith(f"{repo_path}:")]
+                for key in keys_to_delete:
+                    del _cache[key]
+                logger.info(f"Cleared cache for {repo_path}")
 
     def get_uncommitted(self, repo_path: str) -> UncommittedChanges:
         repo = Repo(Path(repo_path).expanduser())

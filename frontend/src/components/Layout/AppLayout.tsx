@@ -10,6 +10,7 @@ import {
   ToolbarItem,
 } from "@patternfly/react-core";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { ThemeToggle } from "./ThemeToggle";
 
 const steps = [
   { path: "/", label: "1. Select Repos" },
@@ -25,7 +26,7 @@ export default function AppLayout() {
     <Masthead>
       <MastheadMain>
         <MastheadBrand>
-          <span style={{ fontSize: "1.25rem", fontWeight: 700 }}>
+          <span style={{ fontSize: "var(--pf-t--global--font--size--xl)", fontWeight: "var(--pf-t--global--font--weight--bold)" }}>
             Git &rarr; Jira
           </span>
         </MastheadBrand>
@@ -45,16 +46,21 @@ export default function AppLayout() {
                         ? "var(--pf-t--global--color--brand--default)"
                         : "var(--pf-t--global--text--color--regular)",
                     fontWeight:
-                      location.pathname === step.path ? 700 : 400,
+                      location.pathname === step.path
+                        ? "var(--pf-t--global--font--weight--bold)"
+                        : "var(--pf-t--global--font--weight--body--default)",
                     cursor: "pointer",
-                    padding: "4px 12px",
-                    fontSize: "0.875rem",
+                    padding: "var(--pf-t--global--spacer--xs) var(--pf-t--global--spacer--sm)",
+                    fontSize: "var(--pf-t--global--font--size--body--default)",
                   }}
                 >
                   {step.label}
                 </button>
               </ToolbarItem>
             ))}
+            <ToolbarItem align={{ default: "alignEnd" }}>
+              <ThemeToggle />
+            </ToolbarItem>
           </ToolbarContent>
         </Toolbar>
       </MastheadContent>

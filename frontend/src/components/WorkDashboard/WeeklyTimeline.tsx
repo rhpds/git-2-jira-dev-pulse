@@ -1,7 +1,17 @@
 import { useState } from "react";
+import {
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  ExpandableRowContent,
+} from "@patternfly/react-table";
+import { EmptyState, EmptyStateBody } from "@patternfly/react-core";
 import type { CommitInfo } from "../../api/types";
 import type { Quarter, Week } from "../../utils/quarterUtils";
-import { getWeeksInQuarter, filterByDateRange, groupByWeek } from "../../utils/quarterUtils";
+import { getWeeksInQuarter, groupByWeek } from "../../utils/quarterUtils";
 
 interface WeeklyTimelineProps {
   commits: CommitInfo[];
@@ -9,14 +19,14 @@ interface WeeklyTimelineProps {
   selectedWeek: number | null;
 }
 
-export default function WeeklyTimeline({ commits, quarter, selectedWeek }: WeeklyTimelineProps) {
+export default function WeeklyTimeline({
+  commits,
+  quarter,
+  selectedWeek,
+}: WeeklyTimelineProps) {
   const [expandedWeeks, setExpandedWeeks] = useState<Set<number>>(new Set());
   const weeks = getWeeksInQuarter(quarter);
-  const grouped = groupByWeek(
-    commits,
-    (c) => new Date(c.date),
-    quarter
-  );
+  const grouped = groupByWeek(commits, (c) => new Date(c.date), quarter);
 
   const toggleWeek = (weekNum: number) => {
     setExpandedWeeks((prev) => {
@@ -38,24 +48,24 @@ export default function WeeklyTimeline({ commits, quarter, selectedWeek }: Weekl
 
   if (weeksWithData.length === 0) {
     return (
-      <div style={{ padding: 16, color: "var(--pf-t--global--text--color--subtle)" }}>
-        No commits in this period.
-      </div>
+      <EmptyState>
+        <EmptyStateBody>No commits in this period.</EmptyStateBody>
+      </EmptyState>
     );
   }
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-      <thead>
-        <tr style={{ textAlign: "left", borderBottom: "2px solid var(--pf-t--global--border--color--default)" }}>
-          <th style={{ padding: "6px 8px", width: 24 }}></th>
-          <th style={{ padding: "6px 8px" }}>Week</th>
-          <th style={{ padding: "6px 8px" }}>Commits</th>
-          <th style={{ padding: "6px 8px" }}>Files</th>
-          <th style={{ padding: "6px 8px" }}>Changes</th>
-        </tr>
-      </thead>
-      <tbody>
+    <Table aria-label="Weekly timeline" variant="compact" isStickyHeader>
+      <Thead>
+        <Tr>
+          <Th width={10} />
+          <Th>Week</Th>
+          <Th>Commits</Th>
+          <Th>Files</Th>
+          <Th>Changes</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
         {weeksWithData.map((week) => {
           const weekCommits = grouped.get(week.weekNum) || [];
           const totalFiles = weekCommits.reduce((s, c) => s + c.files_changed, 0);
@@ -76,8 +86,8 @@ export default function WeeklyTimeline({ commits, quarter, selectedWeek }: Weekl
             />
           );
         })}
-      </tbody>
-    </table>
+      </Tbody>
+    </Table>
   );
 }
 
@@ -100,41 +110,45 @@ function WeekRow({
 }) {
   return (
     <>
-      <tr
-        onClick={onToggle}
-        style={{
-          cursor: "pointer",
-          borderBottom: "1px solid var(--pf-t--global--border--color--default)",
-          background: isExpanded ? "var(--pf-t--global--background--color--secondary--default)" : undefined,
-        }}
-      >
-        <td style={{ padding: "6px 8px" }}>{isExpanded ? "▼" : "▶"}</td>
-        <td style={{ padding: "6px 8px", fontWeight: 600 }}>{week.label}</td>
-        <td style={{ padding: "6px 8px" }}>{commits.length} commits</td>
-        <td style={{ padding: "6px 8px" }}>{totalFiles} files</td>
-        <td style={{ padding: "6px 8px" }}>
-          <span style={{ color: "green" }}>+{totalAdd}</span>{" "}
-          <span style={{ color: "red" }}>−{totalDel}</span>
-        </td>
-      </tr>
-      {isExpanded &&
-        commits.map((c) => (
-          <tr
-            key={c.sha}
-            style={{ borderBottom: "1px solid var(--pf-t--global--border--color--default)", fontSize: "0.9em" }}
-          >
-            <td></td>
-            <td style={{ padding: "4px 8px" }}>
-              <code style={{ fontSize: "0.85em" }}>{c.short_sha}</code>
-            </td>
-            <td style={{ padding: "4px 8px" }} colSpan={2}>
-              {c.message.split("\n")[0].slice(0, 80)}
-            </td>
-            <td style={{ padding: "4px 8px", color: "var(--pf-t--global--text--color--subtle)" }}>
-              {new Date(c.date).toLocaleDateString()}
-            </td>
-          </tr>
-        ))}
+      <Tr isClickable onClick={onToggle}>
+        <Td expand={{ isExpanded, onToggle }} />
+        <Td dataLabel="Week" modifier="fitContent">
+          <strong>{week.label}</strong>
+        </Td>
+        <Td dataLabel="Commits">{commits.length} commits</Td>
+        <Td dataLabel="Files">{totalFiles} files</Td>
+        <Td dataLabel="Changes">
+          <span style={{ color: "var(--pf-t--global--text--color--status--success--default)" }}>
+            +{totalAdd}
+          </span>{" "}
+          <span style={{ color: "var(--pf-t--global--text--color--status--danger--default)" }}>
+            −{totalDel}
+          </span>
+        </Td>
+      </Tr>
+      <Tr isExpanded={isExpanded}>
+        <Td colSpan={5}>
+          <ExpandableRowContent>
+            <Table variant="compact" borders={false}>
+              <Tbody>
+                {commits.map((c) => (
+                  <Tr key={c.sha}>
+                    <Td width={15}>
+                      <code style={{ fontSize: "var(--pf-t--global--font--size--sm)" }}>
+                        {c.short_sha}
+                      </code>
+                    </Td>
+                    <Td>{c.message.split("\n")[0].slice(0, 80)}</Td>
+                    <Td modifier="fitContent">
+                      {new Date(c.date).toLocaleDateString()}
+                    </Td>
+                  </Tr>
+                ))}
+              </Tbody>
+            </Table>
+          </ExpandableRowContent>
+        </Td>
+      </Tr>
     </>
   );
 }

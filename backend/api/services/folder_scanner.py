@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Optional, Literal
 
 from git import Repo, InvalidGitRepositoryError
 
@@ -58,6 +59,60 @@ class FolderScanner:
             info = self._scan_repo(child)
             if info:
                 repos.append(info)
+
+        return repos
+
+    def scan_with_filters(
+        self,
+        status_filter: Optional[RepoStatus] = None,
+        has_uncommitted: Optional[bool] = None,
+        min_commits: int = 0,
+        sort_by: Literal["name", "status", "uncommitted", "commits", "activity"] = "name",
+        sort_desc: bool = False,
+    ) -> list[RepoInfo]:
+        """
+        Scan repos with filters and sorting.
+
+        Args:
+            status_filter: Filter by repo status (CLEAN or DIRTY)
+            has_uncommitted: Filter repos with/without uncommitted changes
+            min_commits: Minimum number of recent commits
+            sort_by: Sort field (name, status, uncommitted, commits, activity)
+            sort_desc: Sort in descending order
+
+        Returns:
+            Filtered and sorted list of repos
+        """
+        repos = self.scan()
+
+        # Apply filters
+        if status_filter:
+            repos = [r for r in repos if r.status == status_filter]
+
+        if has_uncommitted is not None:
+            if has_uncommitted:
+                repos = [r for r in repos if r.uncommitted_count > 0]
+            else:
+                repos = [r for r in repos if r.uncommitted_count == 0]
+
+        if min_commits > 0:
+            repos = [r for r in repos if r.recent_commit_count >= min_commits]
+
+        # Apply sorting
+        if sort_by == "name":
+            repos.sort(key=lambda r: r.name.lower(), reverse=sort_desc)
+        elif sort_by == "status":
+            repos.sort(key=lambda r: r.status.value, reverse=sort_desc)
+        elif sort_by == "uncommitted":
+            repos.sort(key=lambda r: r.uncommitted_count, reverse=sort_desc)
+        elif sort_by == "commits":
+            repos.sort(key=lambda r: r.recent_commit_count, reverse=sort_desc)
+        elif sort_by == "activity":
+            # Activity = uncommitted + commits
+            repos.sort(
+                key=lambda r: r.uncommitted_count + r.recent_commit_count,
+                reverse=sort_desc,
+            )
 
         return repos
 

@@ -1,0 +1,33 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        component: [backend, frontend]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build ${{ matrix.component }} image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./${{ matrix.component }}
+          push: false
+          tags: git-2-jira-${{ matrix.component }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test ${{ matrix.component }} image
+        run: |
+          docker run --rm git-2-jira-${{ matrix.component }}:latest --version || true

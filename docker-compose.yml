@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backend
+      target: development
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+      - ~/.rh-jira-mcp.env:/root/.rh-jira-mcp.env:ro
+      - ~/repos:/root/repos:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: build
+    ports:
+      - "5175:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - VITE_API_URL=http://localhost:8000
+    networks:
+      - app-network
+    depends_on:
+      - backend
+    command: npm run dev -- --host 0.0.0.0
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
