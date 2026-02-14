@@ -34,7 +34,7 @@ export default function AppLayout() {
           <span style={{
             fontSize: "var(--pf-t--global--font--size--heading--md)",
             fontWeight: "var(--pf-t--global--font--weight--bold)",
-            color: "var(--pf-t--global--text--color--on-dark)",
+            color: "#ffffff",
             whiteSpace: "nowrap",
           }}>
             Git→Jira

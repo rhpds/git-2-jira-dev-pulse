@@ -34,8 +34,9 @@ export function RepoGrid({
   return (
     <Gallery
       hasGutter
-      minWidths={{ default: "340px" }}
-      style={{ marginTop: 16 }}
+      minWidths={{ default: "260px", md: "280px", lg: "300px", xl: "240px" }}
+      maxWidths={{ default: "320px" }}
+      style={{ marginTop: 12 }}
     >
       {repos.map((repo) => {
         const isSelected = selected.has(repo.path);
@@ -50,33 +51,34 @@ export function RepoGrid({
               onClick={() => onToggle(repo.path)}
               style={{ cursor: "pointer" }}
             >
-              <div style={{ padding: "1rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.75rem" }}>
-                  <RepoIdentityIcon size={32} color={statusColor} animate />
+              <div style={{ padding: "0.75rem" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
+                  <RepoIdentityIcon size={24} color={statusColor} animate />
                   <Checkbox
                     id={`cb-${repo.name}`}
                     isChecked={isSelected}
                     onChange={() => onToggle(repo.path)}
-                    label={<strong>{repo.name}</strong>}
+                    label={<strong style={{ fontSize: "0.875rem" }}>{repo.name}</strong>}
                     onClick={(e) => e.stopPropagation()}
                   />
                 </div>
                 <div
                   style={{
                     display: "flex",
-                    gap: "var(--pf-t--global--spacer--sm)",
+                    gap: "0.25rem",
                     flexWrap: "wrap",
                     alignItems: "center",
+                    fontSize: "0.75rem"
                   }}
                 >
-                  <Label color="blue">{repo.current_branch}</Label>
-                  <Label color={repo.status === "clean" ? "green" : "orange"}>
-                    {repo.status === "clean" ? "Clean" : `${repo.uncommitted_count} changes`}
+                  <Label color="blue" isCompact>{repo.current_branch}</Label>
+                  <Label color={repo.status === "clean" ? "green" : "orange"} isCompact>
+                    {repo.status === "clean" ? "Clean" : `${repo.uncommitted_count} ch`}
                   </Label>
                   {repo.recent_commit_count > 0 && (
-                    <Label color="purple">{repo.recent_commit_count} commits</Label>
+                    <Label color="purple" isCompact>{repo.recent_commit_count} cm</Label>
                   )}
-                  {repo.has_remote && (
+                  {repo.has_remote && repo.status !== "clean" && (
                     <Button
                       variant="link"
                       isSmall
@@ -84,9 +86,9 @@ export function RepoGrid({
                         e.stopPropagation();
                         onOpenPullModal(repo);
                       }}
-                      style={{ padding: "0 4px" }}
+                      style={{ padding: "0", fontSize: "0.75rem" }}
                     >
-                      Pull branch...
+                      Pull
                     </Button>
                   )}
                 </div>
@@ -98,6 +100,7 @@ export function RepoGrid({
         return (
           <Card
             key={repo.path}
+            isCompact
             isSelectable
             isSelected={isSelected}
             onClick={() => onToggle(repo.path)}
@@ -108,7 +111,7 @@ export function RepoGrid({
                 id={`cb-${repo.name}`}
                 isChecked={isSelected}
                 onChange={() => onToggle(repo.path)}
-                label={repo.name}
+                label={<span style={{ fontSize: "0.875rem" }}>{repo.name}</span>}
                 onClick={(e) => e.stopPropagation()}
               />
             </CardTitle>
@@ -116,19 +119,20 @@ export function RepoGrid({
               <div
                 style={{
                   display: "flex",
-                  gap: "var(--pf-t--global--spacer--sm)",
+                  gap: "0.25rem",
                   flexWrap: "wrap",
                   alignItems: "center",
+                  fontSize: "0.75rem"
                 }}
               >
-                <Label color="blue">{repo.current_branch}</Label>
-                <Label color={repo.status === "clean" ? "green" : "orange"}>
-                  {repo.status === "clean" ? "Clean" : `${repo.uncommitted_count} changes`}
+                <Label color="blue" isCompact>{repo.current_branch}</Label>
+                <Label color={repo.status === "clean" ? "green" : "orange"} isCompact>
+                  {repo.status === "clean" ? "Clean" : `${repo.uncommitted_count} ch`}
                 </Label>
                 {repo.recent_commit_count > 0 && (
-                  <Label color="purple">{repo.recent_commit_count} commits</Label>
+                  <Label color="purple" isCompact>{repo.recent_commit_count} cm</Label>
                 )}
-                {repo.has_remote && (
+                {repo.has_remote && repo.status !== "clean" && (
                   <Button
                     variant="link"
                     isSmall
@@ -136,9 +140,9 @@ export function RepoGrid({
                       e.stopPropagation();
                       onOpenPullModal(repo);
                     }}
-                    style={{ padding: "0 4px" }}
+                    style={{ padding: "0", fontSize: "0.75rem" }}
                   >
-                    Pull branch...
+                    Pull
                   </Button>
                 )}
               </div>
