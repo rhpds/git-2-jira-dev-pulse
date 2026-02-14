@@ -200,3 +200,48 @@ class LinearIssue(Base):
 
     def __repr__(self):
         return f"<LinearIssue(id={self.identifier}, state={self.state_name}, jira={self.jira_key})>"
+
+
+class CodeClimateIntegration(Base):
+    """Stores CodeClimate integration configuration."""
+
+    __tablename__ = "codeclimate_integrations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    repo_id = Column(String(100), nullable=False, unique=True, index=True)
+    repo_name = Column(String(200), nullable=False)
+    repo_slug = Column(String(200), nullable=False)
+    github_slug = Column(String(200), nullable=True)
+    enabled = Column(Boolean, nullable=False, default=True)
+    auto_sync = Column(Boolean, nullable=False, default=True)
+    sync_interval_minutes = Column(Integer, nullable=False, default=60)
+    last_synced = Column(DateTime, nullable=True)
+    repo_metadata = Column(JSONType, nullable=True)  # Store repo info
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<CodeClimateIntegration(repo={self.repo_name}, slug={self.repo_slug})>"
+
+
+class CodeClimateSnapshot(Base):
+    """Stores cached CodeClimate quality snapshots."""
+
+    __tablename__ = "codeclimate_snapshots"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    integration_id = Column(Integer, ForeignKey("codeclimate_integrations.id", ondelete="CASCADE"), nullable=False)
+    snapshot_id = Column(String(100), nullable=False, unique=True, index=True)
+    commit_sha = Column(String(100), nullable=False)
+    committed_at = Column(DateTime, nullable=False)
+    gpa = Column(Integer, nullable=True)  # Maintainability score 0-4
+    lines_of_code = Column(Integer, nullable=False, default=0)
+    test_coverage = Column(Integer, nullable=True)  # Percentage 0-100
+    coverage_rating = Column(String(10), nullable=True)  # A, B, C, D, F
+    total_issues = Column(Integer, nullable=False, default=0)
+    technical_debt_hours = Column(Integer, nullable=True)
+    snapshot_data = Column(JSONType, nullable=True)  # Full snapshot details
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<CodeClimateSnapshot(sha={self.commit_sha[:7]}, gpa={self.gpa})>"

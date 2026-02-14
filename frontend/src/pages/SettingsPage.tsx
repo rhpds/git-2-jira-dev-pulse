@@ -26,9 +26,10 @@ import { AdvancedTab } from "../components/Settings/AdvancedTab";
 import { JiraSettingsTab } from "../components/Settings/JiraSettingsTab";
 import { GitHubIntegrationsTab } from "../components/Settings/GitHubIntegrationsTab";
 import { LinearIntegrationsTab } from "../components/Settings/LinearIntegrationsTab";
+import { CodeClimateIntegrationsTab } from "../components/Settings/CodeClimateIntegrationsTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "directories" | "discovery" | "jira" | "github" | "linear" | "visual" | "advanced";
+type SettingsTabKey = "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "visual" | "advanced";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("directories");
@@ -124,6 +125,15 @@ export default function SettingsPage() {
               >
                 {activeTab === "linear" && (
                   <LinearIntegrationsTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="codeclimate"
+                title={<TabTitleText>📊 CodeClimate Integration</TabTitleText>}
+              >
+                {activeTab === "codeclimate" && (
+                  <CodeClimateIntegrationsTab />
                 )}
               </Tab>
 

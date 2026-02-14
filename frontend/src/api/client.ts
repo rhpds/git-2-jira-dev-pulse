@@ -427,6 +427,84 @@ export async function linkLinearToJira(request: {
   jira_url: string;
   error?: string;
 }> {
-  const { data } = await api.post("/linear/link-to-jira", request);
+  const { data} = await api.post("/linear/link-to-jira", request);
+  return data;
+}
+
+// CodeClimate Integration API
+export async function checkCodeClimateConnection(): Promise<{
+  connected: boolean;
+  orgs_count?: number;
+  error?: string;
+}> {
+  const { data } = await api.get("/codeclimate/health");
+  return data;
+}
+
+export async function getCodeClimateRepos(orgId?: string): Promise<any[]> {
+  const { data } = await api.get("/codeclimate/repos", {
+    params: orgId ? { org_id: orgId } : {},
+  });
+  return data;
+}
+
+export async function getCodeClimateIntegrations(): Promise<any[]> {
+  const { data } = await api.get("/codeclimate/integrations");
+  return data;
+}
+
+export async function enableCodeClimateIntegration(request: {
+  repo_id: string;
+  repo_name?: string;
+  repo_slug?: string;
+  github_slug?: string;
+  auto_sync?: boolean;
+  sync_interval_minutes?: number;
+}): Promise<any> {
+  const { data } = await api.post("/codeclimate/enable", request);
+  return data;
+}
+
+export async function disableCodeClimateIntegration(repoId: string): Promise<any> {
+  const { data } = await api.delete(`/codeclimate/disable/${repoId}`);
+  return data;
+}
+
+export async function syncCodeClimateData(repoId: string): Promise<{
+  success: boolean;
+  repo_name: string;
+  snapshots_synced: number;
+  issues_synced: number;
+  error?: string;
+  last_synced?: string;
+}> {
+  const { data } = await api.post(`/codeclimate/sync/${repoId}`);
+  return data;
+}
+
+export async function getCodeClimateSnapshots(
+  repoId: string,
+  limit = 10
+): Promise<any[]> {
+  const { data } = await api.get(`/codeclimate/${repoId}/snapshots`, {
+    params: { limit },
+  });
+  return data;
+}
+
+export async function getCodeClimateStats(repoId: string): Promise<{
+  repo_id: string;
+  maintainability_score?: number;
+  maintainability_grade: string;
+  test_coverage: number;
+  coverage_rating: string;
+  lines_of_code: number;
+  total_issues: number;
+  technical_debt_hours: number;
+  last_snapshot_at?: string;
+  last_coverage_at?: string;
+  error?: string;
+}> {
+  const { data } = await api.get(`/codeclimate/repos/${repoId}/stats`);
   return data;
 }
