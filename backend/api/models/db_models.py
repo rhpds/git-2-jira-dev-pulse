@@ -103,3 +103,49 @@ class AnalysisSuggestion(Base):
 
     def __repr__(self):
         return f"<AnalysisSuggestion(id={self.id}, summary={self.summary[:50]}, was_created={self.was_created})>"
+
+
+class GitHubIntegration(Base):
+    """Stores GitHub integration data for repositories."""
+
+    __tablename__ = "github_integrations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    repo_path = Column(String(1000), nullable=False, unique=True, index=True)
+    repo_name = Column(String(500), nullable=False)
+    github_owner = Column(String(100), nullable=True)  # e.g., "octocat"
+    github_repo = Column(String(100), nullable=True)  # e.g., "hello-world"
+    remote_url = Column(String(1000), nullable=True)
+    last_synced = Column(DateTime, nullable=True)
+    sync_enabled = Column(Boolean, nullable=False, default=True)
+    metadata = Column(JSONType, nullable=True)  # Store repo info, PR counts, etc.
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<GitHubIntegration(repo={self.repo_name}, github={self.github_owner}/{self.github_repo})>"
+
+
+class GitHubPullRequest(Base):
+    """Stores cached GitHub pull request data."""
+
+    __tablename__ = "github_pull_requests"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    integration_id = Column(Integer, ForeignKey("github_integrations.id", ondelete="CASCADE"), nullable=False)
+    pr_number = Column(Integer, nullable=False)
+    title = Column(String(500), nullable=False)
+    state = Column(String(20), nullable=False)  # open, closed, merged
+    url = Column(String(1000), nullable=False)
+    branch = Column(String(200), nullable=False)
+    base_branch = Column(String(200), nullable=False)
+    author = Column(String(100), nullable=False)
+    created_at_gh = Column(DateTime, nullable=False)  # GitHub creation time
+    merged_at = Column(DateTime, nullable=True)
+    closed_at = Column(DateTime, nullable=True)
+    jira_key = Column(String(50), nullable=True)  # Linked Jira ticket
+    pr_data = Column(JSONType, nullable=True)  # Full PR details
+    last_synced = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<GitHubPullRequest(pr=#{self.pr_number}, state={self.state}, jira={self.jira_key})>"
