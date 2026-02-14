@@ -31,23 +31,13 @@ export default function AppLayout() {
     <Masthead>
       <MastheadMain>
         <MastheadBrand component="div">
-          <Flex spaceItems={{ default: 'spaceItemsLg' }} alignItems={{ default: 'alignItemsCenter' }}>
-            <FlexItem>
-              <Brand
-                src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='50' font-size='40' fill='white'%3EG→J%3C/text%3E%3C/svg%3E"
-                alt="Git to Jira"
-                style={{ height: '36px' }}
-              >
-                <span style={{
-                  fontSize: "var(--pf-t--global--font--size--heading--md)",
-                  fontWeight: "var(--pf-t--global--font--weight--bold)",
-                  marginLeft: "var(--pf-t--global--spacer--sm)"
-                }}>
-                  Git → Jira Dev Pulse
-                </span>
-              </Brand>
-            </FlexItem>
-          </Flex>
+          <span style={{
+            fontSize: "var(--pf-t--global--font--size--heading--lg)",
+            fontWeight: "var(--pf-t--global--font--weight--bold)",
+            color: "var(--pf-t--global--text--color--on-dark)",
+          }}>
+            Git → Jira Dev Pulse
+          </span>
         </MastheadBrand>
       </MastheadMain>
       <MastheadContent>
