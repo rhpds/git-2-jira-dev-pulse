@@ -176,3 +176,40 @@ export interface AnalysisRunDetail {
   metadata: Record<string, any>;
   suggestions: SuggestionDetail[];
 }
+
+// Configuration types
+export interface ScanDirectory {
+  path: string;
+  enabled: boolean;
+  recursive: boolean;
+  max_depth: number;
+  exclude_patterns: string[];
+  exclude_folders: string[];
+}
+
+export interface AutoDiscoveryConfig {
+  enabled: boolean;
+  watch_paths: string[];
+  scan_interval_seconds: number;
+  notify_on_new_repos: boolean;
+}
+
+export interface UIPreferences {
+  theme: string;
+  animations_enabled: boolean;
+  show_visualizations: boolean;
+  default_view: string;
+}
+
+export interface PerformanceConfig {
+  max_parallel_scans: number;
+  cache_ttl_seconds: number;
+}
+
+export interface Git2JiraConfig {
+  version: string;
+  scan_directories: ScanDirectory[];
+  auto_discovery: AutoDiscoveryConfig;
+  ui: UIPreferences;
+  performance: PerformanceConfig;
+}

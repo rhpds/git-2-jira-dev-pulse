@@ -17,7 +17,7 @@ import {
 import { DownloadIcon } from "@patternfly/react-icons";
 import { useNavigate } from "react-router-dom";
 import type { AnalysisRunDetail } from "../../api/types";
-import { setAnalysisResults } from "../../pages/ScanPage";
+import { setAnalysisResults } from "../../utils/sessionStorage";
 
 interface HistoryDetailDrawerProps {
   isOpen: boolean;

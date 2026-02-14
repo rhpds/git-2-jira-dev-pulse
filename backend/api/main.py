@@ -4,12 +4,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .routes import folders, git_analysis, health, jira_tickets, history, templates, export
+from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config
 from .exceptions import Git2JiraException
 from .logging_config import setup_logging, get_logger
 from .database import init_db, get_db
 from .seed_templates import seed_default_templates
 from .middleware.logging_middleware import LoggingMiddleware
+from .services.watcher_service import get_watcher_service
+from .services.config_service import get_config_service
 
 # Set up logging
 setup_logging()
@@ -38,10 +40,28 @@ async def lifespan(app: FastAPI):
         except StopIteration:
             pass
 
+    # Start auto-discovery watcher if enabled
+    config_service = get_config_service()
+    config = config_service.get_config()
+
+    if config.auto_discovery.enabled:
+        logger.info("Auto-discovery is enabled, starting watcher service...")
+        watcher = get_watcher_service()
+        await watcher.start()
+    else:
+        logger.info("Auto-discovery is disabled")
+
     logger.info("Application initialized successfully")
     yield
+
     # Shutdown
     logger.info("Shutting down Git-2-Jira-Dev-Pulse API server")
+
+    # Stop watcher if running
+    watcher = get_watcher_service()
+    if watcher.running:
+        logger.info("Stopping watcher service...")
+        await watcher.stop()
 
 
 app = FastAPI(
@@ -73,6 +93,7 @@ app.include_router(jira_tickets.router)
 app.include_router(history.router)
 app.include_router(templates.router)
 app.include_router(export.router)
+app.include_router(config.router)
 
 
 # Exception handlers

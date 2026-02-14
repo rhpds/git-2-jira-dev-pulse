@@ -5,6 +5,7 @@ import ScanPage from "./pages/ScanPage";
 import WorkDashboardPage from "./pages/WorkDashboardPage";
 import ResultsPage from "./pages/ResultsPage";
 import HistoryPage from "./pages/HistoryPage";
+import SettingsPage from "./pages/SettingsPage";
 import ErrorBoundary from "./components/ErrorBoundary";
 
 const queryClient = new QueryClient({
@@ -22,6 +23,7 @@ export default function App() {
               <Route path="/dashboard" element={<WorkDashboardPage />} />
               <Route path="/results" element={<ResultsPage />} />
               <Route path="/history" element={<HistoryPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -1,0 +1,66 @@
+# Git-2-Jira Configuration Example
+# Copy this to ~/.git2jira.config.yaml and customize for your setup
+
+version: "1.0"
+
+# Multiple scan directories with individual settings
+scan_directories:
+  # Example 1: Simple non-recursive scan
+  - path: "~/repos"
+    enabled: true
+    recursive: false
+    max_depth: 1
+    exclude_patterns:
+      - "node_modules"
+      - ".venv"
+      - ".git"
+      - "__pycache__"
+      - ".pytest_cache"
+    exclude_folders:
+      - "archive"
+      - "backup"
+
+  # Example 2: Recursive scan with depth limit
+  - path: "~/projects"
+    enabled: true
+    recursive: true
+    max_depth: 3
+    exclude_patterns:
+      - "node_modules"
+      - "vendor/*"
+      - "build/*"
+      - "dist/*"
+      - "*.egg-info"
+    exclude_folders:
+      - "test-data"
+
+  # Example 3: Work directory (disabled by default)
+  - path: "~/work"
+    enabled: false
+    recursive: true
+    max_depth: 2
+    exclude_patterns:
+      - ".terraform"
+      - "target/*"
+    exclude_folders: []
+
+# Auto-discovery settings (experimental)
+auto_discovery:
+  enabled: false  # Set to true to enable automatic repository detection
+  watch_paths:
+    - "~/repos"
+    - "~/projects"
+  scan_interval_seconds: 300  # Check every 5 minutes
+  notify_on_new_repos: true  # Send notifications when new repos are found
+
+# UI preferences (for web interface)
+ui:
+  theme: "standard"  # Options: "standard" | "glassmorphic"
+  animations_enabled: true
+  show_visualizations: true
+  default_view: "grid"  # Options: "grid" | "list" | "visualization"
+
+# Performance tuning
+performance:
+  max_parallel_scans: 10  # Maximum concurrent repository scans
+  cache_ttl_seconds: 300  # Cache results for 5 minutes

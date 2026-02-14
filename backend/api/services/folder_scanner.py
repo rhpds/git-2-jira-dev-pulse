@@ -2,65 +2,204 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Optional, Literal
+import fnmatch
 
 from git import Repo, InvalidGitRepositoryError
 
 from ..models.git_models import RepoInfo, RepoStatus
-
-EXCLUDED_FOLDERS = {
-    "Minerva",
-    "automation_apps",
-    "dev-orchestrator-mcp",
-    "devops-intelligence",
-    "google_forms",
-    "infra",
-    "jira-mcp",
-    "ocm-resources",
-    "playright-mcp",
-    "playwright-mcp",
-    "cnv-project",
-    "ripgrep-edit",
-    "workshops",
-}
-
-# Folders that are themselves git repos but should be labeled with sub-project context
-PARENT_WITH_SUBPROJECTS: dict[str, list[str]] = {
-    "rhpds-utils": ["web-utils", "RHDP-Scheduler"],
-}
+from .config_service import get_config_service, ScanDirectory
 
 
 class FolderScanner:
-    def __init__(self, base_path: str):
-        self.base_path = Path(base_path).expanduser()
+    """Multi-directory folder scanner with configurable exclusions.
+
+    Supports scanning multiple base directories with individual settings for:
+    - Recursive scanning
+    - Maximum depth
+    - Pattern-based exclusions
+    - Folder-specific exclusions
+    """
+
+    def __init__(self, base_path: Optional[str] = None):
+        """Initialize folder scanner.
+
+        Args:
+            base_path: Optional legacy base path for backward compatibility.
+                      If None, uses all enabled directories from config.
+        """
+        self.config_service = get_config_service()
+
+        # Legacy mode: single base path
+        if base_path:
+            self.legacy_mode = True
+            self.base_path = Path(base_path).expanduser()
+            # Create a scan directory config from legacy path
+            config = self.config_service.get_config()
+            if config.scan_directories:
+                # Use first directory's settings as defaults
+                first_dir = config.scan_directories[0]
+                self.scan_config = ScanDirectory(
+                    path=str(self.base_path),
+                    enabled=True,
+                    recursive=first_dir.recursive,
+                    max_depth=first_dir.max_depth,
+                    exclude_patterns=first_dir.exclude_patterns,
+                    exclude_folders=first_dir.exclude_folders
+                )
+            else:
+                self.scan_config = ScanDirectory(path=str(self.base_path))
+        else:
+            self.legacy_mode = False
+            self.base_path = None
+            self.scan_config = None
 
     def scan(self) -> list[RepoInfo]:
+        """Scan for git repositories.
+
+        Returns:
+            List of discovered repositories
+        """
         repos: list[RepoInfo] = []
-        if not self.base_path.is_dir():
-            return repos
 
-        for child in sorted(self.base_path.iterdir()):
-            if not child.is_dir() or child.name.startswith("."):
-                continue
-            if child.name in EXCLUDED_FOLDERS:
-                continue
-
-            # Parent folders: scan the parent repo itself but note its sub-projects
-            if child.name in PARENT_WITH_SUBPROJECTS:
-                if (child / ".git").exists():
-                    subs = ", ".join(PARENT_WITH_SUBPROJECTS[child.name])
-                    info = self._scan_repo(child, display_name=f"{child.name} ({subs})")
-                    if info:
-                        repos.append(info)
-                continue
-
-            git_dir = child / ".git"
-            if not git_dir.exists():
-                continue
-            info = self._scan_repo(child)
-            if info:
-                repos.append(info)
+        if self.legacy_mode:
+            # Legacy mode: scan single directory
+            repos.extend(self._scan_directory(self.scan_config))
+        else:
+            # Multi-directory mode: scan all enabled directories
+            config = self.config_service.get_config()
+            for scan_dir in config.scan_directories:
+                if scan_dir.enabled:
+                    repos.extend(self._scan_directory(scan_dir))
 
         return repos
+
+    def _scan_directory(self, scan_config: ScanDirectory) -> list[RepoInfo]:
+        """Scan a single directory according to its configuration.
+
+        Args:
+            scan_config: Configuration for this scan directory
+
+        Returns:
+            List of repositories found in this directory
+        """
+        repos: list[RepoInfo] = []
+        base_path = Path(scan_config.path)
+
+        if not base_path.is_dir():
+            return repos
+
+        if scan_config.recursive:
+            # Recursive scan with depth limit
+            repos.extend(self._scan_recursive(
+                base_path,
+                scan_config,
+                current_depth=0
+            ))
+        else:
+            # Non-recursive scan (original behavior)
+            repos.extend(self._scan_flat(base_path, scan_config))
+
+        return repos
+
+    def _scan_flat(self, base_path: Path, scan_config: ScanDirectory) -> list[RepoInfo]:
+        """Scan a directory non-recursively (1 level deep).
+
+        Args:
+            base_path: Base directory to scan
+            scan_config: Scan configuration
+
+        Returns:
+            List of repositories found
+        """
+        repos: list[RepoInfo] = []
+
+        for child in sorted(base_path.iterdir()):
+            if not child.is_dir() or child.name.startswith("."):
+                continue
+
+            # Check exclusions
+            if self._is_excluded(child, scan_config):
+                continue
+
+            # Check if it's a git repo
+            if (child / ".git").exists():
+                info = self._scan_repo(child)
+                if info:
+                    repos.append(info)
+
+        return repos
+
+    def _scan_recursive(
+        self,
+        path: Path,
+        scan_config: ScanDirectory,
+        current_depth: int
+    ) -> list[RepoInfo]:
+        """Scan directory recursively up to max_depth.
+
+        Args:
+            path: Current directory path
+            scan_config: Scan configuration
+            current_depth: Current recursion depth
+
+        Returns:
+            List of repositories found
+        """
+        repos: list[RepoInfo] = []
+
+        # Stop if we've exceeded max depth
+        if current_depth >= scan_config.max_depth:
+            return repos
+
+        try:
+            for child in sorted(path.iterdir()):
+                if not child.is_dir() or child.name.startswith("."):
+                    continue
+
+                # Check exclusions
+                if self._is_excluded(child, scan_config):
+                    continue
+
+                # Check if it's a git repo
+                if (child / ".git").exists():
+                    info = self._scan_repo(child)
+                    if info:
+                        repos.append(info)
+                    # Don't recurse into git repos
+                    continue
+
+                # Recurse into subdirectories
+                repos.extend(self._scan_recursive(
+                    child,
+                    scan_config,
+                    current_depth + 1
+                ))
+        except (PermissionError, OSError):
+            # Skip directories we can't access
+            pass
+
+        return repos
+
+    def _is_excluded(self, path: Path, scan_config: ScanDirectory) -> bool:
+        """Check if path should be excluded based on patterns and folder names.
+
+        Args:
+            path: Path to check
+            scan_config: Scan configuration with exclusion rules
+
+        Returns:
+            True if path should be excluded
+        """
+        # Check folder-specific exclusions
+        if path.name in scan_config.exclude_folders:
+            return True
+
+        # Check pattern-based exclusions
+        for pattern in scan_config.exclude_patterns:
+            if fnmatch.fnmatch(path.name, pattern):
+                return True
+
+        return False
 
     def scan_with_filters(
         self,

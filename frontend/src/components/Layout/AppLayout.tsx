@@ -20,6 +20,7 @@ const navItems = [
   { path: "/dashboard", label: "Dashboard" },
   { path: "/results", label: "Results" },
   { path: "/history", label: "History" },
+  { path: "/settings", label: "Settings" },
 ];
 
 export default function AppLayout() {

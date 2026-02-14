@@ -10,6 +10,9 @@ import type {
   WorkSummary,
   AnalysisRunSummary,
   AnalysisRunDetail,
+  Git2JiraConfig,
+  ScanDirectory,
+  UIPreferences,
 } from "./types";
 
 const api = axios.create({ baseURL: "/api" });
@@ -141,5 +144,77 @@ export async function restoreAnalysisRun(
   runId: number
 ): Promise<TicketSuggestion[]> {
   const { data } = await api.post(`/history/runs/${runId}/restore`);
+  return data;
+}
+
+// Configuration API
+export async function getConfig(): Promise<Git2JiraConfig> {
+  const { data } = await api.get("/config/");
+  return data;
+}
+
+export async function addScanDirectory(
+  scanDirectory: ScanDirectory
+): Promise<Git2JiraConfig> {
+  const { data } = await api.post("/config/scan-directories", {
+    scan_directory: scanDirectory,
+  });
+  return data;
+}
+
+export async function removeScanDirectory(
+  path: string
+): Promise<Git2JiraConfig> {
+  const { data } = await api.delete("/config/scan-directories", {
+    data: { path },
+  });
+  return data;
+}
+
+export async function updateUIPreferences(
+  preferences: UIPreferences
+): Promise<Git2JiraConfig> {
+  const { data } = await api.put("/config/ui-preferences", {
+    preferences,
+  });
+  return data;
+}
+
+export async function toggleAutoDiscovery(
+  enabled: boolean
+): Promise<Git2JiraConfig> {
+  const { data } = await api.post(`/config/auto-discovery/toggle`, null, {
+    params: { enabled },
+  });
+  return data;
+}
+
+export async function getAutoDiscoveryStatus(): Promise<{
+  running: boolean;
+  enabled: boolean;
+  watch_paths: string[];
+  scan_interval_seconds: number;
+  discovered_count: number;
+  callback_count: number;
+}> {
+  const { data } = await api.get("/config/auto-discovery/status");
+  return data;
+}
+
+export async function startAutoDiscovery(): Promise<any> {
+  const { data } = await api.post("/config/auto-discovery/start");
+  return data;
+}
+
+export async function stopAutoDiscovery(): Promise<any> {
+  const { data } = await api.post("/config/auto-discovery/stop");
+  return data;
+}
+
+export async function triggerManualDiscovery(): Promise<{
+  success: boolean;
+  discovered_count: number;
+}> {
+  const { data } = await api.post("/config/auto-discovery/discover");
   return data;
 }
