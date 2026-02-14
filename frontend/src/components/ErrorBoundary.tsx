@@ -1,7 +1,6 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import {
   EmptyState,
-  EmptyStateHeader,
   EmptyStateIcon,
   EmptyStateBody,
   EmptyStateFooter,
@@ -11,6 +10,7 @@ import {
   StackItem,
   CodeBlock,
   CodeBlockCode,
+  Title,
 } from '@patternfly/react-core';
 import { ExclamationCircleIcon } from '@patternfly/react-icons';
 
@@ -60,11 +60,10 @@ class ErrorBoundary extends Component<Props, State> {
 
       return (
         <EmptyState>
-          <EmptyStateHeader
-            titleText="Something went wrong"
-            icon={<EmptyStateIcon icon={ExclamationCircleIcon} color="var(--pf-t--global--icon--color--status--danger--default)" />}
-            headingLevel="h1"
-          />
+          <EmptyStateIcon icon={ExclamationCircleIcon} color="var(--pf-t--global--icon--color--status--danger--default)" />
+          <Title headingLevel="h1" size="lg">
+            Something went wrong
+          </Title>
           <EmptyStateBody>
             <Stack hasGutter>
               <StackItem>

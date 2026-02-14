@@ -4,7 +4,6 @@ import {
   Title,
   EmptyState,
   EmptyStateBody,
-  EmptyStateHeader,
   Spinner,
 } from "@patternfly/react-core";
 import { HistoryList } from "../components/History/HistoryList";
@@ -59,7 +58,9 @@ export default function HistoryPage() {
   if (error) {
     return (
       <EmptyState>
-        <EmptyStateHeader titleText="Error loading history" />
+        <Title headingLevel="h2" size="lg">
+          Error loading history
+        </Title>
         <EmptyStateBody>{String(error)}</EmptyStateBody>
       </EmptyState>
     );
@@ -69,7 +70,9 @@ export default function HistoryPage() {
     return (
       <PageSection>
         <EmptyState>
-          <EmptyStateHeader titleText="No analysis history" />
+          <Title headingLevel="h2" size="lg">
+            No analysis history
+          </Title>
           <EmptyStateBody>
             Run an analysis to see your history here.
           </EmptyStateBody>
