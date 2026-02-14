@@ -4,7 +4,7 @@
  */
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { getConfig, getThemeCSS, updateUIPreferences } from "../api/client";
 
 interface ThemeContextType {
@@ -16,6 +16,7 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
+  const queryClient = useQueryClient();
   const [currentTheme, setCurrentTheme] = useState<string>("standard");
   const [themeStyleElement, setThemeStyleElement] = useState<HTMLStyleElement | null>(null);
 
@@ -67,14 +68,25 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [themeCSS, currentTheme]);
 
   const setTheme = async (themeId: string) => {
+    // Update state first for immediate UI feedback
     setCurrentTheme(themeId);
 
-    // Update config
+    // Update config on backend
     if (config) {
-      await updateUIPreferences({
-        ...config.ui,
-        theme: themeId,
-      });
+      try {
+        await updateUIPreferences({
+          ...config.ui,
+          theme: themeId,
+        });
+        // Wait a bit for backend to persist
+        await new Promise(resolve => setTimeout(resolve, 100));
+        // Now invalidate queries to refetch with new values
+        queryClient.invalidateQueries({ queryKey: ["config"] });
+      } catch (error) {
+        console.error("Failed to update theme:", error);
+        // Revert state on error
+        setCurrentTheme(config.ui.theme);
+      }
     }
   };
 

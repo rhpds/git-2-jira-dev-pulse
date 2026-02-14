@@ -57,8 +57,10 @@ export function VisualPreferencesTab({ config }: VisualPreferencesTabProps) {
   };
 
   const handleThemeSelect = async (themeId: string) => {
+    // setTheme already updates the config, so we don't need handleUpdate
     await setTheme(themeId);
-    handleUpdate({ theme: themeId });
+    // Invalidate config query to refresh UI
+    queryClient.invalidateQueries({ queryKey: ["config"] });
   };
 
   // Group themes by category
