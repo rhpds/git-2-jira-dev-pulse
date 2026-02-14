@@ -46,7 +46,7 @@ class AnalysisRun(Base):
     timestamp = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
     repos_analyzed = Column(JSONType, nullable=False)  # List of repo paths/names
     project_key = Column(String(50), nullable=True, index=True)
-    metadata = Column(JSONType, nullable=True)  # Additional info (commit counts, etc.)
+    analysis_metadata = Column(JSONType, nullable=True)  # Additional info (commit counts, etc.)
 
     # Relationship to suggestions
     suggestions = relationship(

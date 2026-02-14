@@ -28,8 +28,15 @@ async def lifespan(app: FastAPI):
 
     # Seed default templates
     logger.info("Seeding default templates...")
-    with next(get_db()) as db:
+    db_gen = get_db()
+    db = next(db_gen)
+    try:
         seed_default_templates(db)
+    finally:
+        try:
+            next(db_gen)
+        except StopIteration:
+            pass
 
     logger.info("Application initialized successfully")
     yield

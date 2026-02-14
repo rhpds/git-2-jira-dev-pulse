@@ -89,8 +89,14 @@ def init_db():
     db.initialize()
 
 
-@contextmanager
 def get_db() -> Generator[Session, None, None]:
     """Get database session for dependency injection."""
-    with db.get_session() as session:
+    session = db.session_factory()
+    try:
         yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()

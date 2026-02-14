@@ -39,7 +39,7 @@ class HistoryService:
             timestamp=datetime.now(timezone.utc),
             repos_analyzed=repos_analyzed,
             project_key=project_key,
-            metadata=metadata or {},
+            analysis_metadata=metadata or {},
         )
         self.db.add(run)
         self.db.flush()  # Get the ID without committing

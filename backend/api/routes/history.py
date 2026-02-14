@@ -121,7 +121,7 @@ def get_analysis_run_detail(
         timestamp=run.timestamp,
         repos_analyzed=run.repos_analyzed if isinstance(run.repos_analyzed, list) else [],
         project_key=run.project_key,
-        metadata=run.metadata or {},
+        metadata=run.analysis_metadata or {},  # type: ignore
         suggestions=[
             SuggestionDetail(
                 id=s.id,
