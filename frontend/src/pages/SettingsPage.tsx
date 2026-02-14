@@ -23,9 +23,10 @@ import { ScanDirectoriesTab } from "../components/Settings/ScanDirectoriesTab";
 import { AutoDiscoveryTab } from "../components/Settings/AutoDiscoveryTab";
 import { VisualPreferencesTab } from "../components/Settings/VisualPreferencesTab";
 import { AdvancedTab } from "../components/Settings/AdvancedTab";
+import { JiraSettingsTab } from "../components/Settings/JiraSettingsTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "directories" | "discovery" | "visual" | "advanced";
+type SettingsTabKey = "directories" | "discovery" | "jira" | "visual" | "advanced";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("directories");
@@ -70,7 +71,7 @@ export default function SettingsPage() {
               Settings
             </Title>
             <p style={{ marginTop: "0.5rem", color: "var(--pf-t--global--text--color--subtle)" }}>
-              Configure scan directories, auto-discovery, and visual preferences
+              Configure scan directories, Jira projects, auto-discovery, and visual preferences
             </p>
           </StackItem>
 
@@ -94,6 +95,15 @@ export default function SettingsPage() {
               >
                 {activeTab === "discovery" && config && (
                   <AutoDiscoveryTab config={config} />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="jira"
+                title={<TabTitleText>🎫 Jira Projects</TabTitleText>}
+              >
+                {activeTab === "jira" && config && (
+                  <JiraSettingsTab />
                 )}
               </Tab>
 

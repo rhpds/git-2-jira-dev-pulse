@@ -56,6 +56,43 @@ class PerformanceConfig(BaseModel):
     cache_ttl_seconds: int = 300
 
 
+class JiraBoard(BaseModel):
+    """Jira board configuration."""
+    id: int
+    name: str
+    type: str = "kanban"  # "kanban" | "scrum"
+
+
+class JiraProject(BaseModel):
+    """Jira project configuration."""
+    key: str  # e.g., "TEAM"
+    name: str  # e.g., "Team Project"
+    default: bool = False  # Is this the default project for new tickets?
+    boards: List[JiraBoard] = Field(default_factory=list)
+
+    # Custom field mappings (optional)
+    custom_fields: Dict[str, str] = Field(default_factory=dict)
+
+    # Issue type configuration
+    enabled_issue_types: List[str] = Field(
+        default_factory=lambda: ["Story", "Task", "Bug", "Epic"]
+    )
+
+
+class JiraConfig(BaseModel):
+    """Jira integration configuration."""
+    enabled: bool = True
+    projects: List[JiraProject] = Field(default_factory=list)
+
+    # Auto-linking configuration
+    auto_link_commits: bool = True  # Auto-link commits with PROJ-123 to Jira
+    commit_message_pattern: str = r"([A-Z]+-\d+)"  # Regex to extract issue keys
+
+    # Workflow automation
+    auto_transition: bool = False  # Auto-transition issues based on git state
+    transition_rules: Dict[str, str] = Field(default_factory=dict)  # git_state -> jira_status
+
+
 class Git2JiraConfig(BaseModel):
     """Complete Git-2-Jira configuration."""
     version: str = "1.0"
@@ -63,6 +100,7 @@ class Git2JiraConfig(BaseModel):
     auto_discovery: AutoDiscoveryConfig = Field(default_factory=AutoDiscoveryConfig)
     ui: UIPreferences = Field(default_factory=UIPreferences)
     performance: PerformanceConfig = Field(default_factory=PerformanceConfig)
+    jira: JiraConfig = Field(default_factory=JiraConfig)
 
 
 class ConfigService:

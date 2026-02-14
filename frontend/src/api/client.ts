@@ -215,7 +215,14 @@ export async function triggerManualDiscovery(): Promise<{
   success: boolean;
   discovered_count: number;
 }> {
-  const { data } = await api.post("/config/auto-discovery/discover");
+  const { data} = await api.post("/config/auto-discovery/discover");
+  return data;
+}
+
+export async function updateJiraConfig(request: {
+  jira_config: any;
+}): Promise<Git2JiraConfig> {
+  const { data } = await api.put("/config/jira", request);
   return data;
 }
 

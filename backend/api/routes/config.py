@@ -9,6 +9,9 @@ from ..services.config_service import (
     Git2JiraConfig,
     ScanDirectory,
     UIPreferences,
+    JiraProject,
+    JiraBoard,
+    JiraConfig,
 )
 from ..services.watcher_service import get_watcher_service
 from ..logging_config import get_logger
@@ -207,3 +210,162 @@ async def trigger_manual_discovery() -> Dict[str, Any]:
         "success": True,
         "discovered_count": len(watcher.handler.processed_paths) if watcher.handler else 0
     }
+
+
+# ============================================
+# Jira Configuration Endpoints
+# ============================================
+
+class AddJiraProjectRequest(BaseModel):
+    """Request body for adding a Jira project."""
+    project: JiraProject
+
+
+class UpdateJiraProjectRequest(BaseModel):
+    """Request body for updating a Jira project."""
+    project_key: str
+    project: JiraProject
+
+
+class RemoveJiraProjectRequest(BaseModel):
+    """Request body for removing a Jira project."""
+    project_key: str
+
+
+class UpdateJiraConfigRequest(BaseModel):
+    """Request body for updating Jira configuration."""
+    jira_config: JiraConfig
+
+
+@router.get("/jira")
+async def get_jira_config() -> JiraConfig:
+    """Get Jira configuration.
+
+    Returns:
+        Current JiraConfig
+    """
+    config_service = get_config_service()
+    config = config_service.get_config()
+    return config.jira
+
+
+@router.put("/jira")
+async def update_jira_config(request: UpdateJiraConfigRequest) -> Git2JiraConfig:
+    """Update Jira configuration.
+
+    Args:
+        request: Request containing new Jira configuration
+
+    Returns:
+        Updated full configuration
+    """
+    config_service = get_config_service()
+    config = config_service.get_config(force_reload=True)
+    config.jira = request.jira_config
+    config_service.save_config(config)
+    return config
+
+
+@router.post("/jira/projects")
+async def add_jira_project(request: AddJiraProjectRequest) -> Git2JiraConfig:
+    """Add a new Jira project.
+
+    Args:
+        request: Request containing Jira project configuration
+
+    Returns:
+        Updated configuration
+    """
+    config_service = get_config_service()
+    config = config_service.get_config(force_reload=True)
+
+    # Check if project already exists
+    existing = [p for p in config.jira.projects if p.key == request.project.key]
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Project {request.project.key} already exists")
+
+    config.jira.projects.append(request.project)
+    config_service.save_config(config)
+
+    logger.info(f"Added Jira project: {request.project.key}")
+    return config
+
+
+@router.put("/jira/projects/{project_key}")
+async def update_jira_project(project_key: str, request: UpdateJiraProjectRequest) -> Git2JiraConfig:
+    """Update an existing Jira project.
+
+    Args:
+        project_key: The project key to update
+        request: Request containing updated project configuration
+
+    Returns:
+        Updated configuration
+    """
+    config_service = get_config_service()
+    config = config_service.get_config(force_reload=True)
+
+    # Find and update project
+    for i, project in enumerate(config.jira.projects):
+        if project.key == project_key:
+            config.jira.projects[i] = request.project
+            config_service.save_config(config)
+            logger.info(f"Updated Jira project: {project_key}")
+            return config
+
+    raise HTTPException(status_code=404, detail=f"Project {project_key} not found")
+
+
+@router.delete("/jira/projects/{project_key}")
+async def remove_jira_project(project_key: str) -> Git2JiraConfig:
+    """Remove a Jira project.
+
+    Args:
+        project_key: The project key to remove
+
+    Returns:
+        Updated configuration
+    """
+    config_service = get_config_service()
+    config = config_service.get_config(force_reload=True)
+
+    # Remove project
+    original_count = len(config.jira.projects)
+    config.jira.projects = [p for p in config.jira.projects if p.key != project_key]
+
+    if len(config.jira.projects) == original_count:
+        raise HTTPException(status_code=404, detail=f"Project {project_key} not found")
+
+    config_service.save_config(config)
+    logger.info(f"Removed Jira project: {project_key}")
+    return config
+
+
+@router.post("/jira/projects/{project_key}/set-default")
+async def set_default_jira_project(project_key: str) -> Git2JiraConfig:
+    """Set a project as the default for new tickets.
+
+    Args:
+        project_key: The project key to set as default
+
+    Returns:
+        Updated configuration
+    """
+    config_service = get_config_service()
+    config = config_service.get_config(force_reload=True)
+
+    # Reset all defaults and set the specified project as default
+    found = False
+    for project in config.jira.projects:
+        if project.key == project_key:
+            project.default = True
+            found = True
+        else:
+            project.default = False
+
+    if not found:
+        raise HTTPException(status_code=404, detail=f"Project {project_key} not found")
+
+    config_service.save_config(config)
+    logger.info(f"Set default Jira project: {project_key}")
+    return config

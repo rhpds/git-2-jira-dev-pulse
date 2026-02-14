@@ -206,10 +206,35 @@ export interface PerformanceConfig {
   cache_ttl_seconds: number;
 }
 
+export interface JiraBoard {
+  id: number;
+  name: string;
+  type: string;
+}
+
+export interface JiraProject {
+  key: string;
+  name: string;
+  default: boolean;
+  boards: JiraBoard[];
+  custom_fields: Record<string, string>;
+  enabled_issue_types: string[];
+}
+
+export interface JiraConfig {
+  enabled: boolean;
+  projects: JiraProject[];
+  auto_link_commits: boolean;
+  commit_message_pattern: string;
+  auto_transition: boolean;
+  transition_rules: Record<string, string>;
+}
+
 export interface Git2JiraConfig {
   version: string;
   scan_directories: ScanDirectory[];
   auto_discovery: AutoDiscoveryConfig;
   ui: UIPreferences;
   performance: PerformanceConfig;
+  jira: JiraConfig;
 }
