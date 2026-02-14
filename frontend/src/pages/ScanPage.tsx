@@ -6,10 +6,11 @@ import {
   EmptyState,
   EmptyStateBody,
   Spinner,
-  Title,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
+  Stack,
+  StackItem,
 } from "@patternfly/react-core";
 import { useFolders } from "../hooks/useFolders";
 import { useAnalyzeFolders } from "../hooks/useGitAnalysis";
@@ -91,59 +92,61 @@ export default function ScanPage() {
     );
 
   return (
-    <>
-      <Title headingLevel="h1" size="2xl" style={{ marginBlockEnd: "var(--pf-t--global--spacer--md)" }}>
-        Select Repositories to Analyze
-      </Title>
+    <Stack hasGutter>
+      <StackItem>
+        <RepoFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          activityFilter={activityFilter}
+          onActivityFilterChange={setActivityFilter}
+          statusFilter={statusFilter}
+          onStatusFilterChange={setStatusFilter}
+          selectedBranch={selectedBranch}
+          onBranchChange={setSelectedBranch}
+          branches={branches}
+          onClearFilters={clearFilters}
+          hasActiveFilters={hasActiveFilters}
+          filteredCount={filteredCount}
+          totalCount={totalCount}
+        />
+      </StackItem>
 
-      <RepoFilters
-        searchTerm={searchTerm}
-        onSearchChange={setSearchTerm}
-        activityFilter={activityFilter}
-        onActivityFilterChange={setActivityFilter}
-        statusFilter={statusFilter}
-        onStatusFilterChange={setStatusFilter}
-        selectedBranch={selectedBranch}
-        onBranchChange={setSelectedBranch}
-        branches={branches}
-        onClearFilters={clearFilters}
-        hasActiveFilters={hasActiveFilters}
-        filteredCount={filteredCount}
-        totalCount={totalCount}
-      />
+      <StackItem>
+        <Toolbar>
+          <ToolbarContent>
+            <ToolbarItem>
+              <Checkbox
+                id="select-all"
+                label={`Select all visible (${filteredCount})`}
+                isChecked={
+                  filteredRepos.length > 0 &&
+                  selected.size === filteredRepos.length
+                }
+                onChange={(_e, checked) => toggleAll(checked)}
+              />
+            </ToolbarItem>
+            <ToolbarItem align={{ default: "alignEnd" }}>
+              <Button
+                variant="primary"
+                isDisabled={selected.size === 0 || analyzeMutation.isPending}
+                isLoading={analyzeMutation.isPending}
+                onClick={handleAnalyze}
+              >
+                Analyze Selected ({selected.size})
+              </Button>
+            </ToolbarItem>
+          </ToolbarContent>
+        </Toolbar>
+      </StackItem>
 
-      <Toolbar>
-        <ToolbarContent>
-          <ToolbarItem>
-            <Checkbox
-              id="select-all"
-              label={`Select all (${filteredCount})`}
-              isChecked={
-                filteredRepos.length > 0 &&
-                selected.size === filteredRepos.length
-              }
-              onChange={(_e, checked) => toggleAll(checked)}
-            />
-          </ToolbarItem>
-          <ToolbarItem align={{ default: "alignEnd" }}>
-            <Button
-              variant="primary"
-              isDisabled={selected.size === 0 || analyzeMutation.isPending}
-              isLoading={analyzeMutation.isPending}
-              onClick={handleAnalyze}
-            >
-              Analyze Selected ({selected.size})
-            </Button>
-          </ToolbarItem>
-        </ToolbarContent>
-      </Toolbar>
-
-      <RepoGrid
-        repos={filteredRepos}
-        selected={selected}
-        onToggle={toggle}
-        onOpenPullModal={openPullModal}
-      />
+      <StackItem isFilled>
+        <RepoGrid
+          repos={filteredRepos}
+          selected={selected}
+          onToggle={toggle}
+          onOpenPullModal={openPullModal}
+        />
+      </StackItem>
 
       <PullBranchModal
         pullRepo={pullRepo}
@@ -155,6 +158,6 @@ export default function ScanPage() {
         onPull={handlePull}
         onClearResult={closePullModal}
       />
-    </>
+    </Stack>
   );
 }

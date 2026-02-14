@@ -74,14 +74,18 @@ export function RepoFilters({
               onOpenChange={(isOpen) => setIsActivityOpen(isOpen)}
               toggle={(toggleRef) => (
                 <MenuToggle ref={toggleRef} onClick={() => setIsActivityOpen(!isActivityOpen)}>
-                  <FilterIcon /> Activity: {activityFilter}
+                  <FilterIcon /> Activity: {activityFilter === 'active' ? 'Recently updated' : activityFilter === 'inactive' ? 'Older repos' : 'All'}
                 </MenuToggle>
               )}
             >
               <SelectList>
-                <SelectOption value="all">All</SelectOption>
-                <SelectOption value="active">Active</SelectOption>
-                <SelectOption value="inactive">Inactive</SelectOption>
+                <SelectOption value="all">All repositories</SelectOption>
+                <SelectOption value="active" description="Updated in the last 30 days">
+                  Recently updated
+                </SelectOption>
+                <SelectOption value="inactive" description="No updates in 30+ days">
+                  Older repos
+                </SelectOption>
               </SelectList>
             </Select>
           </ToolbarItem>
@@ -98,14 +102,18 @@ export function RepoFilters({
               onOpenChange={(isOpen) => setIsStatusOpen(isOpen)}
               toggle={(toggleRef) => (
                 <MenuToggle ref={toggleRef} onClick={() => setIsStatusOpen(!isStatusOpen)}>
-                  <FilterIcon /> Status: {statusFilter}
+                  <FilterIcon /> Changes: {statusFilter === 'clean' ? 'No changes' : statusFilter === 'dirty' ? 'Has changes' : 'All'}
                 </MenuToggle>
               )}
             >
               <SelectList>
-                <SelectOption value="all">All</SelectOption>
-                <SelectOption value="clean">Clean</SelectOption>
-                <SelectOption value="dirty">Dirty</SelectOption>
+                <SelectOption value="all">All repositories</SelectOption>
+                <SelectOption value="clean" description="No uncommitted changes">
+                  No changes
+                </SelectOption>
+                <SelectOption value="dirty" description="Has uncommitted changes">
+                  Has changes
+                </SelectOption>
               </SelectList>
             </Select>
           </ToolbarItem>

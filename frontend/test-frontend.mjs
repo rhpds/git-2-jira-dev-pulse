@@ -72,15 +72,16 @@ async function testFrontend() {
     console.log(`📝 Page has content: ${bodyText.length > 0 ? 'Yes' : 'No'}`);
 
     // Check for specific elements
-    const hasSelectRepos = bodyText.includes('Select Repositories');
+    const hasRepos = bodyText.includes('Repositories') || bodyText.includes('Select all');
     const hasError = bodyText.includes('Something went wrong');
 
     if (hasError) {
       console.log('\n⚠️  Error boundary was triggered - the page shows "Something went wrong"');
-    } else if (hasSelectRepos) {
-      console.log('\n✅ Page loaded successfully - "Select Repositories" found');
+    } else if (hasRepos) {
+      console.log('\n✅ Page loaded successfully - Repository interface found');
     } else {
       console.log('\n⚠️  Page loaded but expected content not found');
+      console.log(`First 200 chars: ${bodyText.substring(0, 200)}`);
     }
 
     // Take a screenshot
