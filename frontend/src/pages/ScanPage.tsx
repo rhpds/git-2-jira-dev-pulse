@@ -6,6 +6,7 @@ import {
   EmptyState,
   EmptyStateBody,
   Spinner,
+  Title,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
