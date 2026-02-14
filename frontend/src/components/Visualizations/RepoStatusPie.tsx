@@ -108,10 +108,10 @@ export function RepoStatusPie({ repos, height = 300 }: RepoStatusPieProps) {
     >
       <GlassCard variant="gradient" gradient="info">
         <div style={{ marginBottom: '1rem' }}>
-          <h3 style={{ color: 'white', fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+          <h3 style={{ color: 'var(--pf-t--global--text--color--regular)', fontSize: '1.25rem', marginBottom: '0.5rem' }}>
             📊 Repository Status
           </h3>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+          <p style={{ color: 'var(--pf-t--global--text--color--subtle)', fontSize: '0.875rem' }}>
             Distribution of clean vs modified repositories
           </p>
         </div>

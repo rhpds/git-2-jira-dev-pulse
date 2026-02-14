@@ -69,10 +69,10 @@ export function ActivityHeatmap({ repos, maxRepos = 10, height = 300 }: Activity
     >
       <GlassCard variant="gradient" gradient="primary">
         <div style={{ marginBottom: '1rem' }}>
-          <h3 style={{ color: 'white', fontSize: '1.25rem', marginBottom: '0.5rem' }}>
+          <h3 style={{ color: 'var(--pf-t--global--text--color--regular)', fontSize: '1.25rem', marginBottom: '0.5rem' }}>
             🔥 Most Active Repositories
           </h3>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.875rem' }}>
+          <p style={{ color: 'var(--pf-t--global--text--color--subtle)', fontSize: '0.875rem' }}>
             Top {chartData.length} repos by commits and uncommitted changes
           </p>
         </div>
