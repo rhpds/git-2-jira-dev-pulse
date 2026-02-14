@@ -37,7 +37,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     if (config?.ui.theme && config.ui.theme !== currentTheme) {
       setCurrentTheme(config.ui.theme);
     }
-  }, [config]);
+  }, [config, currentTheme]);
 
   // Inject theme CSS into document
   useEffect(() => {

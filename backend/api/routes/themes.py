@@ -134,20 +134,56 @@ async def get_theme_css(theme_id: str):
         raise HTTPException(status_code=404, detail=f"Theme '{theme_id}' not found")
 
     # Generate CSS variables from theme definition
+    # Map theme colors to PatternFly variables
     css_vars = []
+    colors = theme.colors.model_dump()
 
-    # Colors
-    for key, value in theme.colors.model_dump().items():
+    # PatternFly global color overrides
+    if colors.get("background"):
+        css_vars.append(f"  --pf-t--global--background--color--primary: {colors['background']};")
+    if colors.get("surface"):
+        css_vars.append(f"  --pf-t--global--background--color--secondary: {colors['surface']};")
+        css_vars.append(f"  --pf-v6-c-card--BackgroundColor: {colors['surface']};")
+    if colors.get("text_primary"):
+        css_vars.append(f"  --pf-t--global--text--color--regular: {colors['text_primary']};")
+    if colors.get("text_secondary"):
+        css_vars.append(f"  --pf-t--global--text--color--secondary: {colors['text_secondary']};")
+    if colors.get("text_subtle"):
+        css_vars.append(f"  --pf-t--global--text--color--subtle: {colors['text_subtle']};")
+    if colors.get("text_on_dark"):
+        css_vars.append(f"  --pf-t--global--text--color--on-dark: {colors['text_on_dark']};")
+    if colors.get("primary"):
+        css_vars.append(f"  --pf-t--global--color--brand--default: {colors['primary']};")
+    if colors.get("success"):
+        css_vars.append(f"  --pf-t--global--color--status--success--default: {colors['success']};")
+    if colors.get("warning"):
+        css_vars.append(f"  --pf-t--global--color--status--warning--default: {colors['warning']};")
+    if colors.get("danger"):
+        css_vars.append(f"  --pf-t--global--color--status--danger--default: {colors['danger']};")
+    if colors.get("info"):
+        css_vars.append(f"  --pf-t--global--color--status--info--default: {colors['info']};")
+    if colors.get("border"):
+        css_vars.append(f"  --pf-t--global--border--color--default: {colors['border']};")
+
+    # Custom theme variables (for custom components)
+    for key, value in colors.items():
         if value:
             css_vars.append(f"  --theme-color-{key.replace('_', '-')}: {value};")
 
     # Effects
-    for key, value in theme.effects.model_dump().items():
+    effects = theme.effects.model_dump()
+    for key, value in effects.items():
         if value:
             css_vars.append(f"  --theme-effect-{key.replace('_', '-')}: {value};")
 
     # Typography
-    for key, value in theme.typography.model_dump().items():
+    typography = theme.typography.model_dump()
+    if typography.get("font_family"):
+        css_vars.append(f"  --pf-t--global--font--family--body: {typography['font_family']};")
+    if typography.get("font_family_mono"):
+        css_vars.append(f"  --pf-t--global--font--family--monospace: {typography['font_family_mono']};")
+
+    for key, value in typography.items():
         if value:
             css_vars.append(f"  --theme-font-{key.replace('_', '-')}: {value};")
 
@@ -166,6 +202,21 @@ async def get_theme_css(theme_id: str):
 
 :root[data-theme="{theme.id}"] {{
 {chr(10).join(css_vars)}
+}}
+"""
+
+    # Add special styling for gradient/glassmorphic backgrounds
+    if colors.get("background") and ("gradient" in colors["background"] or "rgba" in str(colors.get("glass_bg", ""))):
+        css += f"""
+/* Gradient/Glassmorphic background styling */
+[data-theme="{theme.id}"] .pf-v6-c-page {{
+  background: {colors['background']} !important;
+}}
+
+[data-theme="{theme.id}"] .pf-v6-c-card {{
+  background: {colors.get('surface', colors['background'])} !important;
+  backdrop-filter: blur({effects.get('blur_radius', '10px')}) !important;
+  border: 1px solid {colors.get('border', 'rgba(255, 255, 255, 0.2)')} !important;
 }}
 """
 
