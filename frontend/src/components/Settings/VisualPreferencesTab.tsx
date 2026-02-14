@@ -1,6 +1,6 @@
 /**
  * Visual Preferences Tab
- * Manage UI theme and visual settings with theme gallery
+ * Compact, easy-to-use theme and visual settings
  */
 
 import { useState } from "react";
@@ -17,8 +17,9 @@ import {
   Button,
   Modal,
   ModalVariant,
-  TextInput,
   TextArea,
+  Flex,
+  FlexItem,
 } from "@patternfly/react-core";
 import { CheckCircleIcon, UploadIcon } from "@patternfly/react-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -63,195 +64,119 @@ export function VisualPreferencesTab({ config }: VisualPreferencesTabProps) {
     queryClient.invalidateQueries({ queryKey: ["config"] });
   };
 
-  // Group themes by category
-  const builtInThemes = themes.filter((t) => t.category === "built-in");
-  const darkThemes = themes.filter((t) => t.category === "dark");
-  const lightThemes = themes.filter((t) => ["light", "accessibility"].includes(t.category));
-  const customThemes = themes.filter((t) => t.category === "custom");
-
+  // Compact theme card component
   const ThemeCard = ({ theme }: { theme: ThemeSummary }) => {
     const isSelected = currentTheme === theme.id;
 
     return (
       <Card
+        isCompact
         isClickable
         isSelected={isSelected}
         onClick={() => handleThemeSelect(theme.id)}
         style={{
           border: isSelected ? "2px solid var(--pf-t--global--color--brand--default)" : undefined,
           cursor: "pointer",
-          position: "relative",
+          minHeight: "80px",
         }}
       >
         <CardBody>
-          <Stack hasGutter>
-            <StackItem>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <strong>{theme.name}</strong>
-                {isSelected && <CheckCircleIcon color="var(--pf-t--global--color--brand--default)" />}
+          <Flex direction={{ default: "column" }} spaceItems={{ default: "spaceItemsNone" }}>
+            <FlexItem>
+              <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                {isSelected && <CheckCircleIcon color="var(--pf-t--global--color--brand--default)" size="sm" />}
+                <strong style={{ fontSize: "0.875rem" }}>{theme.name}</strong>
               </div>
-            </StackItem>
-            <StackItem>
-              <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)" }}>
+            </FlexItem>
+            <FlexItem>
+              <div style={{
+                fontSize: "0.75rem",
+                color: "var(--pf-t--global--text--color--subtle)",
+                marginTop: "0.25rem",
+                lineHeight: "1.2"
+              }}>
                 {theme.description}
               </div>
-            </StackItem>
-            {theme.author && (
-              <StackItem>
-                <div style={{ fontSize: "0.75rem", color: "var(--pf-t--global--text--color--subtle)" }}>
-                  by {theme.author}
-                </div>
-              </StackItem>
-            )}
-            {/* Theme preview badge */}
-            <StackItem>
-              <div style={{
-                padding: "0.25rem 0.5rem",
-                borderRadius: "4px",
-                fontSize: "0.75rem",
-                fontWeight: 500,
-                backgroundColor: "var(--pf-t--global--background--color--secondary)",
-                display: "inline-block",
-              }}>
-                {theme.category.toUpperCase()}
-              </div>
-            </StackItem>
-          </Stack>
+            </FlexItem>
+          </Flex>
         </CardBody>
       </Card>
     );
   };
 
   return (
-    <Stack hasGutter style={{ marginTop: "1rem" }}>
+    <Stack hasGutter style={{ marginTop: "1rem", maxWidth: "1200px" }}>
+      {/* Quick Settings at top */}
       <StackItem>
-        <h3>Visual Preferences</h3>
-        <p style={{ color: "var(--pf-t--global--text--color--subtle)", fontSize: "0.875rem" }}>
-          Customize the appearance and visual effects of the application
-        </p>
-      </StackItem>
-
-      {/* Theme Gallery */}
-      <StackItem>
-        <Card>
+        <Card isCompact>
           <CardBody>
-            <Stack hasGutter>
-              <StackItem>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div>
-                    <strong>Theme Gallery</strong>
-                    <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)", marginTop: "0.25rem" }}>
-                      Choose from 10 built-in themes or upload your own
-                    </div>
-                  </div>
-                  <Button variant="secondary" icon={<UploadIcon />} onClick={() => setShowUploadModal(true)}>
-                    Upload Custom Theme
-                  </Button>
-                </div>
-              </StackItem>
-
-              {/* Built-in Themes */}
-              {builtInThemes.length > 0 && (
-                <StackItem>
-                  <h4 style={{ marginBottom: "0.5rem" }}>Built-in Themes</h4>
-                  <Grid hasGutter>
-                    {builtInThemes.map((theme) => (
-                      <GridItem key={theme.id} span={4}>
-                        <ThemeCard theme={theme} />
-                      </GridItem>
-                    ))}
-                  </Grid>
-                </StackItem>
-              )}
-
-              {/* Dark Themes */}
-              {darkThemes.length > 0 && (
-                <StackItem>
-                  <h4 style={{ marginBottom: "0.5rem" }}>Dark Themes</h4>
-                  <Grid hasGutter>
-                    {darkThemes.map((theme) => (
-                      <GridItem key={theme.id} span={4}>
-                        <ThemeCard theme={theme} />
-                      </GridItem>
-                    ))}
-                  </Grid>
-                </StackItem>
-              )}
-
-              {/* Light & Accessibility Themes */}
-              {lightThemes.length > 0 && (
-                <StackItem>
-                  <h4 style={{ marginBottom: "0.5rem" }}>Light & Accessibility Themes</h4>
-                  <Grid hasGutter>
-                    {lightThemes.map((theme) => (
-                      <GridItem key={theme.id} span={4}>
-                        <ThemeCard theme={theme} />
-                      </GridItem>
-                    ))}
-                  </Grid>
-                </StackItem>
-              )}
-
-              {/* Custom Themes */}
-              {customThemes.length > 0 && (
-                <StackItem>
-                  <h4 style={{ marginBottom: "0.5rem" }}>Custom Themes</h4>
-                  <Grid hasGutter>
-                    {customThemes.map((theme) => (
-                      <GridItem key={theme.id} span={4}>
-                        <ThemeCard theme={theme} />
-                      </GridItem>
-                    ))}
-                  </Grid>
-                </StackItem>
-              )}
-            </Stack>
+            <Grid hasGutter>
+              <GridItem span={4}>
+                <Flex alignItems={{ default: "alignItemsCenter" }} spaceItems={{ default: "spaceItemsSm" }}>
+                  <FlexItem>
+                    <Switch
+                      id="animations-toggle"
+                      isChecked={preferences.animations_enabled}
+                      onChange={(_e, checked) => handleUpdate({ animations_enabled: checked })}
+                      isDisabled={updateMutation.isPending}
+                      aria-label="Enable animations"
+                    />
+                  </FlexItem>
+                  <FlexItem>
+                    <strong>Animations</strong>
+                  </FlexItem>
+                </Flex>
+              </GridItem>
+              <GridItem span={4}>
+                <Flex alignItems={{ default: "alignItemsCenter" }} spaceItems={{ default: "spaceItemsSm" }}>
+                  <FlexItem>
+                    <Switch
+                      id="visualizations-toggle"
+                      isChecked={preferences.show_visualizations}
+                      onChange={(_e, checked) => handleUpdate({ show_visualizations: checked })}
+                      isDisabled={updateMutation.isPending}
+                      aria-label="Show visualizations"
+                    />
+                  </FlexItem>
+                  <FlexItem>
+                    <strong>Data Visualizations</strong>
+                  </FlexItem>
+                </Flex>
+              </GridItem>
+              <GridItem span={4} style={{ textAlign: "right" }}>
+                <Button
+                  variant="link"
+                  icon={<UploadIcon />}
+                  onClick={() => setShowUploadModal(true)}
+                  isSmall
+                >
+                  Upload Custom
+                </Button>
+              </GridItem>
+            </Grid>
           </CardBody>
         </Card>
       </StackItem>
 
-      {/* Animations */}
+      {/* Theme Gallery - All themes in one compact grid */}
       <StackItem>
-        <Card>
-          <CardBody>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <strong>Enable Animations</strong>
-                <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)", marginTop: "0.25rem" }}>
-                  Smooth transitions and motion effects throughout the UI
-                </div>
-              </div>
-              <Switch
-                id="animations-toggle"
-                isChecked={preferences.animations_enabled}
-                onChange={(_e, checked) => handleUpdate({ animations_enabled: checked })}
-                isDisabled={updateMutation.isPending}
-              />
-            </div>
-          </CardBody>
-        </Card>
-      </StackItem>
-
-      {/* Visualizations */}
-      <StackItem>
-        <Card>
-          <CardBody>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <strong>Show Data Visualizations</strong>
-                <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)", marginTop: "0.25rem" }}>
-                  Display interactive charts and graphs on the scan page
-                </div>
-              </div>
-              <Switch
-                id="visualizations-toggle"
-                isChecked={preferences.show_visualizations}
-                onChange={(_e, checked) => handleUpdate({ show_visualizations: checked })}
-                isDisabled={updateMutation.isPending}
-              />
-            </div>
-          </CardBody>
-        </Card>
+        <div style={{ marginBottom: "0.5rem" }}>
+          <strong>Choose Theme</strong>
+          <span style={{
+            fontSize: "0.875rem",
+            color: "var(--pf-t--global--text--color--subtle",
+            marginLeft: "0.5rem"
+          }}>
+            ({themes.length} available)
+          </span>
+        </div>
+        <Grid hasGutter>
+          {themes.map((theme) => (
+            <GridItem key={theme.id} span={6} sm={4} md={3} lg={2}>
+              <ThemeCard theme={theme} />
+            </GridItem>
+          ))}
+        </Grid>
       </StackItem>
 
       {/* Upload Custom Theme Modal */}
@@ -301,6 +226,7 @@ colors:
   background: "#ffffff"
   surface: "#f5f5f5"
   ...`}
+                  aria-label="Custom theme YAML"
                 />
               </FormGroup>
             </Form>
