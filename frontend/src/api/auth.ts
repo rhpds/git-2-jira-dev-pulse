@@ -217,3 +217,56 @@ export async function getStripeStatus(): Promise<{ configured: boolean }> {
   const { data } = await api.get("/billing/stripe-status");
   return data;
 }
+
+// Organization API functions
+export interface OrgMember {
+  user_id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  joined_at: string;
+}
+
+export async function getOrganization(): Promise<OrganizationInfo> {
+  const { data } = await api.get("/org/");
+  return data;
+}
+
+export async function updateOrganization(
+  name: string,
+  slug?: string
+): Promise<OrganizationInfo> {
+  const { data } = await api.put("/org/", { name, slug });
+  return data;
+}
+
+export async function getOrgMembers(): Promise<OrgMember[]> {
+  const { data } = await api.get("/org/members");
+  return data;
+}
+
+export async function inviteMember(
+  email: string,
+  role: string = "member"
+): Promise<OrgMember> {
+  const { data } = await api.post("/org/members", { email, role });
+  return data;
+}
+
+export async function updateMemberRole(
+  userId: number,
+  role: string
+): Promise<{ success: boolean }> {
+  const { data } = await api.put(`/org/members/${userId}/role`, {
+    email: "",
+    role,
+  });
+  return data;
+}
+
+export async function removeMember(
+  userId: number
+): Promise<{ success: boolean }> {
+  const { data } = await api.delete(`/org/members/${userId}`);
+  return data;
+}

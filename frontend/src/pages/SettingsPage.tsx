@@ -1,10 +1,6 @@
 /**
  * Settings Page
- * Complete configuration UI with tabs for:
- * - Scan Directories
- * - Auto-Discovery
- * - Visual Preferences
- * - Advanced Settings
+ * Complete configuration UI with tabs for all settings
  */
 
 import { useState } from "react";
@@ -17,7 +13,7 @@ import {
   StackItem,
   Title,
 } from "@patternfly/react-core";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { ScanDirectoriesTab } from "../components/Settings/ScanDirectoriesTab";
 import { AutoDiscoveryTab } from "../components/Settings/AutoDiscoveryTab";
@@ -28,13 +24,14 @@ import { GitHubIntegrationsTab } from "../components/Settings/GitHubIntegrations
 import { LinearIntegrationsTab } from "../components/Settings/LinearIntegrationsTab";
 import { CodeClimateIntegrationsTab } from "../components/Settings/CodeClimateIntegrationsTab";
 import { BillingTab } from "../components/Settings/BillingTab";
+import { TeamTab } from "../components/Settings/TeamTab";
+import { ProfileTab } from "../components/Settings/ProfileTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced";
+type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced";
 
 export default function SettingsPage() {
-  const [activeTab, setActiveTab] = useState<SettingsTabKey>("directories");
-  const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<SettingsTabKey>("profile");
 
   // Fetch current configuration
   const { data: config, isLoading, error } = useQuery({
@@ -75,7 +72,7 @@ export default function SettingsPage() {
               Settings
             </Title>
             <p style={{ marginTop: "0.5rem", color: "var(--pf-t--global--text--color--subtle)" }}>
-              Configure scan directories, Jira projects, auto-discovery, and visual preferences
+              Manage your profile, team, integrations, and preferences
             </p>
           </StackItem>
 
@@ -85,8 +82,35 @@ export default function SettingsPage() {
               onSelect={(_event, tabKey) => setActiveTab(tabKey as SettingsTabKey)}
             >
               <Tab
+                eventKey="profile"
+                title={<TabTitleText>Profile</TabTitleText>}
+              >
+                {activeTab === "profile" && (
+                  <ProfileTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="team"
+                title={<TabTitleText>Team</TabTitleText>}
+              >
+                {activeTab === "team" && (
+                  <TeamTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="billing"
+                title={<TabTitleText>Billing</TabTitleText>}
+              >
+                {activeTab === "billing" && (
+                  <BillingTab />
+                )}
+              </Tab>
+
+              <Tab
                 eventKey="directories"
-                title={<TabTitleText>📁 Scan Directories</TabTitleText>}
+                title={<TabTitleText>Directories</TabTitleText>}
               >
                 {activeTab === "directories" && config && (
                   <ScanDirectoriesTab config={config} />
@@ -95,7 +119,7 @@ export default function SettingsPage() {
 
               <Tab
                 eventKey="discovery"
-                title={<TabTitleText>🔍 Auto-Discovery</TabTitleText>}
+                title={<TabTitleText>Auto-Discovery</TabTitleText>}
               >
                 {activeTab === "discovery" && config && (
                   <AutoDiscoveryTab config={config} />
@@ -104,7 +128,7 @@ export default function SettingsPage() {
 
               <Tab
                 eventKey="jira"
-                title={<TabTitleText>🎫 Jira Projects</TabTitleText>}
+                title={<TabTitleText>Jira</TabTitleText>}
               >
                 {activeTab === "jira" && config && (
                   <JiraSettingsTab />
@@ -113,7 +137,7 @@ export default function SettingsPage() {
 
               <Tab
                 eventKey="github"
-                title={<TabTitleText>🐙 GitHub Integration</TabTitleText>}
+                title={<TabTitleText>GitHub</TabTitleText>}
               >
                 {activeTab === "github" && (
                   <GitHubIntegrationsTab />
@@ -122,7 +146,7 @@ export default function SettingsPage() {
 
               <Tab
                 eventKey="linear"
-                title={<TabTitleText>📐 Linear Integration</TabTitleText>}
+                title={<TabTitleText>Linear</TabTitleText>}
               >
                 {activeTab === "linear" && (
                   <LinearIntegrationsTab />
@@ -131,7 +155,7 @@ export default function SettingsPage() {
 
               <Tab
                 eventKey="codeclimate"
-                title={<TabTitleText>📊 CodeClimate Integration</TabTitleText>}
+                title={<TabTitleText>CodeClimate</TabTitleText>}
               >
                 {activeTab === "codeclimate" && (
                   <CodeClimateIntegrationsTab />
@@ -139,17 +163,8 @@ export default function SettingsPage() {
               </Tab>
 
               <Tab
-                eventKey="billing"
-                title={<TabTitleText>💳 Billing</TabTitleText>}
-              >
-                {activeTab === "billing" && (
-                  <BillingTab />
-                )}
-              </Tab>
-
-              <Tab
                 eventKey="visual"
-                title={<TabTitleText>🎨 Visual Preferences</TabTitleText>}
+                title={<TabTitleText>Visual</TabTitleText>}
               >
                 {activeTab === "visual" && config && (
                   <VisualPreferencesTab config={config} />
@@ -158,7 +173,7 @@ export default function SettingsPage() {
 
               <Tab
                 eventKey="advanced"
-                title={<TabTitleText>⚙️ Advanced</TabTitleText>}
+                title={<TabTitleText>Advanced</TabTitleText>}
               >
                 {activeTab === "advanced" && config && (
                   <AdvancedTab config={config} />

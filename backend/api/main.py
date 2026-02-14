@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, billing
+from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, billing, org
 from .exceptions import Git2JiraException
 from .logging_config import setup_logging, get_logger
 from .database import init_db, get_db
@@ -106,6 +106,7 @@ app.include_router(linear.router)
 app.include_router(codeclimate.router)
 app.include_router(auth.router)
 app.include_router(billing.router)
+app.include_router(org.router)
 
 
 # Exception handlers

@@ -26,6 +26,7 @@ from ..services.stripe_service import (
     create_customer_portal,
     handle_webhook,
 )
+from ..services.usage_service import get_usage_summary
 from ..middleware.auth_middleware import get_current_user, require_org_role
 
 router = APIRouter(prefix="/api/billing", tags=["billing"])
@@ -91,24 +92,9 @@ async def get_billing_overview(
             cancel_at=subscription.cancel_at,
         )
 
-    # Build usage summary
-    member_count = db.execute(
-        select(func.count(OrganizationMember.id)).where(
-            OrganizationMember.org_id == org.id
-        )
-    ).scalar() or 0
-
-    plan_limits = PLAN_LIMITS.get(current_plan, PLAN_LIMITS["free"])
-    usage = UsageSummary(
-        repos_scanned=0,  # TODO: Track actual usage
-        repos_limit=plan_limits["repos"],
-        tickets_created=0,
-        api_calls=0,
-        integrations_active=0,
-        integrations_limit=plan_limits["integrations"],
-        seats_used=member_count,
-        seats_limit=plan_limits["seats"],
-    )
+    # Build usage summary from real data
+    usage_data = get_usage_summary(db, org.id)
+    usage = UsageSummary(**usage_data)
 
     # Build plans list
     plans = []
@@ -211,26 +197,8 @@ async def get_usage(
         raise HTTPException(status_code=403, detail="No organization found")
 
     org, _role = org_info
-    subscription = get_org_subscription(db, org.id)
-    current_plan = subscription.plan if subscription else "free"
-    plan_limits = PLAN_LIMITS.get(current_plan, PLAN_LIMITS["free"])
-
-    member_count = db.execute(
-        select(func.count(OrganizationMember.id)).where(
-            OrganizationMember.org_id == org.id
-        )
-    ).scalar() or 0
-
-    return UsageSummary(
-        repos_scanned=0,
-        repos_limit=plan_limits["repos"],
-        tickets_created=0,
-        api_calls=0,
-        integrations_active=0,
-        integrations_limit=plan_limits["integrations"],
-        seats_used=member_count,
-        seats_limit=plan_limits["seats"],
-    )
+    usage_data = get_usage_summary(db, org.id)
+    return UsageSummary(**usage_data)
 
 
 @router.get("/stripe-status")
