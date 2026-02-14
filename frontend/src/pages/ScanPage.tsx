@@ -117,7 +117,7 @@ export default function ScanPage() {
       <StackItem>
         <Grid hasGutter>
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "gradient" : undefined} gradient="primary" hover>
+            <StatCard variant={isGlassmorphic ? "gradient" : undefined} gradient="primary">
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <PulseIcon size={40} color={isGlassmorphic ? "white" : "var(--pf-t--color--blue--40)"} animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold", color: isGlassmorphic ? "white" : undefined }}>
@@ -131,7 +131,7 @@ export default function ScanPage() {
           </GridItem>
 
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined} hover>
+            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined}>
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <ActivityBurstIcon size={40} color="var(--pf-t--color--purple--40)" animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold" }}>
@@ -145,7 +145,7 @@ export default function ScanPage() {
           </GridItem>
 
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined} hover>
+            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined}>
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <StatusIcon size={40} color="var(--pf-t--color--orange--40)" animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold" }}>
@@ -159,7 +159,7 @@ export default function ScanPage() {
           </GridItem>
 
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined} hover>
+            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined}>
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <CodeFlowIcon size={40} color="var(--pf-t--color--green--40)" animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold" }}>

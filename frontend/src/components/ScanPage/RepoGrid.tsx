@@ -47,7 +47,6 @@ export function RepoGrid({
             <GlassCard
               key={repo.path}
               variant={isSelected ? "border-gradient" : "default"}
-              hover
               onClick={() => onToggle(repo.path)}
               style={{ cursor: "pointer" }}
             >
@@ -81,7 +80,7 @@ export function RepoGrid({
                   {repo.has_remote && repo.status !== "clean" && (
                     <Button
                       variant="link"
-                      isSmall
+                      size="sm"
                       onClick={(e) => {
                         e.stopPropagation();
                         onOpenPullModal(repo);
@@ -135,7 +134,7 @@ export function RepoGrid({
                 {repo.has_remote && repo.status !== "clean" && (
                   <Button
                     variant="link"
-                    isSmall
+                    size="sm"
                     onClick={(e) => {
                       e.stopPropagation();
                       onOpenPullModal(repo);

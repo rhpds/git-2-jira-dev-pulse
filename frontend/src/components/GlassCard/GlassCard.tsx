@@ -14,7 +14,7 @@ interface GlassCardProps extends Omit<ComponentProps<typeof motion.div>, 'childr
   children: ReactNode;
   variant?: GlassCardVariant;
   gradient?: GlassCardGradient;
-  hover?: boolean;
+  enableHover?: boolean;
   pulse?: boolean;
   float?: boolean;
   className?: string;
@@ -33,7 +33,7 @@ export function GlassCard({
   children,
   variant = 'default',
   gradient = 'primary',
-  hover = true,
+  enableHover = true,
   pulse = false,
   float = false,
   className = '',
@@ -67,7 +67,7 @@ export function GlassCard({
         ease: 'easeOut',
       },
     },
-    hover: hover
+    hover: enableHover
       ? {
           y: -4,
           transition: {
@@ -91,7 +91,7 @@ export function GlassCard({
       variants={defaultVariants}
       initial="hidden"
       animate="visible"
-      whileHover={hover ? 'hover' : undefined}
+      whileHover={enableHover ? 'hover' : undefined}
       {...motionProps}
     >
       {children}
