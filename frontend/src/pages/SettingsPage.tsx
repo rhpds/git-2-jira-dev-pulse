@@ -24,9 +24,10 @@ import { AutoDiscoveryTab } from "../components/Settings/AutoDiscoveryTab";
 import { VisualPreferencesTab } from "../components/Settings/VisualPreferencesTab";
 import { AdvancedTab } from "../components/Settings/AdvancedTab";
 import { JiraSettingsTab } from "../components/Settings/JiraSettingsTab";
+import { GitHubIntegrationsTab } from "../components/Settings/GitHubIntegrationsTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "directories" | "discovery" | "jira" | "visual" | "advanced";
+type SettingsTabKey = "directories" | "discovery" | "jira" | "github" | "visual" | "advanced";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("directories");
@@ -104,6 +105,15 @@ export default function SettingsPage() {
               >
                 {activeTab === "jira" && config && (
                   <JiraSettingsTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="github"
+                title={<TabTitleText>🐙 GitHub Integration</TabTitleText>}
+              >
+                {activeTab === "github" && (
+                  <GitHubIntegrationsTab />
                 )}
               </Tab>
 

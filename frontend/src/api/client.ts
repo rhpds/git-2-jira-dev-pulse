@@ -277,3 +277,77 @@ export async function installCustomTheme(
 export async function deleteCustomTheme(themeId: string): Promise<void> {
   await api.delete(`/themes/${themeId}`);
 }
+
+// GitHub Integration API
+export async function checkGitHubConnection(): Promise<{
+  connected: boolean;
+  username?: string;
+  name?: string;
+  email?: string;
+  avatar_url?: string;
+  error?: string;
+}> {
+  const { data } = await api.get("/github/health");
+  return data;
+}
+
+export async function getGitHubIntegrations(): Promise<any[]> {
+  const { data } = await api.get("/github/integrations");
+  return data;
+}
+
+export async function enableGitHubIntegration(request: {
+  repo_path: string;
+  github_owner?: string;
+  github_repo?: string;
+  remote_url?: string;
+  sync_enabled?: boolean;
+}): Promise<any> {
+  const { data } = await api.post("/github/enable", request);
+  return data;
+}
+
+export async function disableGitHubIntegration(repoPath: string): Promise<any> {
+  const encodedPath = encodeURIComponent(repoPath);
+  const { data } = await api.delete(`/github/disable/${encodedPath}`);
+  return data;
+}
+
+export async function syncGitHubData(repoPath: string, sinceDays = 30): Promise<{
+  success: boolean;
+  repo_name: string;
+  prs_synced: number;
+  commits_synced: number;
+  jira_links_created: number;
+  error?: string;
+  last_synced?: string;
+}> {
+  const encodedPath = encodeURIComponent(repoPath);
+  const { data } = await api.post(`/github/sync/${encodedPath}`, null, {
+    params: { since_days: sinceDays },
+  });
+  return data;
+}
+
+export async function getGitHubPRs(repoPath: string, state = "all"): Promise<any[]> {
+  const encodedPath = encodeURIComponent(repoPath);
+  const { data } = await api.get(`/github/${encodedPath}/prs`, {
+    params: { state },
+  });
+  return data;
+}
+
+export async function linkPRToJira(request: {
+  repo_path: string;
+  pr_number: number;
+  jira_key: string;
+  add_comment?: boolean;
+}): Promise<{
+  success: boolean;
+  pr_url: string;
+  jira_url: string;
+  error?: string;
+}> {
+  const { data } = await api.post("/github/link-pr-to-jira", request);
+  return data;
+}
