@@ -1,0 +1,25 @@
+{
+  "project": {
+    "key": "RHPDS",
+    "name": "Red Hat Partner Demo System",
+    "default": true,
+    "boards": [
+      {
+        "id": 1234,
+        "name": "GPTE Team Board",
+        "type": "kanban"
+      },
+      {
+        "id": 5678,
+        "name": "Sprint Planning",
+        "type": "scrum"
+      }
+    ],
+    "custom_fields": {
+      "git_commits_count": "customfield_10050",
+      "git_branch_name": "customfield_10051",
+      "code_review_status": "customfield_10052"
+    },
+    "enabled_issue_types": ["Story", "Task", "Bug", "Epic", "Spike"]
+  }
+}

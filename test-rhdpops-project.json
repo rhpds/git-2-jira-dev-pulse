@@ -1,0 +1,18 @@
+{
+  "project": {
+    "key": "RHDPOPS",
+    "name": "RHDP Operations",
+    "default": false,
+    "boards": [
+      {
+        "id": 9012,
+        "name": "Operations Board",
+        "type": "kanban"
+      }
+    ],
+    "custom_fields": {
+      "git_repo_name": "customfield_10060"
+    },
+    "enabled_issue_types": ["Story", "Task", "Bug"]
+  }
+}

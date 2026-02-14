@@ -29,7 +29,7 @@ from ..models.github_models import (
 from ..services.github_client import GitHubClient
 from ..services.jira_client import JiraClient
 
-router = APIRouter(prefix="/github", tags=["github"])
+router = APIRouter(prefix="/api/github", tags=["github"])
 
 
 def get_github_client() -> GitHubClient:
@@ -117,7 +117,7 @@ async def enable_github_integration(
     try:
         repo_info = client.get_repo_info(request.github_owner, request.github_repo)
         if "error" not in repo_info:
-            integration.metadata = repo_info
+            integration.repo_metadata = repo_info
             db.commit()
     except Exception:
         pass
@@ -166,7 +166,7 @@ async def list_github_integrations(
             "remote_url": integration.remote_url,
             "sync_enabled": integration.sync_enabled,
             "last_synced": integration.last_synced.isoformat() if integration.last_synced else None,
-            "metadata": integration.metadata,
+            "metadata": integration.repo_metadata,
         }
         for integration in integrations
     ]

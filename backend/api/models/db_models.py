@@ -118,7 +118,7 @@ class GitHubIntegration(Base):
     remote_url = Column(String(1000), nullable=True)
     last_synced = Column(DateTime, nullable=True)
     sync_enabled = Column(Boolean, nullable=False, default=True)
-    metadata = Column(JSONType, nullable=True)  # Store repo info, PR counts, etc.
+    repo_metadata = Column(JSONType, nullable=True)  # Store repo info, PR counts, etc.
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
