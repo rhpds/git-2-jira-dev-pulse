@@ -218,3 +218,55 @@ export async function triggerManualDiscovery(): Promise<{
   const { data } = await api.post("/config/auto-discovery/discover");
   return data;
 }
+
+// Theme API
+export interface ThemeSummary {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  author?: string | null;
+}
+
+export interface ThemeDefinition {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  author?: string | null;
+  version: string;
+  colors: Record<string, string>;
+  effects: Record<string, string>;
+  typography: Record<string, string>;
+  gradients: Record<string, string>;
+  custom_vars: Record<string, string>;
+  custom_css?: string | null;
+}
+
+export async function listThemes(category?: string): Promise<ThemeSummary[]> {
+  const { data } = await api.get("/themes/", {
+    params: category ? { category } : {},
+  });
+  return data;
+}
+
+export async function getTheme(themeId: string): Promise<ThemeDefinition> {
+  const { data } = await api.get(`/themes/${themeId}`);
+  return data;
+}
+
+export async function getThemeCSS(themeId: string): Promise<{ css: string }> {
+  const { data } = await api.get(`/themes/${themeId}/css`);
+  return data;
+}
+
+export async function installCustomTheme(
+  themeData: any
+): Promise<ThemeDefinition> {
+  const { data } = await api.post("/themes/install", themeData);
+  return data;
+}
+
+export async function deleteCustomTheme(themeId: string): Promise<void> {
+  await api.delete(`/themes/${themeId}`);
+}
