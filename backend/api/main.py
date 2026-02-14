@@ -4,11 +4,12 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate
+from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, billing
 from .exceptions import Git2JiraException
 from .logging_config import setup_logging, get_logger
 from .database import init_db, get_db
 from .seed_templates import seed_default_templates
+from .seed_features import seed_feature_flags
 from .middleware.logging_middleware import LoggingMiddleware
 from .services.watcher_service import get_watcher_service
 from .services.config_service import get_config_service
@@ -34,6 +35,7 @@ async def lifespan(app: FastAPI):
     db = next(db_gen)
     try:
         seed_default_templates(db)
+        seed_feature_flags(db)
     finally:
         try:
             next(db_gen)
@@ -102,6 +104,8 @@ app.include_router(themes.router)
 app.include_router(github.router)
 app.include_router(linear.router)
 app.include_router(codeclimate.router)
+app.include_router(auth.router)
+app.include_router(billing.router)
 
 
 # Exception handlers

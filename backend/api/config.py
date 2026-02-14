@@ -23,6 +23,14 @@ class Settings(BaseSettings):
     # Logging settings
     log_level: str = "INFO"
 
+    # Auth settings
+    jwt_secret_key: str = ""
+    auth_enabled: bool = False  # Opt-in auth for backward compatibility
+
+    # Stripe settings
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+
     model_config = {
         "env_file": str(Path.home() / ".rh-jira-mcp.env"),
         "env_file_encoding": "utf-8",

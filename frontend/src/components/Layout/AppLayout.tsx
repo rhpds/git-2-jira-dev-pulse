@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Masthead,
   MastheadContent,
@@ -10,10 +11,16 @@ import {
   NavItem,
   Flex,
   FlexItem,
-  Brand,
+  Dropdown,
+  DropdownList,
+  DropdownItem,
+  MenuToggle,
+  Divider,
+  Label,
 } from "@patternfly/react-core";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
   { path: "/", label: "Repositories" },
@@ -26,6 +33,8 @@ const navItems = [
 export default function AppLayout() {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const header = (
     <Masthead>
@@ -37,7 +46,7 @@ export default function AppLayout() {
             color: "var(--pf-t--global--text--color--regular)",
             whiteSpace: "nowrap",
           }}>
-            Git→Jira
+            DevPulse Pro
           </span>
         </MastheadBrand>
       </MastheadMain>
@@ -60,6 +69,71 @@ export default function AppLayout() {
           </FlexItem>
           <FlexItem>
             <ThemeToggle />
+          </FlexItem>
+          <FlexItem>
+            {isAuthenticated && user ? (
+              <Dropdown
+                isOpen={isUserMenuOpen}
+                onSelect={() => setIsUserMenuOpen(false)}
+                onOpenChange={setIsUserMenuOpen}
+                toggle={(toggleRef) => (
+                  <MenuToggle
+                    ref={toggleRef}
+                    onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                    isExpanded={isUserMenuOpen}
+                    variant="plain"
+                  >
+                    <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                      {user.full_name}
+                      {user.subscription && (
+                        <Label isCompact color="blue">
+                          {user.subscription.plan}
+                        </Label>
+                      )}
+                    </span>
+                  </MenuToggle>
+                )}
+                popperProps={{ position: "right" }}
+              >
+                <DropdownList>
+                  <DropdownItem
+                    key="profile"
+                    description={user.email}
+                    onClick={() => navigate("/settings")}
+                  >
+                    Profile
+                  </DropdownItem>
+                  <DropdownItem
+                    key="org"
+                    description={user.organization?.name}
+                    onClick={() => navigate("/settings")}
+                  >
+                    Organization
+                  </DropdownItem>
+                  <Divider key="divider" />
+                  <DropdownItem
+                    key="logout"
+                    onClick={() => {
+                      logout();
+                      navigate("/login");
+                    }}
+                  >
+                    Sign out
+                  </DropdownItem>
+                </DropdownList>
+              </Dropdown>
+            ) : (
+              <Flex spaceItems={{ default: "spaceItemsSm" }}>
+                <FlexItem>
+                  <a
+                    onClick={() => navigate("/login")}
+                    style={{ cursor: "pointer", color: "var(--pf-t--global--text--color--link--default)" }}
+                  >
+                    Sign in
+                  </a>
+                </FlexItem>
+              </Flex>
+            )}
           </FlexItem>
         </Flex>
       </MastheadContent>

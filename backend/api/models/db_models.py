@@ -5,11 +5,13 @@ from datetime import datetime, timezone
 from sqlalchemy import (
     Column,
     Integer,
+    Float,
     String,
     DateTime,
     Boolean,
     Text,
     ForeignKey,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import relationship, declarative_base
 from sqlalchemy.types import TypeDecorator
@@ -245,3 +247,165 @@ class CodeClimateSnapshot(Base):
 
     def __repr__(self):
         return f"<CodeClimateSnapshot(sha={self.commit_sha[:7]}, gpa={self.gpa})>"
+
+
+# ============================================================================
+# Phase 2: Authentication, Organizations, and Billing Models
+# ============================================================================
+
+
+class User(Base):
+    """User accounts for multi-tenancy."""
+
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(255), nullable=False, unique=True, index=True)
+    password_hash = Column(String(255), nullable=False)
+    full_name = Column(String(200), nullable=False)
+    avatar_url = Column(String(1000), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    is_verified = Column(Boolean, nullable=False, default=False)
+    role = Column(String(20), nullable=False, default="user")  # user, admin, superadmin
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+    last_login = Column(DateTime, nullable=True)
+
+    # Relationships
+    memberships = relationship("OrganizationMember", back_populates="user", cascade="all, delete-orphan")
+    api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<User(id={self.id}, email={self.email}, role={self.role})>"
+
+
+class Organization(Base):
+    """Organizations for team-based multi-tenancy."""
+
+    __tablename__ = "organizations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    name = Column(String(200), nullable=False)
+    slug = Column(String(100), nullable=False, unique=True, index=True)
+    owner_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    stripe_customer_id = Column(String(100), nullable=True, unique=True, index=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    members = relationship("OrganizationMember", back_populates="organization", cascade="all, delete-orphan")
+    subscription = relationship("Subscription", back_populates="organization", uselist=False, cascade="all, delete-orphan")
+    usage_records = relationship("UsageRecord", back_populates="organization", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Organization(id={self.id}, name={self.name}, slug={self.slug})>"
+
+
+class OrganizationMember(Base):
+    """Membership linking users to organizations with roles."""
+
+    __tablename__ = "organization_members"
+    __table_args__ = (
+        UniqueConstraint("user_id", "org_id", name="uq_user_org"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    role = Column(String(20), nullable=False, default="member")  # owner, admin, member, viewer
+    joined_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    user = relationship("User", back_populates="memberships")
+    organization = relationship("Organization", back_populates="members")
+
+    def __repr__(self):
+        return f"<OrganizationMember(user={self.user_id}, org={self.org_id}, role={self.role})>"
+
+
+class Subscription(Base):
+    """Subscription plans tied to organizations."""
+
+    __tablename__ = "subscriptions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, unique=True)
+    plan = Column(String(20), nullable=False, default="free")  # free, pro, team, business, enterprise
+    status = Column(String(20), nullable=False, default="active")  # active, trialing, past_due, canceled, paused
+    stripe_subscription_id = Column(String(100), nullable=True, unique=True, index=True)
+    stripe_price_id = Column(String(100), nullable=True)
+    current_period_start = Column(DateTime, nullable=True)
+    current_period_end = Column(DateTime, nullable=True)
+    trial_end = Column(DateTime, nullable=True)
+    cancel_at = Column(DateTime, nullable=True)
+    seats_limit = Column(Integer, nullable=False, default=1)
+    repos_limit = Column(Integer, nullable=False, default=5)
+    integrations_limit = Column(Integer, nullable=False, default=1)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    organization = relationship("Organization", back_populates="subscription")
+
+    def __repr__(self):
+        return f"<Subscription(org={self.org_id}, plan={self.plan}, status={self.status})>"
+
+
+class UsageRecord(Base):
+    """Tracks usage metrics per organization for billing and quotas."""
+
+    __tablename__ = "usage_records"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False)
+    metric = Column(String(50), nullable=False, index=True)  # repos_scanned, tickets_created, api_calls, integrations_active
+    value = Column(Float, nullable=False, default=0)
+    period_start = Column(DateTime, nullable=False)
+    period_end = Column(DateTime, nullable=False)
+    recorded_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    organization = relationship("Organization", back_populates="usage_records")
+
+    def __repr__(self):
+        return f"<UsageRecord(org={self.org_id}, metric={self.metric}, value={self.value})>"
+
+
+class APIKey(Base):
+    """API keys for programmatic access."""
+
+    __tablename__ = "api_keys"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    key_hash = Column(String(255), nullable=False, unique=True, index=True)
+    name = Column(String(100), nullable=False)
+    prefix = Column(String(10), nullable=False)  # First 8 chars for identification
+    scopes = Column(JSONType, nullable=True)  # List of allowed scopes
+    last_used = Column(DateTime, nullable=True)
+    expires_at = Column(DateTime, nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    user = relationship("User", back_populates="api_keys")
+
+    def __repr__(self):
+        return f"<APIKey(id={self.id}, name={self.name}, prefix={self.prefix}...)>"
+
+
+class FeatureFlag(Base):
+    """Feature flags for tier-based access control."""
+
+    __tablename__ = "feature_flags"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    key = Column(String(100), nullable=False, unique=True, index=True)
+    name = Column(String(200), nullable=False)
+    description = Column(Text, nullable=True)
+    min_plan = Column(String(20), nullable=False, default="free")  # Minimum plan required
+    enabled = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<FeatureFlag(key={self.key}, min_plan={self.min_plan})>"
