@@ -32,11 +32,12 @@ export default function AppLayout() {
       <MastheadMain>
         <MastheadBrand component="div">
           <span style={{
-            fontSize: "var(--pf-t--global--font--size--heading--lg)",
+            fontSize: "var(--pf-t--global--font--size--heading--md)",
             fontWeight: "var(--pf-t--global--font--weight--bold)",
             color: "var(--pf-t--global--text--color--on-dark)",
+            whiteSpace: "nowrap",
           }}>
-            Git → Jira Dev Pulse
+            Git→Jira
           </span>
         </MastheadBrand>
       </MastheadMain>
