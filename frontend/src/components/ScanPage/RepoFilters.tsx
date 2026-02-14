@@ -6,7 +6,6 @@ import {
   SelectOption,
   SelectList,
   MenuToggle,
-  MenuToggleElement,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
@@ -73,7 +72,7 @@ export function RepoFilters({
                 setIsActivityOpen(false);
               }}
               onOpenChange={(isOpen) => setIsActivityOpen(isOpen)}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+              toggle={(toggleRef) => (
                 <MenuToggle ref={toggleRef} onClick={() => setIsActivityOpen(!isActivityOpen)}>
                   <FilterIcon /> Activity: {activityFilter}
                 </MenuToggle>
@@ -97,7 +96,7 @@ export function RepoFilters({
                 setIsStatusOpen(false);
               }}
               onOpenChange={(isOpen) => setIsStatusOpen(isOpen)}
-              toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+              toggle={(toggleRef) => (
                 <MenuToggle ref={toggleRef} onClick={() => setIsStatusOpen(!isStatusOpen)}>
                   <FilterIcon /> Status: {statusFilter}
                 </MenuToggle>
@@ -122,7 +121,7 @@ export function RepoFilters({
                   setIsBranchOpen(false);
                 }}
                 onOpenChange={(isOpen) => setIsBranchOpen(isOpen)}
-                toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+                toggle={(toggleRef) => (
                   <MenuToggle ref={toggleRef} onClick={() => setIsBranchOpen(!isBranchOpen)}>
                     <FilterIcon /> Branch: {selectedBranch}
                   </MenuToggle>

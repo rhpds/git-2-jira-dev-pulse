@@ -3,7 +3,6 @@ import {
   DropdownList,
   DropdownItem,
   MenuToggle,
-  MenuToggleElement,
 } from "@patternfly/react-core";
 import { DownloadIcon } from "@patternfly/react-icons";
 import { useState } from "react";
@@ -53,7 +52,7 @@ export function ExportButtons({
     <Dropdown
       isOpen={isOpen}
       onOpenChange={(isOpen) => setIsOpen(isOpen)}
-      toggle={(toggleRef: React.Ref<MenuToggleElement>) => (
+      toggle={(toggleRef) => (
         <MenuToggle
           ref={toggleRef}
           onClick={() => setIsOpen(!isOpen)}
