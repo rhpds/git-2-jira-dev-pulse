@@ -351,3 +351,82 @@ export async function linkPRToJira(request: {
   const { data } = await api.post("/github/link-pr-to-jira", request);
   return data;
 }
+
+// Linear Integration API
+export async function checkLinearConnection(): Promise<{
+  connected: boolean;
+  user_id?: string;
+  name?: string;
+  display_name?: string;
+  email?: string;
+  avatar_url?: string;
+  error?: string;
+}> {
+  const { data } = await api.get("/linear/health");
+  return data;
+}
+
+export async function getLinearTeams(): Promise<any[]> {
+  const { data } = await api.get("/linear/teams");
+  return data;
+}
+
+export async function getLinearIntegrations(): Promise<any[]> {
+  const { data } = await api.get("/linear/integrations");
+  return data;
+}
+
+export async function enableLinearIntegration(request: {
+  team_id: string;
+  team_name?: string;
+  team_key?: string;
+  auto_sync?: boolean;
+  sync_interval_minutes?: number;
+}): Promise<any> {
+  const { data } = await api.post("/linear/enable", request);
+  return data;
+}
+
+export async function disableLinearIntegration(teamId: string): Promise<any> {
+  const { data } = await api.delete(`/linear/disable/${teamId}`);
+  return data;
+}
+
+export async function syncLinearData(teamId: string, limit = 100): Promise<{
+  success: boolean;
+  team_name: string;
+  issues_synced: number;
+  projects_synced: number;
+  jira_links_created: number;
+  error?: string;
+  last_synced?: string;
+}> {
+  const { data } = await api.post(`/linear/sync/${teamId}`, null, {
+    params: { limit },
+  });
+  return data;
+}
+
+export async function getLinearIssues(
+  teamId: string,
+  state?: string
+): Promise<any[]> {
+  const { data } = await api.get(`/linear/${teamId}/issues`, {
+    params: { state },
+  });
+  return data;
+}
+
+export async function linkLinearToJira(request: {
+  linear_issue_id: string;
+  jira_key: string;
+  add_comment?: boolean;
+}): Promise<{
+  success: boolean;
+  linear_url: string;
+  jira_url: string;
+  error?: string;
+}> {
+  const { data } = await api.post("/linear/link-to-jira", request);
+  return data;
+}

@@ -149,3 +149,54 @@ class GitHubPullRequest(Base):
 
     def __repr__(self):
         return f"<GitHubPullRequest(pr=#{self.pr_number}, state={self.state}, jira={self.jira_key})>"
+
+
+class LinearIntegration(Base):
+    """Stores Linear integration configuration."""
+
+    __tablename__ = "linear_integrations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    team_id = Column(String(100), nullable=False, unique=True, index=True)
+    team_name = Column(String(200), nullable=False)
+    team_key = Column(String(50), nullable=False)
+    enabled = Column(Boolean, nullable=False, default=True)
+    auto_sync = Column(Boolean, nullable=False, default=True)
+    sync_interval_minutes = Column(Integer, nullable=False, default=30)
+    last_synced = Column(DateTime, nullable=True)
+    team_metadata = Column(JSONType, nullable=True)  # Store team info
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<LinearIntegration(team={self.team_name}, key={self.team_key})>"
+
+
+class LinearIssue(Base):
+    """Stores cached Linear issue data."""
+
+    __tablename__ = "linear_issues"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    integration_id = Column(Integer, ForeignKey("linear_integrations.id", ondelete="CASCADE"), nullable=False)
+    linear_id = Column(String(100), nullable=False, unique=True, index=True)
+    identifier = Column(String(50), nullable=False)  # e.g., "ENG-123"
+    title = Column(String(500), nullable=False)
+    description = Column(Text, nullable=True)
+    state_name = Column(String(100), nullable=False)
+    state_type = Column(String(50), nullable=False)  # backlog, unstarted, started, completed, canceled
+    priority = Column(Integer, nullable=False, default=0)
+    url = Column(String(1000), nullable=False)
+    assignee_id = Column(String(100), nullable=True)
+    assignee_name = Column(String(200), nullable=True)
+    project_id = Column(String(100), nullable=True)
+    project_name = Column(String(200), nullable=True)
+    created_at_linear = Column(DateTime, nullable=False)
+    updated_at_linear = Column(DateTime, nullable=False)
+    completed_at = Column(DateTime, nullable=True)
+    jira_key = Column(String(50), nullable=True)  # Linked Jira ticket
+    issue_data = Column(JSONType, nullable=True)  # Full issue details
+    last_synced = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<LinearIssue(id={self.identifier}, state={self.state_name}, jira={self.jira_key})>"
