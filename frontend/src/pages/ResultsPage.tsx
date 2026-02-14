@@ -6,6 +6,8 @@ import {
   CardBody,
   EmptyState,
   EmptyStateBody,
+  EmptyStateFooter,
+  EmptyStateActions,
   Label,
   Title,
 } from "@patternfly/react-core";
@@ -26,16 +28,17 @@ export default function ResultsPage() {
 
   if (!results) {
     return (
-      <EmptyState>
-        <Title headingLevel="h2" size="lg">
-          No results yet
-        </Title>
+      <EmptyState titleText="No results yet">
         <EmptyStateBody>
           Complete the ticket creation flow first.
         </EmptyStateBody>
-        <Button variant="primary" onClick={() => navigate("/")}>
-          Start Over
-        </Button>
+        <EmptyStateFooter>
+          <EmptyStateActions>
+            <Button variant="primary" onClick={() => navigate("/")}>
+              Start Over
+            </Button>
+          </EmptyStateActions>
+        </EmptyStateFooter>
       </EmptyState>
     );
   }

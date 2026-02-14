@@ -7,6 +7,8 @@ import {
   DrawerContentBody,
   EmptyState,
   EmptyStateBody,
+  EmptyStateFooter,
+  EmptyStateActions,
   Title,
 } from "@patternfly/react-core";
 import type { TicketCreateRequest, TicketSuggestion, WorkSummary } from "../api/types";
@@ -173,16 +175,17 @@ export default function WorkDashboardPage() {
 
   if (results.length === 0) {
     return (
-      <EmptyState>
-        <Title headingLevel="h2" size="lg">
-          No analysis results
-        </Title>
+      <EmptyState titleText="No analysis results">
         <EmptyStateBody>
           Go back to Step 1 and select repos to analyze.
         </EmptyStateBody>
-        <Button variant="primary" onClick={() => navigate("/")}>
-          Back to Select Repos
-        </Button>
+        <EmptyStateFooter>
+          <EmptyStateActions>
+            <Button variant="primary" onClick={() => navigate("/")}>
+              Back to Select Repos
+            </Button>
+          </EmptyStateActions>
+        </EmptyStateFooter>
       </EmptyState>
     );
   }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   PageSection,
-  Title,
   EmptyState,
   EmptyStateBody,
   Spinner,
@@ -57,10 +56,7 @@ export default function HistoryPage() {
 
   if (error) {
     return (
-      <EmptyState>
-        <Title headingLevel="h2" size="lg">
-          Error loading history
-        </Title>
+      <EmptyState titleText="Error loading history" status="danger">
         <EmptyStateBody>{String(error)}</EmptyStateBody>
       </EmptyState>
     );
@@ -69,10 +65,7 @@ export default function HistoryPage() {
   if (!runs || runs.length === 0) {
     return (
       <PageSection>
-        <EmptyState>
-          <Title headingLevel="h2" size="lg">
-            No analysis history
-          </Title>
+        <EmptyState titleText="No analysis history">
           <EmptyStateBody>
             Run an analysis to see your history here.
           </EmptyStateBody>

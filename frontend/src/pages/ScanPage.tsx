@@ -6,7 +6,6 @@ import {
   EmptyState,
   EmptyStateBody,
   Spinner,
-  Title,
   Toolbar,
   ToolbarContent,
   ToolbarItem,
@@ -85,10 +84,7 @@ export default function ScanPage() {
   if (isLoading) return <Spinner aria-label="Loading repos..." />;
   if (error)
     return (
-      <EmptyState>
-        <Title headingLevel="h2" size="lg">
-          Error loading repositories
-        </Title>
+      <EmptyState titleText="Error loading repositories" status="danger">
         <EmptyStateBody>{String(error)}</EmptyStateBody>
       </EmptyState>
     );
