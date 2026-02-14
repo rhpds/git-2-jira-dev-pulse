@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { getRemoteBranches, gitPull } from "../api/client";
-import type { RemoteBranch, RepoInfo } from "../api/types";
+import { getRemoteBranches, gitPull, type RemoteBranch } from "../api/client";
+import type { RepoInfo } from "../api/types";
 
 interface PullResult {
   success: boolean;

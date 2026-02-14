@@ -1,6 +1,6 @@
 export type RepoStatus = "clean" | "dirty";
 
-export interface RepoInfo {
+export type RepoInfo = {
   name: string;
   path: string;
   current_branch: string;
@@ -8,7 +8,7 @@ export interface RepoInfo {
   uncommitted_count: number;
   recent_commit_count: number;
   has_remote: boolean;
-}
+};
 
 export interface FileChange {
   path: string;

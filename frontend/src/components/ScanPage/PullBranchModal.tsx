@@ -9,7 +9,8 @@ import {
   Alert,
   AlertActionCloseButton,
 } from "@patternfly/react-core";
-import type { RemoteBranch, RepoInfo } from "../../api/types";
+import type { RepoInfo } from "../../api/types";
+import type { RemoteBranch } from "../../api/client";
 
 interface PullBranchModalProps {
   pullRepo: RepoInfo | null;

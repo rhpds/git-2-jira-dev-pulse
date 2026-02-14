@@ -1,0 +1,141 @@
+{
+  "url": "http://localhost:5175",
+  "timestamp": "2026-02-14T17:50:46.055Z",
+  "status": 200,
+  "rootContent": {
+    "exists": true,
+    "hasChildren": true,
+    "innerHTML": "<div class=\"pf-v6-c-page\"><header class=\"pf-v6-c-masthead pf-m-display-inline-on-md\"><div class=\"pf-v6-c-masthead__main\"><div class=\"pf-v6-c-masthead__brand\" component=\"div\"><div class=\"pf-v6-l-flex p"
+  },
+  "reactCheck": {
+    "reactFound": false,
+    "bodyClasses": "",
+    "scriptsLoaded": 3
+  },
+  "consoleMessages": [
+    {
+      "type": "debug",
+      "text": "[vite] connecting..."
+    },
+    {
+      "type": "debug",
+      "text": "[vite] connected."
+    },
+    {
+      "type": "info",
+      "text": "%cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold"
+    },
+    {
+      "type": "error",
+      "text": "Received `%s` for a non-boolean attribute `%s`.\n\nIf you want to write it to the DOM, pass a string instead: %s=\"%s\" or %s={value.toString()}. true hover hover true hover"
+    },
+    {
+      "type": "error",
+      "text": "React does not recognize the `%s` prop on a DOM element. If you intentionally want it to appear in the DOM as a custom attribute, spell it as lowercase `%s` instead. If you accidentally passed it from a parent component, remove it from the DOM element. isSmall issmall"
+    }
+  ],
+  "errors": [],
+  "failedRequests": [],
+  "networkRequests": [
+    {
+      "name": "http://localhost:5175/@vite/client",
+      "duration": 173.7000000178814,
+      "size": 179228
+    },
+    {
+      "name": "http://localhost:5175/src/main.tsx",
+      "duration": 184.7000000178814,
+      "size": 2483
+    },
+    {
+      "name": "http://localhost:5175/@react-refresh",
+      "duration": 10.799999982118607,
+      "size": 112194
+    },
+    {
+      "name": "http://localhost:5175/node_modules/vite/dist/client/env.mjs",
+      "duration": 1.4000000059604645,
+      "size": 3778
+    },
+    {
+      "name": "http://localhost:5175/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=7a8dabac",
+      "duration": 12.699999988079071,
+      "size": 12675
+    },
+    {
+      "name": "http://localhost:5175/node_modules/.vite/deps/react.js?v=7a8dabac",
+      "duration": 13.599999994039536,
+      "size": 1324
+    },
+    {
+      "name": "http://localhost:5175/src/styles/glassmorphism.css",
+      "duration": 29.400000005960464,
+      "size": 9551
+    },
+    {
+      "name": "http://localhost:5175/src/App.tsx",
+      "duration": 32.5,
+      "size": 9965
+    },
+    {
+      "name": "http://localhost:5175/node_modules/.vite/deps/react-dom_client.js?v=7a8dabac",
+      "duration": 32.79999998211861,
+      "size": 1005579
+    },
+    {
+      "name": "http://localhost:5175/node_modules/@patternfly/react-core/dist/styles/base.css",
+      "duration": 132,
+      "size": 232777
+    },
+    {
+      "name": "http://localhost:5175/node_modules/.vite/deps/chunk-G3PMV62Z.js?v=7a8dabac",
+      "duration": 22.69999998807907,
+      "size": 8268
+    },
+    {
+      "name": "http://localhost:5175/node_modules/.vite/deps/chunk-RY7GF66K.js?v=7a8dabac",
+      "duration": 24.099999994039536,
+      "size": 45864
+    },
+    {
+      "name": "http://localhost:5175/node_modules/.vite/deps/@tanstack_react-query.js?v=7a8dabac",
+      "duration": 12.599999994039536,
+      "size": 112512
+    },
+    {
+      "name": "http://localhost:5175/node_modules/.vite/deps/react-router-dom.js?v=7a8dabac",
+      "duration": 69.69999998807907,
+      "size": 451860
+    },
+    {
+      "name": "http://localhost:5175/src/pages/ScanPage.tsx",
+      "duration": 103.2000000178814,
+      "size": 56703
+    },
+    {
+      "name": "http://localhost:5175/src/components/Layout/AppLayout.tsx",
+      "duration": 106.40000000596046,
+      "size": 15181
+    },
+    {
+      "name": "http://localhost:5175/src/pages/WorkDashboardPage.tsx",
+      "duration": 219.2000000178814,
+      "size": 32324
+    },
+    {
+      "name": "http://localhost:5175/src/pages/ResultsPage.tsx",
+      "duration": 227.09999999403954,
+      "size": 22279
+    },
+    {
+      "name": "http://localhost:5175/src/components/ErrorBoundary.tsx",
+      "duration": 107.60000002384186,
+      "size": 12438
+    },
+    {
+      "name": "http://localhost:5175/src/pages/HistoryPage.tsx",
+      "duration": 109.60000002384186,
+      "size": 13792
+    }
+  ]
+}
