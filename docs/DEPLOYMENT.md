@@ -40,7 +40,7 @@ npm run dev
 
 ### Development Ports
 - Backend API: http://localhost:8000
-- Frontend UI: http://localhost:5173
+- Frontend UI: http://localhost:5175
 - API Docs: http://localhost:8000/docs
 
 ## Production Deployment
@@ -338,7 +338,7 @@ RATE_LIMIT_PER_MINUTE=60
 ```env
 DEBUG=true
 LOG_LEVEL=DEBUG
-ALLOWED_ORIGINS=http://localhost:5173,http://localhost:3000
+ALLOWED_ORIGINS=http://localhost:5175,http://localhost:3000
 ```
 
 **Production:**

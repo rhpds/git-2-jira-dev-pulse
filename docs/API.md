@@ -358,7 +358,7 @@ The Jira API has rate limits. If you hit a rate limit, you'll receive:
 ## CORS
 
 The API allows requests from:
-- `http://localhost:5173` (Vite dev server)
+- `http://localhost:5175` (Vite dev server)
 - `http://localhost:3000` (alternative frontend)
 
 For production deployments, configure CORS origins in `backend/api/main.py`.

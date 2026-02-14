@@ -41,18 +41,18 @@ make frontend # Terminal 2
 ```
 
 **Audio:**
-"Let's start the application. Run 'make all' to start both the backend and frontend, or run them separately in two terminals. The backend starts on port 8000, and the frontend on port 5173."
+"Let's start the application. Run 'make all' to start both the backend and frontend, or run them separately in two terminals. The backend starts on port 8000, and the frontend on port 5175."
 
 **Annotations:**
 - Text overlay: "$ make all"
 - Split screen showing both starting
 - Callout: "Backend: http://localhost:8000"
-- Callout: "Frontend: http://localhost:5173"
+- Callout: "Frontend: http://localhost:5175"
 - Loading indicators
 
 **Show startup logs:**
 - Backend: "INFO: Application startup complete"
-- Frontend: "Local: http://localhost:5173/"
+- Frontend: "Local: http://localhost:5175/"
 
 **Annotations:**
 - Green checkmarks when each starts
@@ -61,11 +61,11 @@ make frontend # Terminal 2
 ### Scene 3: Opening the UI (0:30-0:50)
 **Visual:**
 - Open browser
-- Navigate to localhost:5173
+- Navigate to localhost:5175
 - Show landing page
 
 **Audio:**
-"Open your browser and go to localhost:5173. You'll see the Git-2-Jira homepage with our three-step workflow: Select Repos, Review Work, and Create Tickets."
+"Open your browser and go to localhost:5175. You'll see the Git-2-Jira homepage with our three-step workflow: Select Repos, Review Work, and Create Tickets."
 
 **Show landing page:**
 - Hero section with app name
@@ -454,7 +454,7 @@ Alternative Interfaces:
 ```
 Git-2-Jira-Dev-Pulse
 
-Web UI: http://localhost:5173
+Web UI: http://localhost:5175
 API Docs: http://localhost:8000/docs
 GitHub: github.com/rhpds/git-2-jira-dev-pulse
 ```

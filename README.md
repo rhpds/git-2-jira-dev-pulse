@@ -63,14 +63,14 @@ Change `JIRA_URL` to your server and `JIRA_DEFAULT_PROJECT` to your project key.
 
 ```bash
 # Web UI (recommended)
-make all          # Starts backend (:8000) + frontend (:5173)
+make all          # Starts backend (:8000) + frontend (:5175)
 
 # Or run separately
 make backend      # FastAPI on http://localhost:8000
-make frontend     # Vite dev server on http://localhost:5173
+make frontend     # Vite dev server on http://localhost:5175
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open [http://localhost:5175](http://localhost:5175) in your browser.
 
 ### 4. Verify
 
