@@ -144,3 +144,35 @@ export interface HealthStatus {
     error?: string;
   };
 }
+
+// History types
+export interface AnalysisRunSummary {
+  id: number;
+  timestamp: string;
+  repos_count: number;
+  repos_analyzed: string[];
+  project_key: string | null;
+  total_suggestions: number;
+  created_tickets: number;
+}
+
+export interface SuggestionDetail {
+  id: number;
+  summary: string;
+  description: string;
+  issue_type: string;
+  priority: string;
+  source_repo: string | null;
+  labels: string[];
+  was_created: boolean;
+  jira_key: string | null;
+}
+
+export interface AnalysisRunDetail {
+  id: number;
+  timestamp: string;
+  repos_analyzed: string[];
+  project_key: string | null;
+  metadata: Record<string, any>;
+  suggestions: SuggestionDetail[];
+}

@@ -8,6 +8,8 @@ import type {
   TicketCreateRequest,
   TicketSuggestion,
   WorkSummary,
+  AnalysisRunSummary,
+  AnalysisRunDetail,
 } from "./types";
 
 const api = axios.create({ baseURL: "/api" });
@@ -110,5 +112,34 @@ export async function gitPull(
   current_branch?: string;
 }> {
   const { data } = await api.post("/git/pull", { path, branch });
+  return data;
+}
+
+// History API
+export async function getAnalysisHistory(
+  limit = 50,
+  projectKey?: string
+): Promise<AnalysisRunSummary[]> {
+  const { data } = await api.get("/history/runs", {
+    params: { limit, project_key: projectKey },
+  });
+  return data;
+}
+
+export async function getAnalysisRun(
+  runId: number
+): Promise<AnalysisRunDetail> {
+  const { data } = await api.get(`/history/runs/${runId}`);
+  return data;
+}
+
+export async function deleteAnalysisRun(runId: number): Promise<void> {
+  await api.delete(`/history/runs/${runId}`);
+}
+
+export async function restoreAnalysisRun(
+  runId: number
+): Promise<TicketSuggestion[]> {
+  const { data } = await api.post(`/history/runs/${runId}/restore`);
   return data;
 }

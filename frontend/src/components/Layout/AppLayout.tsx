@@ -16,6 +16,7 @@ const steps = [
   { path: "/", label: "1. Select Repos" },
   { path: "/dashboard", label: "2. Work Dashboard" },
   { path: "/results", label: "3. Results" },
+  { path: "/history", label: "History" },
 ];
 
 export default function AppLayout() {
