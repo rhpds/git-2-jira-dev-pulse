@@ -30,9 +30,10 @@ import { AuditLogTab } from "../components/Settings/AuditLogTab";
 import { WebhookTab } from "../components/Settings/WebhookTab";
 import { NotificationPreferencesTab } from "../components/Settings/NotificationPreferencesTab";
 import { AccountDangerZone } from "../components/Settings/AccountDangerZone";
+import { TwoFactorTab } from "../components/Settings/TwoFactorTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "account";
+type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "security" | "account";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("profile");
@@ -190,6 +191,15 @@ export default function SettingsPage() {
               >
                 {activeTab === "notifications" && (
                   <NotificationPreferencesTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="security"
+                title={<TabTitleText>Security</TabTitleText>}
+              >
+                {activeTab === "security" && (
+                  <TwoFactorTab />
                 )}
               </Tab>
 

@@ -8,6 +8,8 @@ import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
 import OnboardingPage from "./pages/OnboardingPage";
+import OAuthCallbackPage from "./pages/OAuthCallbackPage";
+import ActivityFeedPage from "./pages/ActivityFeedPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -30,6 +32,7 @@ export default function App() {
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/register" element={<RegisterPage />} />
                 <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route path="/oauth/callback" element={<OAuthCallbackPage />} />
 
                 {/* App routes */}
                 <Route element={<AppLayout />}>
@@ -39,6 +42,7 @@ export default function App() {
                   <Route path="/history" element={<HistoryPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
                   <Route path="/admin" element={<AdminDashboardPage />} />
+                  <Route path="/activity" element={<ActivityFeedPage />} />
                 </Route>
               </Routes>
             </BrowserRouter>

@@ -27,6 +27,7 @@ import { useAuth } from "../../context/AuthContext";
 const baseNavItems = [
   { path: "/", label: "Repositories" },
   { path: "/dashboard", label: "Dashboard" },
+  { path: "/activity", label: "Activity" },
   { path: "/results", label: "Results" },
   { path: "/history", label: "History" },
   { path: "/settings", label: "Settings" },

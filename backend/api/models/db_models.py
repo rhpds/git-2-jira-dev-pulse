@@ -272,6 +272,16 @@ class User(Base):
     last_login = Column(DateTime, nullable=True)
     onboarding_completed = Column(Boolean, nullable=False, default=False)
 
+    # OAuth fields
+    github_id = Column(String(100), nullable=True, unique=True, index=True)
+    github_username = Column(String(100), nullable=True)
+    oauth_provider = Column(String(50), nullable=True)  # "github", "google", etc.
+
+    # Two-Factor Authentication
+    totp_secret = Column(String(255), nullable=True)
+    totp_enabled = Column(Boolean, nullable=False, default=False)
+    totp_backup_codes = Column(JSONType, nullable=True)
+
     # Relationships
     memberships = relationship("OrganizationMember", back_populates="user", cascade="all, delete-orphan")
     api_keys = relationship("APIKey", back_populates="user", cascade="all, delete-orphan")

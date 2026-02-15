@@ -4,13 +4,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, billing, org, analytics, audit, webhooks, notifications, admin, search
+from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, billing, org, analytics, audit, webhooks, notifications, admin, search, oauth, activity, twofa
 from .exceptions import Git2JiraException
 from .logging_config import setup_logging, get_logger
 from .database import init_db, get_db
 from .seed_templates import seed_default_templates
 from .seed_features import seed_feature_flags
 from .middleware.logging_middleware import LoggingMiddleware
+from .middleware.rate_limit import RateLimitMiddleware
 from .services.watcher_service import get_watcher_service
 from .services.config_service import get_config_service
 
@@ -91,6 +92,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.add_middleware(LoggingMiddleware)
+app.add_middleware(RateLimitMiddleware)
 
 app.include_router(health.router)
 app.include_router(folders.router)
@@ -113,6 +115,9 @@ app.include_router(webhooks.router)
 app.include_router(notifications.router)
 app.include_router(admin.router)
 app.include_router(search.router)
+app.include_router(oauth.router)
+app.include_router(activity.router)
+app.include_router(twofa.router)
 
 
 # Exception handlers
