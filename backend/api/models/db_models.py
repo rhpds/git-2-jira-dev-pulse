@@ -409,3 +409,91 @@ class FeatureFlag(Base):
 
     def __repr__(self):
         return f"<FeatureFlag(key={self.key}, min_plan={self.min_plan})>"
+
+
+# ============================================================================
+# Phase 5: Audit Logging, Webhooks, and Notifications
+# ============================================================================
+
+
+class AuditLog(Base):
+    """Records user/system actions for compliance and debugging."""
+
+    __tablename__ = "audit_logs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    actor_email = Column(String(255), nullable=True)
+    action = Column(String(100), nullable=False, index=True)  # e.g., member.invited, ticket.created
+    resource_type = Column(String(50), nullable=True)  # e.g., user, ticket, integration
+    resource_id = Column(String(200), nullable=True)
+    details = Column(JSONType, nullable=True)  # Extra context
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+
+    def __repr__(self):
+        return f"<AuditLog(id={self.id}, action={self.action}, actor={self.actor_email})>"
+
+
+class Webhook(Base):
+    """Registered webhooks for external event delivery."""
+
+    __tablename__ = "webhooks"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    url = Column(String(2000), nullable=False)
+    secret = Column(String(255), nullable=True)  # HMAC signing secret
+    events = Column(JSONType, nullable=False)  # List of subscribed event types
+    is_active = Column(Boolean, nullable=False, default=True)
+    description = Column(String(500), nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    deliveries = relationship("WebhookDelivery", back_populates="webhook", cascade="all, delete-orphan")
+
+    def __repr__(self):
+        return f"<Webhook(id={self.id}, url={self.url[:50]}, events={self.events})>"
+
+
+class WebhookDelivery(Base):
+    """Tracks individual webhook delivery attempts."""
+
+    __tablename__ = "webhook_deliveries"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    webhook_id = Column(Integer, ForeignKey("webhooks.id", ondelete="CASCADE"), nullable=False, index=True)
+    event = Column(String(100), nullable=False)
+    payload = Column(JSONType, nullable=False)
+    response_status = Column(Integer, nullable=True)
+    response_body = Column(Text, nullable=True)
+    success = Column(Boolean, nullable=False, default=False)
+    attempt = Column(Integer, nullable=False, default=1)
+    delivered_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    webhook = relationship("Webhook", back_populates="deliveries")
+
+    def __repr__(self):
+        return f"<WebhookDelivery(id={self.id}, event={self.event}, success={self.success})>"
+
+
+class Notification(Base):
+    """In-app notifications for users."""
+
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=True)
+    type = Column(String(50), nullable=False, index=True)  # quota_warning, member_joined, etc.
+    title = Column(String(200), nullable=False)
+    message = Column(Text, nullable=False)
+    extra_data = Column(JSONType, nullable=True)  # Extra context (links, IDs)
+    is_read = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), index=True)
+
+    def __repr__(self):
+        return f"<Notification(id={self.id}, type={self.type}, read={self.is_read})>"

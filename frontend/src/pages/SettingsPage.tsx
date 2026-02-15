@@ -26,9 +26,11 @@ import { CodeClimateIntegrationsTab } from "../components/Settings/CodeClimateIn
 import { BillingTab } from "../components/Settings/BillingTab";
 import { TeamTab } from "../components/Settings/TeamTab";
 import { ProfileTab } from "../components/Settings/ProfileTab";
+import { AuditLogTab } from "../components/Settings/AuditLogTab";
+import { WebhookTab } from "../components/Settings/WebhookTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced";
+type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("profile");
@@ -159,6 +161,24 @@ export default function SettingsPage() {
               >
                 {activeTab === "codeclimate" && (
                   <CodeClimateIntegrationsTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="audit"
+                title={<TabTitleText>Audit Log</TabTitleText>}
+              >
+                {activeTab === "audit" && (
+                  <AuditLogTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="webhooks"
+                title={<TabTitleText>Webhooks</TabTitleText>}
+              >
+                {activeTab === "webhooks" && (
+                  <WebhookTab />
                 )}
               </Tab>
 

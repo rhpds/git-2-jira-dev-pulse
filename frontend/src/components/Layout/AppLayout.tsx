@@ -20,6 +20,7 @@ import {
 } from "@patternfly/react-core";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
+import { NotificationBell } from "../NotificationBell/NotificationBell";
 import { useAuth } from "../../context/AuthContext";
 
 const navItems = [
@@ -69,6 +70,9 @@ export default function AppLayout() {
           </FlexItem>
           <FlexItem>
             <ThemeToggle />
+          </FlexItem>
+          <FlexItem>
+            <NotificationBell />
           </FlexItem>
           <FlexItem>
             {isAuthenticated && user ? (
