@@ -541,7 +541,7 @@ cp example.config.yaml ~/.git2jira.config.yaml
 
 4. **Announce**
    - Internal team announcement
-   - Update RHDP documentation
+   - Update project documentation
    - Post in Slack channel
 
 ### Post-Release
@@ -557,7 +557,7 @@ cp example.config.yaml ~/.git2jira.config.yaml
 
 **Implemented by:** Claude Opus 4.6 (with human oversight)
 **Platform:** Git-2-Jira-Dev-Pulse
-**Team:** RHDP Operations
+**Team:** DevPulse
 **Date:** February 2026
 
 ---

@@ -97,7 +97,7 @@ async def update_ui_preferences(request: UpdateUIPreferencesRequest) -> Git2Jira
 
 @router.post("/migrate-from-env")
 async def migrate_from_env() -> MigrateResponse:
-    """Migrate configuration from legacy .rh-jira-mcp.env file.
+    """Migrate configuration from legacy .git2jira.env file.
 
     Returns:
         Migration response with new config and backup path

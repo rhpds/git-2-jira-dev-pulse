@@ -54,7 +54,7 @@ export default function WorkDashboardPage() {
 
   // Quarter state
   const [quarterMode, setQuarterMode] = useState<QuarterMode>(() => {
-    return (localStorage.getItem("quarterMode") as QuarterMode) || "redhat";
+    return (localStorage.getItem("quarterMode") as QuarterMode) || "fiscal";
   });
   const [selectedQuarter, setSelectedQuarter] = useState<Quarter>(() =>
     getCurrentQuarter(quarterMode)
@@ -67,7 +67,7 @@ export default function WorkDashboardPage() {
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
 
-  const projectKey = "RHDPOPS";
+  const projectKey = "MYPROJECT";
 
   useEffect(() => {
     setResults(getAnalysisResults());
@@ -80,7 +80,7 @@ export default function WorkDashboardPage() {
 
   // Recalculate quarter when mode changes
   const handleToggleMode = () => {
-    const newMode = quarterMode === "redhat" ? "calendar" : "redhat";
+    const newMode = quarterMode === "fiscal" ? "calendar" : "fiscal";
     setQuarterMode(newMode);
     setSelectedQuarter(getCurrentQuarter(newMode));
     setSelectedWeek(null);

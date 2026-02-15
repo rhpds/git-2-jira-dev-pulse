@@ -59,9 +59,9 @@ export default function DashboardToolbar({
           <ToolbarItem>
             <Switch
               id="quarter-mode-toggle"
-              label="RH Fiscal"
+              label="Fiscal Year"
               labelOff="Calendar"
-              isChecked={quarterMode === "redhat"}
+              isChecked={quarterMode === "fiscal"}
               onChange={onToggleMode}
             />
           </ToolbarItem>

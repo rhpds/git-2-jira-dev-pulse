@@ -112,7 +112,7 @@ videos/
 
 - **Issues**: [GitHub Issues](https://github.com/rhpds/git-2-jira-dev-pulse/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/rhpds/git-2-jira-dev-pulse/discussions)
-- **Slack**: #rhdp-dev-tools (Red Hat internal)
+- **Discussions**: [GitHub Discussions](https://github.com/rhpds/git-2-jira-dev-pulse/discussions)
 
 ## Contributing to Docs
 

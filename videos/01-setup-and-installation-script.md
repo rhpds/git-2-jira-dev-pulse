@@ -237,7 +237,7 @@ Git-2-Jira-Dev-Pulse
 
 Documentation: github.com/rhpds/git-2-jira-dev-pulse
 Issues: github.com/rhpds/git-2-jira-dev-pulse/issues
-Slack: #rhdp-dev-tools
+Slack: #dev-tools
 ```
 
 ---

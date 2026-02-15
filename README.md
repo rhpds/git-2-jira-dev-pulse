@@ -2,12 +2,12 @@
 
 Turn your git activity into Jira tickets. Scans local repositories, visualizes work by quarter, and creates tickets in one click.
 
-Built for the RHDP team — works with Red Hat Jira (`issues.redhat.com`) out of the box, but configurable for any Jira instance.
+Works with any Jira instance — Jira Cloud (`*.atlassian.net`), Jira Data Center, or self-hosted Jira Server.
 
 ## What It Does
 
 1. **Select Repos** — picks up all git repos in your `~/repos` directory
-2. **Work Dashboard** — groups commits, PRs, and existing Jira tickets by Red Hat fiscal quarter (or calendar quarter), with week-level drill-down
+2. **Work Dashboard** — groups commits, PRs, and existing Jira tickets by fiscal quarter (or calendar quarter), with week-level drill-down
 3. **Create Tickets** — generates smart ticket suggestions from your git activity and pushes them to Jira
 
 Comes in three flavors: **Web UI** (React + PatternFly), **CLI**, and **MCP Server** (for Claude Code / Claude Desktop).
@@ -34,15 +34,15 @@ make install
 Copy the example env file to your home directory:
 
 ```bash
-cp .env.example ~/.rh-jira-mcp.env
+cp .env.example ~/.git2jira.env
 ```
 
-Then edit `~/.rh-jira-mcp.env` with your values:
+Then edit `~/.git2jira.env` with your values:
 
 ```env
-JIRA_URL=https://issues.redhat.com
+JIRA_URL=https://your-jira.atlassian.net
 JIRA_API_TOKEN=<your-token>
-JIRA_DEFAULT_PROJECT=RHDPOPS
+JIRA_DEFAULT_PROJECT=MYPROJECT
 JIRA_DEFAULT_ASSIGNEE=<your-jira-username>
 REPOS_BASE_PATH=~/repos
 ```
@@ -51,11 +51,8 @@ REPOS_BASE_PATH=~/repos
 
 | Jira Instance | Where to Generate |
 |---|---|
-| Red Hat Jira (`issues.redhat.com`) | [Profile → Personal Access Tokens](https://issues.redhat.com/secure/ViewProfile.jspa) |
 | Atlassian Cloud (`*.atlassian.net`) | [Atlassian API Tokens](https://id.atlassian.com/manage-profile/security/api-tokens) |
-| Self-hosted Jira Server | Your Jira admin panel → Personal Access Tokens |
-
-**Using a different Jira instance:**
+| Jira Data Center / Server | Your Jira admin panel → Personal Access Tokens |
 
 Change `JIRA_URL` to your server and `JIRA_DEFAULT_PROJECT` to your project key. Everything else works the same.
 
@@ -125,7 +122,7 @@ python cli/main.py analyze ~/repos/my-project
 python cli/main.py suggest ~/repos/my-project
 
 # Create a ticket directly
-python cli/main.py create --project RHDPOPS \
+python cli/main.py create --project MYPROJECT \
   --summary "Add feature X" --type Story
 
 # Check Jira connection
@@ -174,7 +171,7 @@ scan_directories:
 
 ### Backward Compatibility
 
-The tool automatically falls back to `~/.rh-jira-mcp.env` if no YAML config exists. Use `python cli/main.py config migrate` to upgrade to the new format.
+The tool automatically falls back to `~/.git2jira.env` if no YAML config exists. Use `python cli/main.py config migrate` to upgrade to the new format.
 
 ## MCP Server (Claude Code / Claude Desktop)
 
@@ -248,12 +245,11 @@ Manage all configuration through the web UI:
 
 Access at [http://localhost:5175/settings](http://localhost:5175/settings)
 
-## RHDP Team Notes
+## Notes
 
-- The default project is **RHDPOPS** — change `JIRA_DEFAULT_PROJECT` in your env if you use a different project
-- The dashboard supports **Red Hat fiscal quarters** (FY starts in March: Q1=Mar-May, Q2=Jun-Aug, Q3=Sep-Nov, Q4=Dec-Feb) — toggle to calendar quarters in the UI
+- The default project is **MYPROJECT** — change `JIRA_DEFAULT_PROJECT` in your env if you use a different project
+- The dashboard supports **fiscal quarters** (FY starts in March: Q1=Mar-May, Q2=Jun-Aug, Q3=Sep-Nov, Q4=Dec-Feb) — toggle to calendar quarters in the UI
 - PR detection requires `gh auth login` with access to the repos you work on
-- The `rhdp-slack-bot` Jira integration is available in the RHDPOPS project — tickets created here will be visible there too
 
 ## Project Structure
 
@@ -266,4 +262,4 @@ mcp-server/           FastMCP server for Claude
 
 ## Environment File Location
 
-The app reads from `~/.rh-jira-mcp.env` by default. This is the same file used by `jira-mcp` and other RHDP tools, so if you already have that set up, you're good to go.
+The app reads from `~/.git2jira.env` by default.

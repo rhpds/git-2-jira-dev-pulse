@@ -17,7 +17,7 @@ Check Jira connectivity and get current user info.
     "user": {
       "accountId": "557058:...",
       "displayName": "John Doe",
-      "emailAddress": "jdoe@redhat.com"
+      "emailAddress": "jdoe@example.com"
     }
   }
 }
@@ -162,19 +162,19 @@ Generate Jira ticket suggestions from git work summaries.
       "uncommitted_changes": {...}
     }
   ],
-  "project_key": "RHDPOPS"
+  "project_key": "MYPROJECT"
 }
 ```
 
 **Parameters:**
 - `work_summaries` (required): Array of GitWorkSummary objects from `/api/analyze/`
-- `project_key` (required): Jira project key (e.g., "RHDPOPS")
+- `project_key` (required): Jira project key (e.g., "MYPROJECT")
 
 **Response:**
 ```json
 [
   {
-    "project_key": "RHDPOPS",
+    "project_key": "MYPROJECT",
     "summary": "Implement user authentication",
     "description": "Based on recent commits in my-project:\n\n- Add login endpoint\n- Create JWT token service\n- Implement password hashing\n\nCommits: a1b2c3d, b2c3d4e, c3d4e5f",
     "issue_type": "Story",
@@ -183,7 +183,7 @@ Generate Jira ticket suggestions from git work summaries.
     "estimated_story_points": 5
   },
   {
-    "project_key": "RHDPOPS",
+    "project_key": "MYPROJECT",
     "summary": "Fix database connection timeout",
     "description": "Resolved database connection issues:\n\n- Increase connection pool size\n- Add retry logic\n- Improve error handling\n\nCommit: d4e5f6a",
     "issue_type": "Bug",
@@ -212,7 +212,7 @@ Create a single Jira ticket.
 **Request Body:**
 ```json
 {
-  "project_key": "RHDPOPS",
+  "project_key": "MYPROJECT",
   "summary": "Implement user authentication",
   "description": "Add login and JWT token functionality",
   "issue_type": "Story",
@@ -235,8 +235,8 @@ Create a single Jira ticket.
 ```json
 {
   "success": true,
-  "key": "RHDPOPS-1234",
-  "url": "https://issues.redhat.com/browse/RHDPOPS-1234",
+  "key": "MYPROJECT-1234",
+  "url": "https://your-jira.atlassian.net/browse/MYPROJECT-1234",
   "summary": "Implement user authentication"
 }
 ```
@@ -246,7 +246,7 @@ Create a single Jira ticket.
 curl -X POST http://localhost:8000/api/tickets/ \
   -H "Content-Type: application/json" \
   -d '{
-    "project_key": "RHDPOPS",
+    "project_key": "MYPROJECT",
     "summary": "Add dark mode",
     "description": "Implement dark mode toggle in UI settings",
     "issue_type": "Story",
@@ -265,13 +265,13 @@ Create multiple Jira tickets at once.
 {
   "tickets": [
     {
-      "project_key": "RHDPOPS",
+      "project_key": "MYPROJECT",
       "summary": "First ticket",
       "description": "Description 1",
       "issue_type": "Story"
     },
     {
-      "project_key": "RHDPOPS",
+      "project_key": "MYPROJECT",
       "summary": "Second ticket",
       "description": "Description 2",
       "issue_type": "Task"
@@ -286,14 +286,14 @@ Create multiple Jira tickets at once.
   "results": [
     {
       "success": true,
-      "key": "RHDPOPS-1234",
-      "url": "https://issues.redhat.com/browse/RHDPOPS-1234",
+      "key": "MYPROJECT-1234",
+      "url": "https://your-jira.atlassian.net/browse/MYPROJECT-1234",
       "summary": "First ticket"
     },
     {
       "success": true,
-      "key": "RHDPOPS-1235",
-      "url": "https://issues.redhat.com/browse/RHDPOPS-1235",
+      "key": "MYPROJECT-1235",
+      "url": "https://your-jira.atlassian.net/browse/MYPROJECT-1235",
       "summary": "Second ticket"
     }
   ],
@@ -400,7 +400,7 @@ print(response.json())
 
 # Create ticket
 ticket = {
-    "project_key": "RHDPOPS",
+    "project_key": "MYPROJECT",
     "summary": "Test ticket",
     "description": "Created via API",
     "issue_type": "Task"
@@ -413,11 +413,11 @@ print(response.json())
 
 ## Authentication
 
-The API does not require authentication itself. However, it uses your Jira credentials from `~/.rh-jira-mcp.env` to communicate with Jira.
+The API does not require authentication itself. However, it uses your Jira credentials from `~/.git2jira.env` to communicate with Jira.
 
 **Required environment variables:**
 ```env
-JIRA_URL=https://issues.redhat.com
+JIRA_URL=https://your-jira.atlassian.net
 JIRA_API_TOKEN=<your-token>
 ```
 

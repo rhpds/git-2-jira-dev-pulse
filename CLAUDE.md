@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Git-to-Jira ticket app. Scans local git repos, analyzes work (commits, branches, uncommitted changes), generates Jira ticket suggestions, and pushes them to Red Hat Jira (issues.redhat.com).
+Git-to-Jira ticket app. Scans local git repos, analyzes work (commits, branches, uncommitted changes), generates Jira ticket suggestions, and pushes them to Jira.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ python cli/main.py scan  # CLI usage
 
 ## Jira Credentials
 
-Loaded from `~/.rh-jira-mcp.env` (JIRA_URL, JIRA_API_TOKEN). Same file used by jira-mcp.
+Loaded from `~/.git2jira.env` (JIRA_URL, JIRA_API_TOKEN). Same file used by jira-mcp.
 
 ## Key Patterns
 

@@ -347,7 +347,7 @@ async def link_pr_to_jira(
 
     # Build URLs
     pr_url = pr.url
-    jira_server = os.getenv("JIRA_URL", "https://issues.redhat.com")
+    jira_server = os.getenv("JIRA_URL", "https://your-jira.atlassian.net")
     jira_url = f"{jira_server}/browse/{request.jira_key}"
 
     # Optionally add comment to PR

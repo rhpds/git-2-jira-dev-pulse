@@ -6,7 +6,7 @@ This guide helps you upgrade from Git-2-Jira-Dev-Pulse v1.x to v2.0 with the new
 
 ### Configuration Location
 
-**v1.x**: Single-directory scanning via `.rh-jira-mcp.env`:
+**v1.x**: Single-directory scanning via `.git2jira.env`:
 ```env
 REPOS_BASE_PATH=~/repos
 ```
@@ -42,9 +42,9 @@ python cli/main.py config migrate
 ```
 
 **What this does:**
-1. Reads your current `REPOS_BASE_PATH` from `~/.rh-jira-mcp.env`
+1. Reads your current `REPOS_BASE_PATH` from `~/.git2jira.env`
 2. Creates a new `~/.git2jira.config.yaml` with equivalent settings
-3. Backs up your original `.env` to `.rh-jira-mcp.env.backup`
+3. Backs up your original `.env` to `.git2jira.env.backup`
 4. Preserves all Jira credentials in the `.env` file
 
 **After migration:**
@@ -270,7 +270,7 @@ scan_directories:
 cp example.config.yaml ~/.git2jira.config.yaml
 
 # Option 2: Restore .env file
-cp .env.example ~/.rh-jira-mcp.env
+cp .env.example ~/.git2jira.env
 # Edit with your values
 ```
 
@@ -341,7 +341,7 @@ If you need to revert to v1.x behavior:
 
 2. **Restore original .env** (if backed up):
    ```bash
-   mv ~/.rh-jira-mcp.env.backup ~/.rh-jira-mcp.env
+   mv ~/.git2jira.env.backup ~/.git2jira.env
    ```
 
 3. **Restart application**:

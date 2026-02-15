@@ -1,7 +1,7 @@
 """Configuration service for Git-2-Jira-Dev-Pulse.
 
 Supports YAML-based multi-directory configuration with backward compatibility
-for legacy .rh-jira-mcp.env configuration.
+for legacy .git2jira.env configuration.
 """
 
 import os
@@ -107,7 +107,7 @@ class ConfigService:
     """Service for managing Git-2-Jira configuration."""
 
     DEFAULT_CONFIG_PATH = Path.home() / ".git2jira.config.yaml"
-    LEGACY_ENV_PATH = Path.home() / ".rh-jira-mcp.env"
+    LEGACY_ENV_PATH = Path.home() / ".git2jira.env"
 
     def __init__(self, config_path: Optional[Path] = None):
         """Initialize config service.
@@ -145,7 +145,7 @@ class ConfigService:
         return self._config
 
     def _create_from_legacy_env(self) -> Git2JiraConfig:
-        """Create config from legacy .rh-jira-mcp.env file."""
+        """Create config from legacy .git2jira.env file."""
         # Read legacy env file
         env_vars: Dict[str, str] = {}
         with open(self.LEGACY_ENV_PATH, "r") as f:

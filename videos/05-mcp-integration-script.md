@@ -235,7 +235,7 @@ aiops-skills analysis:
 - 2 active branches
 - Major work: New skill definitions
 
-🔧 Using: suggest_tickets([paths], "RHDPOPS")
+🔧 Using: suggest_tickets([paths], "MYPROJECT")
 ```
 
 **Show suggestions:**
@@ -275,10 +275,10 @@ Would you like me to create these tickets?
 
 **Show Claude creating:**
 ```
-I'll create both tickets in RHDPOPS and assign them to you.
+I'll create both tickets in MYPROJECT and assign them to you.
 
 🔧 Using: create_jira_ticket(
-    project_key="RHDPOPS",
+    project_key="MYPROJECT",
     summary="Implement MCP server for Claude integration",
     description="...",
     issue_type="Story",
@@ -289,24 +289,24 @@ I'll create both tickets in RHDPOPS and assign them to you.
 
 **Show success:**
 ```
-✓ Created: RHDPOPS-1234
+✓ Created: MYPROJECT-1234
   Implement MCP server for Claude integration
-  https://issues.redhat.com/browse/RHDPOPS-1234
+  https://your-jira.atlassian.net/browse/MYPROJECT-1234
 
 🔧 Using: create_jira_ticket(...)
 ```
 
 **Show second ticket:**
 ```
-✓ Created: RHDPOPS-1235
+✓ Created: MYPROJECT-1235
   Update AIOps skill definitions
-  https://issues.redhat.com/browse/RHDPOPS-1235
+  https://your-jira.atlassian.net/browse/MYPROJECT-1235
 
 Both tickets are created and assigned to you! Here's a
 summary:
 
-• RHDPOPS-1234 (Story, Major): MCP server integration
-• RHDPOPS-1235 (Task, Normal): Skill definitions update
+• MYPROJECT-1234 (Story, Major): MCP server integration
+• MYPROJECT-1235 (Task, Normal): Skill definitions update
 
 Would you like me to analyze more repositories or create
 additional tickets?
@@ -468,7 +468,7 @@ Git-2-Jira-Dev-Pulse
    github.com/rhpds/git-2-jira-dev-pulse/issues
 
 💬 Questions:
-   Slack: #rhdp-dev-tools
+   Slack: #dev-tools
 
 ⭐ Star us on GitHub!
 ```

@@ -306,9 +306,9 @@ docker-compose logs -f
 # .env.production
 
 # Jira Configuration
-JIRA_URL=https://issues.redhat.com
+JIRA_URL=https://your-jira.atlassian.net
 JIRA_API_TOKEN=<secure-token>
-JIRA_DEFAULT_PROJECT=RHDPOPS
+JIRA_DEFAULT_PROJECT=MYPROJECT
 JIRA_DEFAULT_ASSIGNEE=<username>
 
 # Repositories
@@ -628,7 +628,7 @@ sudo tail -f /var/log/nginx/error.log
 ```bash
 # Test from server
 curl -H "Authorization: Bearer $JIRA_API_TOKEN" \
-    https://issues.redhat.com/rest/api/2/myself
+    https://your-jira.atlassian.net/rest/api/2/myself
 
 # Check firewall
 sudo ufw status
@@ -670,4 +670,4 @@ curl http://localhost:8000/api/health
 
 - Documentation: https://github.com/rhpds/git-2-jira-dev-pulse/docs
 - Issues: https://github.com/rhpds/git-2-jira-dev-pulse/issues
-- Slack: #rhdp-dev-tools
+- Discussions: https://github.com/rhpds/git-2-jira-dev-pulse/discussions

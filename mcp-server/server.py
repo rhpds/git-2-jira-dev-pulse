@@ -19,7 +19,7 @@ from api.services.git_analyzer import GitAnalyzer
 from api.services.jira_client import JiraClient
 from api.services.ticket_suggester import TicketSuggester
 
-load_dotenv(Path.home() / ".rh-jira-mcp.env")
+load_dotenv(Path.home() / ".git2jira.env")
 
 mcp = FastMCP("git-to-jira")
 
@@ -55,7 +55,7 @@ def suggest_tickets(paths: list[str], project_key: str) -> str:
 
     Args:
         paths: List of absolute repo paths to analyze
-        project_key: Jira project key (e.g. RHDPOPS)
+        project_key: Jira project key (e.g. MYPROJECT)
     """
     summaries = [analyzer.get_work_summary(p) for p in paths]
     suggestions = suggester.suggest(summaries, project_key)

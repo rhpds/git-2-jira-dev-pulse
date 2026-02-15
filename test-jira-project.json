@@ -1,12 +1,12 @@
 {
   "project": {
-    "key": "RHPDS",
-    "name": "Red Hat Partner Demo System",
+    "key": "MYPROJECT",
+    "name": "My Project",
     "default": true,
     "boards": [
       {
         "id": 1234,
-        "name": "GPTE Team Board",
+        "name": "Team Board",
         "type": "kanban"
       },
       {

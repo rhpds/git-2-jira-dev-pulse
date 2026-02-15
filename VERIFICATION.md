@@ -7,7 +7,7 @@ Use this checklist to verify all features of Git-2-Jira-Dev-Pulse v2.0 are worki
 - [ ] Python 3.11+ installed (`python --version`)
 - [ ] Node.js 20+ installed (`node --version`)
 - [ ] GitHub CLI authenticated (`gh auth status`)
-- [ ] Jira credentials configured in `~/.rh-jira-mcp.env`
+- [ ] Jira credentials configured in `~/.git2jira.env`
 - [ ] Dependencies installed (`make install`)
 
 ## ✅ Backend Verification
@@ -28,8 +28,8 @@ curl http://localhost:8000/api/health
   "jira": {
     "connected": true,
     "user": "your-username",
-    "email": "your-email@redhat.com",
-    "server": "https://issues.redhat.com"
+    "email": "your-email@example.com",
+    "server": "https://your-jira.atlassian.net"
   }
 }
 ```
@@ -248,7 +248,7 @@ python cli/main.py health
 ```
 ✓ Jira connected
   User: your-username
-  Server: https://issues.redhat.com
+  Server: https://your-jira.atlassian.net
 ```
 
 ### Migration

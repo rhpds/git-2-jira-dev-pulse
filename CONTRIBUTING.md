@@ -14,7 +14,7 @@ Thank you for your interest in contributing! This document provides guidelines a
 
 ## Code of Conduct
 
-This project follows the [Red Hat Community Code of Conduct](https://www.redhat.com/en/about/community-code-of-conduct). By participating, you are expected to uphold this code.
+This project follows the [Contributor Covenant Code of Conduct](https://www.contributor-covenant.org/version/2/1/code_of_conduct/). By participating, you are expected to uphold this code.
 
 ## Getting Started
 
@@ -77,14 +77,14 @@ This installs:
 ### 3. Configure Environment
 
 ```bash
-cp .env.example ~/.rh-jira-mcp.env
+cp .env.example ~/.git2jira.env
 ```
 
-Edit `~/.rh-jira-mcp.env` with your Jira credentials:
+Edit `~/.git2jira.env` with your Jira credentials:
 ```env
-JIRA_URL=https://issues.redhat.com
+JIRA_URL=https://your-jira.atlassian.net
 JIRA_API_TOKEN=<your-token>
-JIRA_DEFAULT_PROJECT=RHDPOPS
+JIRA_DEFAULT_PROJECT=MYPROJECT
 REPOS_BASE_PATH=~/repos
 ```
 
@@ -428,7 +428,6 @@ When making changes, update relevant docs:
 
 ## Questions?
 
-- **Slack:** #rhdp-dev-tools (Red Hat internal)
 - **GitHub Discussions:** For general questions
 - **GitHub Issues:** For bugs and features
 - **Email:** Contact the maintainers

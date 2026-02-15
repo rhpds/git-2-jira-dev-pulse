@@ -268,7 +268,7 @@ Keep raw footage and project files for easy updates.
 - Check existing video examples
 - Review script files in this directory
 - Contact video maintainer
-- Post in #rhdp-dev-tools Slack
+- Post in #dev-tools Slack
 
 ## Resources
 

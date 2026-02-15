@@ -35,7 +35,7 @@ Git-2-Jira-Dev-Pulse is a multi-interface application that transforms git activi
         │        External Systems             │
         ├──────────────────┬──────────────────┤
         │  Git Repos       │  Jira API        │
-        │  ~/repos/        │  issues.redhat   │
+        │  ~/repos/        │  your-jira       │
         │  (GitPython)     │  (jira library)  │
         └──────────────────┴──────────────────┘
 ```
@@ -125,7 +125,7 @@ class JiraClient:
 - Single ticket creation
 - Batch ticket creation
 - Error handling and retry logic
-- Credential management (from ~/.rh-jira-mcp.env)
+- Credential management (from ~/.git2jira.env)
 
 ### Data Models
 
@@ -168,7 +168,7 @@ class TicketSuggestion:
 - **React 18** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Build tool
-- **PatternFly 5** - Red Hat design system
+- **PatternFly 5** - Design system
 - **React Router** - Navigation
 
 ### Component Structure
@@ -239,7 +239,7 @@ def analyze(path: str):
     """Analyze a single repository"""
 
 @app.command()
-def suggest(paths: list[str], project: str = "RHDPOPS"):
+def suggest(paths: list[str], project: str = "MYPROJECT"):
     """Generate ticket suggestions"""
 
 @app.command()
@@ -286,12 +286,12 @@ def create_jira_ticket(...) -> str:
 ## Configuration
 
 ### Environment Variables
-All interfaces read from `~/.rh-jira-mcp.env`:
+All interfaces read from `~/.git2jira.env`:
 
 ```env
-JIRA_URL=https://issues.redhat.com
+JIRA_URL=https://your-jira.atlassian.net
 JIRA_API_TOKEN=<token>
-JIRA_DEFAULT_PROJECT=RHDPOPS
+JIRA_DEFAULT_PROJECT=MYPROJECT
 JIRA_DEFAULT_ASSIGNEE=<username>
 REPOS_BASE_PATH=~/repos
 ```
@@ -301,11 +301,11 @@ REPOS_BASE_PATH=~/repos
 class Settings(BaseSettings):
     jira_url: str
     jira_api_token: str
-    jira_default_project: str = "RHDPOPS"
+    jira_default_project: str = "MYPROJECT"
     repos_base_path: Path = Path.home() / "repos"
 
     class Config:
-        env_file = Path.home() / ".rh-jira-mcp.env"
+        env_file = Path.home() / ".git2jira.env"
 ```
 
 ## Data Flow Examples
@@ -343,7 +343,7 @@ class Settings(BaseSettings):
 
 ## Security Considerations
 
-1. **Credentials:** Stored in home directory (`~/.rh-jira-mcp.env`), not in repo
+1. **Credentials:** Stored in home directory (`~/.git2jira.env`), not in repo
 2. **API Token:** Passed via environment, never logged
 3. **CORS:** FastAPI backend restricts origins (localhost only by default)
 4. **Input Validation:** Pydantic models validate all inputs

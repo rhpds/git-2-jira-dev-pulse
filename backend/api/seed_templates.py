@@ -39,7 +39,7 @@ This ticket tracks uncommitted changes and recent work on the {branch} branch.
 """,
         issue_type=IssueType.TASK.value,
         priority=Priority.MAJOR.value,
-        labels=["ops-development", "rhdpops-automation"],
+        labels=["ops-development", "devpulse-automation"],
         is_default=True,
     )
 

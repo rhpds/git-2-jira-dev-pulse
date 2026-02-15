@@ -14,7 +14,7 @@ from api.config import Settings
 def test_settings():
     """Test settings fixture."""
     return Settings(
-        jira_url="https://test.jira.com",
+        jira_url="https://test-jira.atlassian.net",
         jira_api_token="test_token",
         jira_default_project="TEST",
         repos_base_path="/tmp/test_repos",

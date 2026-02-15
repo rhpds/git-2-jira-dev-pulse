@@ -9,7 +9,7 @@ services:
       - "9000:9000"
     volumes:
       - ./backend:/app
-      - ~/.rh-jira-mcp.env:/root/.rh-jira-mcp.env:ro
+      - ~/.git2jira.env:/root/.git2jira.env:ro
       - ~/.git2jira.config.yaml:/root/.git2jira.config.yaml:ro
       - ~/repos:/root/repos:ro
     environment:

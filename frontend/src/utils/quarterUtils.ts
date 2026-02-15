@@ -1,4 +1,4 @@
-export type QuarterMode = "redhat" | "calendar";
+export type QuarterMode = "fiscal" | "calendar";
 
 export interface Quarter {
   year: number;
@@ -16,7 +16,7 @@ export interface Week {
 }
 
 /**
- * Red Hat fiscal year starts in March:
+ * Fiscal year starts in March:
  *   Q1 = Mar-May, Q2 = Jun-Aug, Q3 = Sep-Nov, Q4 = Dec-Feb
  *
  * Calendar quarters:
@@ -24,7 +24,7 @@ export interface Week {
  */
 
 function getQuarterStartMonth(quarter: number, mode: QuarterMode): number {
-  if (mode === "redhat") {
+  if (mode === "fiscal") {
     // Q1=Mar(2), Q2=Jun(5), Q3=Sep(8), Q4=Dec(11)
     return [2, 5, 8, 11][quarter - 1];
   }
@@ -35,10 +35,10 @@ function getQuarterStartMonth(quarter: number, mode: QuarterMode): number {
 function makeQuarter(year: number, quarter: number, mode: QuarterMode): Quarter {
   const startMonth = getQuarterStartMonth(quarter, mode);
 
-  // For RH fiscal Q4 (Dec-Feb), Dec is in the previous calendar year
+  // For fiscal Q4 (Dec-Feb), Dec is in the previous calendar year
   let calendarYear = year;
-  if (mode === "redhat") {
-    // RH FY year label is 1 ahead for Q1-Q3 (e.g., FY26 Q1 = Mar 2025)
+  if (mode === "fiscal") {
+    // FY year label is 1 ahead for Q1-Q3 (e.g., FY26 Q1 = Mar 2025)
     // FY26 Q1 = Mar 2025, FY26 Q2 = Jun 2025, FY26 Q3 = Sep 2025, FY26 Q4 = Dec 2025
     calendarYear = year - 1;
     if (quarter === 4) {
@@ -64,7 +64,7 @@ export function getCurrentQuarter(mode: QuarterMode): Quarter {
   const now = new Date();
   const month = now.getMonth(); // 0-11
 
-  if (mode === "redhat") {
+  if (mode === "fiscal") {
     // Mar-May=Q1, Jun-Aug=Q2, Sep-Nov=Q3, Dec-Feb=Q4
     let q: number;
     let fy: number;
@@ -178,7 +178,7 @@ export function groupByWeek<T>(
 }
 
 export function getQuarterLabel(quarter: Quarter): string {
-  if (quarter.mode === "redhat") {
+  if (quarter.mode === "fiscal") {
     const fyShort = quarter.year.toString().slice(-2);
     return `FY${fyShort} Q${quarter.quarter}`;
   }

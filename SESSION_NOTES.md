@@ -16,7 +16,7 @@
 Configured servers:
 1. Sequential thinking - @modelcontextprotocol/server-sequential-thinking
 2. Memory - @modelcontextprotocol/server-memory
-3. Jira (Red Hat) - localhost/jira-mcp:latest (containerized, uses ~/.rh-jira-mcp.env)
+3. Jira - localhost/jira-mcp:latest (containerized, uses ~/.git2jira.env)
 4. Git Operations - @cyanheads/git-mcp-server
 5. Git-to-Jira Project - ~/repos/git-2-jira-dev-pulse/mcp-server/server.py
 6. GitHub - ghcr.io/github/github-mcp-server
@@ -24,10 +24,10 @@ Configured servers:
 8. Filesystem - @modelcontextprotocol/server-filesystem
 9. Kubernetes - mcp-server-kubernetes
 
-**Jira Credentials:** ~/.rh-jira-mcp.env
-- JIRA_URL=https://issues.redhat.com/
-- JIRA_DEFAULT_PROJECT=RHDPOPS
-- Connected as: slack-google-jira bot
+**Jira Credentials:** ~/.git2jira.env
+- JIRA_URL=https://your-jira.atlassian.net
+- JIRA_DEFAULT_PROJECT=MYPROJECT
+- Connected as: your-jira-user
 
 ## Documentation Created (4,930+ lines)
 **Files Added:**
@@ -59,11 +59,11 @@ Each script includes:
 - FolderScanner - scans ~/repos for git repositories
 - GitAnalyzer - analyzes commits, branches, uncommitted changes
 - TicketSuggester - generates Jira ticket suggestions from git work
-- JiraClient - creates tickets in issues.redhat.com
+- JiraClient - creates tickets in your Jira instance
 
 **Frontend (React + PatternFly 5):**
 - 3-step wizard: Select Repos → Review Work → Create Tickets
-- Quarter-based grouping (Red Hat fiscal quarters)
+- Quarter-based grouping (fiscal quarters)
 - SessionStorage for state management
 
 **CLI (Typer):**
@@ -88,7 +88,7 @@ python cli/main.py scan  # CLI usage
 
 ## Key Features
 - Scans ~/repos for git repositories
-- Groups commits by Red Hat fiscal quarters
+- Groups commits by fiscal quarters
 - Detects uncommitted changes
 - AI-powered ticket suggestions
 - Batch ticket creation
@@ -100,7 +100,7 @@ python cli/main.py scan  # CLI usage
 - ✅ Video scripts ready for recording
 - ✅ Port changed to 5175 (no conflicts)
 - ✅ Backend and frontend running successfully
-- ✅ Jira connection verified (issues.redhat.com)
+- ✅ Jira connection verified
 - ✅ All changes committed and pushed to GitHub
 
 ## Next Steps

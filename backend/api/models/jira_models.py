@@ -22,7 +22,7 @@ AVAILABLE_LABELS = [
     "ops-development",
     "ansible-agent",
     "cost-focused",
-    "rhdpops-automation",
+    "devpulse-automation",
 ]
 
 

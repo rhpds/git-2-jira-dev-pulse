@@ -171,11 +171,11 @@ make frontend # Terminal 2
 ```
 
 **Audio:**
-"Here's your work grouped by quarter. By default, it shows Red Hat fiscal quarters, but you can toggle to calendar quarters. Each quarter shows your total commits and breaks them down by repository."
+"Here's your work grouped by quarter. By default, it shows fiscal quarters, but you can toggle to calendar quarters. Each quarter shows your total commits and breaks them down by repository."
 
 **Annotations:**
 - Yellow highlight on quarter header
-- Callout: "Red Hat Fiscal Year"
+- Callout: "Fiscal Year"
 - Arrow pointing to toggle: "Switch to calendar quarters"
 - Red circle on quarter dropdown
 
@@ -308,7 +308,7 @@ Modified Files (3):
 
 **Show edit form:**
 ```
-Project: RHDPOPS ▼
+Project: MYPROJECT ▼
 Summary: [Implement MCP server integration]
 Description: [Large text area]
 Type: Story ▼
@@ -335,8 +335,8 @@ Labels: [+ Add label]
 ```
 ✓ Ticket Created Successfully!
 
-RHDPOPS-1234: Implement MCP server integration
-View in Jira: https://issues.redhat.com/browse/RHDPOPS-1234
+MYPROJECT-1234: Implement MCP server integration
+View in Jira: https://your-jira.atlassian.net/browse/MYPROJECT-1234
 
 [Create Another] [View All Tickets]
 ```
@@ -371,9 +371,9 @@ View in Jira: https://issues.redhat.com/browse/RHDPOPS-1234
 **Show batch progress:**
 ```
 Creating tickets... (2 of 3)
-✓ RHDPOPS-1234 created
-✓ RHDPOPS-1235 created
-⏳ RHDPOPS-1236 creating...
+✓ MYPROJECT-1234 created
+✓ MYPROJECT-1235 created
+⏳ MYPROJECT-1236 creating...
 ```
 
 **Annotations:**
@@ -385,9 +385,9 @@ Creating tickets... (2 of 3)
 ```
 ✓ All Tickets Created!
 
-RHDPOPS-1234: MCP server integration
-RHDPOPS-1235: Fix frontend routing
-RHDPOPS-1236: Update documentation
+MYPROJECT-1234: MCP server integration
+MYPROJECT-1235: Fix frontend routing
+MYPROJECT-1236: Update documentation
 
 [View in Jira] [Start Over] [Export List]
 ```

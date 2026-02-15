@@ -75,9 +75,9 @@ python cli/main.py health
 ```
 ✓ Jira Connection Healthy
 
-Server: https://issues.redhat.com
-User: John Doe (jdoe@redhat.com)
-Default Project: RHDPOPS
+Server: https://your-jira.atlassian.net
+User: John Doe (jdoe@example.com)
+Default Project: MYPROJECT
 
 Everything is configured correctly!
 ```
@@ -213,7 +213,7 @@ Last commit: 2 hours ago
 **Commands:**
 ```bash
 python cli/main.py suggest ~/repos/git-2-jira-dev-pulse \
-  --project RHDPOPS
+  --project MYPROJECT
 ```
 
 **Show output:**
@@ -273,7 +273,7 @@ python cli/main.py create --interactive
 
 # Direct creation
 python cli/main.py create \
-  --project RHDPOPS \
+  --project MYPROJECT \
   --summary "Add dark mode to UI" \
   --description "Implement dark mode toggle in settings panel" \
   --type Story \
@@ -285,7 +285,7 @@ python cli/main.py create \
 ```
 Create Jira Ticket (Interactive Mode)
 
-Project key: RHDPOPS
+Project key: MYPROJECT
 Summary: Add dark mode to UI
 Description: Implement dark mode toggle in settings panel
 Issue type (Story/Task/Bug): Story
@@ -299,10 +299,10 @@ Creating ticket...
 ```
 ✓ Ticket Created Successfully!
 
-   RHDPOPS-1234: Add dark mode to UI
+   MYPROJECT-1234: Add dark mode to UI
 
    View in Jira:
-   https://issues.redhat.com/browse/RHDPOPS-1234
+   https://your-jira.atlassian.net/browse/MYPROJECT-1234
 
    Assigned to: John Doe
    Type: Story
@@ -329,14 +329,14 @@ Creating ticket...
 # Analyze multiple repos and create tickets
 for repo in ~/repos/*; do
   if [ -d "$repo/.git" ]; then
-    python cli/main.py suggest "$repo" --project RHDPOPS
+    python cli/main.py suggest "$repo" --project MYPROJECT
   fi
 done
 
 # Create tickets from a file
 while IFS= read -r line; do
   python cli/main.py create \
-    --project RHDPOPS \
+    --project MYPROJECT \
     --summary "$line" \
     --type Task
 done < tickets.txt

@@ -3,8 +3,8 @@
 Usage:
     python cli/main.py scan
     python cli/main.py analyze ~/repos/jira-mcp
-    python cli/main.py suggest ~/repos/jira-mcp --project RHDPOPS
-    python cli/main.py create --project RHDPOPS --summary "Fix bug" --type Bug
+    python cli/main.py suggest ~/repos/jira-mcp --project MYPROJECT
+    python cli/main.py create --project MYPROJECT --summary "Fix bug" --type Bug
 """
 
 import sys
@@ -131,7 +131,7 @@ def config_remove(path: str = typer.Argument(..., help="Directory path to remove
 
 @config_app.command("migrate")
 def config_migrate():
-    """Migrate from legacy .rh-jira-mcp.env to YAML config."""
+    """Migrate from legacy .git2jira.env to YAML config."""
     try:
         config = config_service.migrate_from_env()
         backup_path = config_service.LEGACY_ENV_PATH.with_suffix(".env.backup")

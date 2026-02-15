@@ -30,7 +30,7 @@
 ```
 Your Machine              Jira API
     ↓                        ↓
-  .env file  →  API Token  →  issues.redhat.com
+  .env file  →  API Token  →  your-jira.atlassian.net
     ↑                        ↑
 Configuration          Authentication
 ```
@@ -60,9 +60,9 @@ cat .env.example
 
 **Show on screen:**
 ```env
-JIRA_URL=https://issues.redhat.com
+JIRA_URL=https://your-jira.atlassian.net
 JIRA_API_TOKEN=<your-token-here>
-JIRA_DEFAULT_PROJECT=RHDPOPS
+JIRA_DEFAULT_PROJECT=MYPROJECT
 JIRA_DEFAULT_ASSIGNEE=<your-jira-username>
 REPOS_BASE_PATH=~/repos
 ```
@@ -81,17 +81,17 @@ REPOS_BASE_PATH=~/repos
 
 **Commands:**
 ```bash
-cp .env.example ~/.rh-jira-mcp.env
-ls -la ~/.rh-jira-mcp.env
+cp .env.example ~/.git2jira.env
+ls -la ~/.git2jira.env
 ```
 
 **Audio:**
-"Copy the example file to your home directory with this name: dot-rh-jira-mcp-dot-env. This naming matches the jira-mcp project, so if you've already set that up, you're done!"
+"Copy the example file to your home directory with this name: dot-git2jira-dot-env. This is where Git-2-Jira looks for your credentials."
 
 **Annotations:**
 - Text overlay showing command
 - Red circle around destination path
-- Callout: "Same file used by jira-mcp tools"
+- Callout: "Git-2-Jira reads credentials from here"
 - Green checkmark after successful copy
 
 ### Scene 5: Getting Jira API Token (1:10-2:30)
@@ -100,17 +100,17 @@ ls -la ~/.rh-jira-mcp.env
 - Navigate to Jira
 - Go to token generation page
 
-**For Red Hat Jira (issues.redhat.com):**
+**For Jira (your-jira.atlassian.net):**
 
 **Steps:**
-1. Go to issues.redhat.com
+1. Go to your-jira.atlassian.net
 2. Click profile icon (top right)
 3. Click "Profile"
 4. Click "Personal Access Tokens" tab
 5. Click "Create token"
 
 **Audio:**
-"Now let's get your Jira API token. The process differs slightly by Jira instance. For Red Hat Jira, go to issues.redhat.com, click your profile icon, then Profile, then the Personal Access Tokens tab. Click 'Create token'."
+"Now let's get your Jira API token. The process differs slightly by Jira instance. Go to your Jira instance, click your profile icon, then Profile, then the Personal Access Tokens tab. Click 'Create token'."
 
 **Annotations:**
 - Red circles on each click target (fade in/out)
@@ -148,13 +148,13 @@ ls -la ~/.rh-jira-mcp.env
 **Commands:**
 ```bash
 # Option 1: nano
-nano ~/.rh-jira-mcp.env
+nano ~/.git2jira.env
 
 # Option 2: VS Code
-code ~/.rh-jira-mcp.env
+code ~/.git2jira.env
 
 # Option 3: vim
-vim ~/.rh-jira-mcp.env
+vim ~/.git2jira.env
 ```
 
 **Audio:**
@@ -162,15 +162,15 @@ vim ~/.rh-jira-mcp.env
 
 **Show file contents:**
 ```env
-JIRA_URL=https://issues.redhat.com
+JIRA_URL=https://your-jira.atlassian.net
 JIRA_API_TOKEN=paste-your-token-here
-JIRA_DEFAULT_PROJECT=RHDPOPS
+JIRA_DEFAULT_PROJECT=MYPROJECT
 JIRA_DEFAULT_ASSIGNEE=your-username
 REPOS_BASE_PATH=~/repos
 ```
 
 **Audio (continued):**
-"Paste your token where it says 'paste-your-token-here'. Then update your Jira username and project key. If you're on the RHDP team, use RHDPOPS for the project. Update your repos path if it's different from ~/repos."
+"Paste your token where it says 'paste-your-token-here'. Then update your Jira username and project key. Set the project key to match your Jira project. Update your repos path if it's different from ~/repos."
 
 **Annotations:**
 - Arrow pointing to JIRA_API_TOKEN line
@@ -229,7 +229,7 @@ curl http://localhost:8000/api/health
     "user": {
       "accountId": "557058:...",
       "displayName": "John Doe",
-      "emailAddress": "jdoe@redhat.com"
+      "emailAddress": "jdoe@example.com"
     }
   }
 }

@@ -20,7 +20,7 @@ This release transforms Git-2-Jira-Dev-Pulse from a single-directory tool into a
   - Recursive scanning with configurable depth limits (1-10 levels)
   - Pattern-based exclusions using glob patterns
   - Per-directory folder exclusions
-  - Backward compatible with legacy `.rh-jira-mcp.env`
+  - Backward compatible with legacy `.git2jira.env`
 
 - **Configuration Service** (`backend/api/services/config_service.py`)
   - Centralized configuration management
@@ -181,7 +181,7 @@ This release transforms Git-2-Jira-Dev-Pulse from a single-directory tool into a
 
 ### Changed
 
-- **Breaking**: Configuration now defaults to `~/.git2jira.config.yaml` instead of only `.rh-jira-mcp.env`
+- **Breaking**: Configuration now defaults to `~/.git2jira.config.yaml` instead of only `.git2jira.env`
 - **Backend**: Folder scanner refactored to support multiple base directories
 - **Backend**: Removed hardcoded `EXCLUDED_FOLDERS` constant
 - **Frontend**: Updated port from 5173 to 5175 to avoid conflicts
@@ -210,10 +210,10 @@ This release transforms Git-2-Jira-Dev-Pulse from a single-directory tool into a
 
 For existing users, the tool maintains backward compatibility:
 
-1. **Automatic Fallback**: If no YAML config exists, the tool falls back to `~/.rh-jira-mcp.env`
+1. **Automatic Fallback**: If no YAML config exists, the tool falls back to `~/.git2jira.env`
 2. **Migration Command**: Run `python cli/main.py config migrate` to convert to new format
 3. **Preview First**: Migration shows preview before saving
-4. **Backup Created**: Original `.env` file backed up to `.rh-jira-mcp.env.backup`
+4. **Backup Created**: Original `.env` file backed up to `.git2jira.env.backup`
 
 ### Performance
 

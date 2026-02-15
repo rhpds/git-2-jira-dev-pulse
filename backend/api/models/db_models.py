@@ -97,7 +97,7 @@ class AnalysisSuggestion(Base):
     source_repo = Column(String(500), nullable=True)
     labels = Column(JSONType, nullable=True)  # List of label strings
     was_created = Column(Boolean, nullable=False, default=False)
-    jira_key = Column(String(50), nullable=True)  # e.g., "RHDPOPS-1234"
+    jira_key = Column(String(50), nullable=True)  # e.g., "PROJ-1234"
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     # Relationship to analysis run
