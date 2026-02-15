@@ -18,8 +18,9 @@ import {
   FormGroup,
   TextInput,
   Select,
+  SelectList,
   SelectOption,
-  SelectVariant,
+  MenuToggle,
   Spinner,
   Modal,
   ModalVariant,
@@ -381,30 +382,41 @@ export function TeamTab() {
           </FormGroup>
           <FormGroup label="Role" fieldId="invite-role">
             <Select
-              variant={SelectVariant.single}
-              onToggle={(_event, isOpen) => setIsRoleSelectOpen(isOpen)}
+              isOpen={isRoleSelectOpen}
+              onOpenChange={(isOpen) => setIsRoleSelectOpen(isOpen)}
               onSelect={(_event, selection) => {
                 setInviteRole(selection as string);
                 setIsRoleSelectOpen(false);
               }}
-              selections={inviteRole}
-              isOpen={isRoleSelectOpen}
+              selected={inviteRole}
+              toggle={(toggleRef) => (
+                <MenuToggle
+                  ref={toggleRef}
+                  onClick={() => setIsRoleSelectOpen(!isRoleSelectOpen)}
+                  isExpanded={isRoleSelectOpen}
+                  style={{ width: "100%" }}
+                >
+                  {inviteRole.charAt(0).toUpperCase() + inviteRole.slice(1)}
+                </MenuToggle>
+              )}
             >
-              <SelectOption value="viewer" description="View-only access">
-                Viewer
-              </SelectOption>
-              <SelectOption
-                value="member"
-                description="Can scan repos and create tickets"
-              >
-                Member
-              </SelectOption>
-              <SelectOption
-                value="admin"
-                description="Can manage team and settings"
-              >
-                Admin
-              </SelectOption>
+              <SelectList>
+                <SelectOption value="viewer" description="View-only access">
+                  Viewer
+                </SelectOption>
+                <SelectOption
+                  value="member"
+                  description="Can scan repos and create tickets"
+                >
+                  Member
+                </SelectOption>
+                <SelectOption
+                  value="admin"
+                  description="Can manage team and settings"
+                >
+                  Admin
+                </SelectOption>
+              </SelectList>
             </Select>
           </FormGroup>
         </Form>
