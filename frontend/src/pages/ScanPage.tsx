@@ -26,6 +26,7 @@ import { RepoGrid } from "../components/ScanPage/RepoGrid";
 import { PullBranchModal } from "../components/ScanPage/PullBranchModal";
 import { RepoFilters } from "../components/ScanPage/RepoFilters";
 import { setAnalysisResults } from "../utils/sessionStorage";
+import { useFavorites } from "../hooks/useFavorites";
 import { getConfig } from "../api/client";
 import { GlassCard } from "../components/GlassCard/GlassCard";
 import { PulseIcon, ActivityBurstIcon, StatusIcon, CodeFlowIcon } from "../components/CustomIcons";
@@ -39,6 +40,7 @@ export default function ScanPage() {
   const { data: repos, isLoading, error, refetch } = useFolders();
   const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig });
   const analyzeMutation = useAnalyzeFolders();
+  const { favorites, toggleFavorite } = useFavorites();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
 
@@ -271,6 +273,8 @@ export default function ScanPage() {
                 selected={selected}
                 onToggle={toggle}
                 onOpenPullModal={openPullModal}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
               />
             </motion.div>
           )}

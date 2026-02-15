@@ -10,6 +10,8 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.db_models import User
 from ..services.auth_service import get_user_organization
+from sqlalchemy import select
+from ..models.db_models import WebhookDelivery
 from ..services.webhook_service import (
     WEBHOOK_EVENTS,
     create_webhook,
@@ -209,8 +211,56 @@ async def list_deliveries(
                 "response_status": d.response_status,
                 "success": d.success,
                 "attempt": d.attempt,
+                "max_retries": d.max_retries,
+                "next_retry_at": d.next_retry_at.isoformat() if d.next_retry_at else None,
                 "delivered_at": d.delivered_at.isoformat() if d.delivered_at else None,
             }
             for d in deliveries
         ]
+    }
+
+
+@router.post("/{webhook_id}/deliveries/{delivery_id}/retry")
+async def retry_delivery(
+    webhook_id: int,
+    delivery_id: int,
+    user: User = Depends(require_org_role("admin")),
+    db: Session = Depends(get_db),
+):
+    """Retry a failed webhook delivery."""
+    org_info = get_user_organization(db, user.id)
+    if not org_info:
+        raise HTTPException(status_code=404, detail="No organization found")
+
+    org, _role = org_info
+    wh = get_webhook(db, webhook_id, org.id)
+    if not wh:
+        raise HTTPException(status_code=404, detail="Webhook not found")
+
+    delivery = db.execute(
+        select(WebhookDelivery).where(
+            WebhookDelivery.id == delivery_id,
+            WebhookDelivery.webhook_id == webhook_id,
+        )
+    ).scalar_one_or_none()
+
+    if not delivery:
+        raise HTTPException(status_code=404, detail="Delivery not found")
+
+    if delivery.success:
+        raise HTTPException(status_code=400, detail="Delivery was already successful")
+
+    if delivery.attempt >= delivery.max_retries:
+        raise HTTPException(status_code=400, detail="Maximum retries exceeded")
+
+    # Re-deliver
+    new_delivery = await deliver_webhook(db, wh, delivery.event, delivery.payload)
+    new_delivery.attempt = delivery.attempt + 1
+    db.commit()
+
+    return {
+        "success": new_delivery.success,
+        "attempt": new_delivery.attempt,
+        "response_status": new_delivery.response_status,
+        "delivered_at": new_delivery.delivered_at.isoformat() if new_delivery.delivered_at else None,
     }

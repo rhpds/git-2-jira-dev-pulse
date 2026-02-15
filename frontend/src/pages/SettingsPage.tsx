@@ -33,9 +33,10 @@ import { AccountDangerZone } from "../components/Settings/AccountDangerZone";
 import { TwoFactorTab } from "../components/Settings/TwoFactorTab";
 import { SessionsTab } from "../components/Settings/SessionsTab";
 import { ScheduleTab } from "../components/Settings/ScheduleTab";
+import { InviteLinksTab } from "../components/Settings/InviteLinksTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "security" | "sessions" | "schedules" | "account";
+type SettingsTabKey = "profile" | "team" | "invites" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "security" | "sessions" | "schedules" | "account";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("profile");
@@ -103,6 +104,15 @@ export default function SettingsPage() {
               >
                 {activeTab === "team" && (
                   <TeamTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="invites"
+                title={<TabTitleText>Invites</TabTitleText>}
+              >
+                {activeTab === "invites" && (
+                  <InviteLinksTab />
                 )}
               </Tab>
 

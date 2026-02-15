@@ -18,6 +18,8 @@ interface RepoGridProps {
   selected: Set<string>;
   onToggle: (path: string) => void;
   onOpenPullModal: (repo: RepoInfo) => void;
+  favorites?: Set<string>;
+  onToggleFavorite?: (repoPath: string, repoName: string) => void;
 }
 
 export function RepoGrid({
@@ -25,6 +27,8 @@ export function RepoGrid({
   selected,
   onToggle,
   onOpenPullModal,
+  favorites,
+  onToggleFavorite,
 }: RepoGridProps) {
   const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig });
   const isGlassmorphic = config?.ui.theme === "glassmorphic";
@@ -40,7 +44,21 @@ export function RepoGrid({
     >
       {repos.map((repo) => {
         const isSelected = selected.has(repo.path);
+        const isFav = favorites?.has(repo.path) ?? false;
         const statusColor = repo.status === "clean" ? "var(--pf-t--color--green--40)" : "var(--pf-t--color--orange--40)";
+
+        const starBtn = onToggleFavorite ? (
+          <span
+            role="button"
+            tabIndex={0}
+            onClick={(e) => { e.stopPropagation(); onToggleFavorite(repo.path, repo.name); }}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.stopPropagation(); onToggleFavorite(repo.path, repo.name); } }}
+            style={{ cursor: "pointer", fontSize: "1rem", lineHeight: 1, userSelect: "none" }}
+            title={isFav ? "Remove from favorites" : "Add to favorites"}
+          >
+            {isFav ? "\u2605" : "\u2606"}
+          </span>
+        ) : null;
 
         if (isGlassmorphic) {
           return (
@@ -60,6 +78,7 @@ export function RepoGrid({
                     label={<strong style={{ fontSize: "0.875rem" }}>{repo.name}</strong>}
                     onClick={(e) => e.stopPropagation()}
                   />
+                  <span style={{ marginLeft: "auto" }}>{starBtn}</span>
                 </div>
                 <div
                   style={{
@@ -106,13 +125,16 @@ export function RepoGrid({
             style={{ cursor: "pointer" }}
           >
             <CardTitle>
-              <Checkbox
-                id={`cb-${repo.name}`}
-                isChecked={isSelected}
-                onChange={() => onToggle(repo.path)}
-                label={<span style={{ fontSize: "0.875rem" }}>{repo.name}</span>}
-                onClick={(e) => e.stopPropagation()}
-              />
+              <div style={{ display: "flex", alignItems: "center" }}>
+                <Checkbox
+                  id={`cb-${repo.name}`}
+                  isChecked={isSelected}
+                  onChange={() => onToggle(repo.path)}
+                  label={<span style={{ fontSize: "0.875rem" }}>{repo.name}</span>}
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <span style={{ marginLeft: "auto" }}>{starBtn}</span>
+              </div>
             </CardTitle>
             <CardBody>
               <div

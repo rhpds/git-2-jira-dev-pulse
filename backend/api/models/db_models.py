@@ -483,6 +483,8 @@ class WebhookDelivery(Base):
     response_body = Column(Text, nullable=True)
     success = Column(Boolean, nullable=False, default=False)
     attempt = Column(Integer, nullable=False, default=1)
+    max_retries = Column(Integer, nullable=False, default=3)
+    next_retry_at = Column(DateTime, nullable=True)
     delivered_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     webhook = relationship("Webhook", back_populates="deliveries")
@@ -568,3 +570,46 @@ class ScanSchedule(Base):
 
     def __repr__(self):
         return f"<ScanSchedule(id={self.id}, name={self.name}, freq={self.frequency})>"
+
+
+# ============================================================================
+# Phase 10: Favorites, Invitation Links, Webhook Retries
+# ============================================================================
+
+
+class FavoriteRepo(Base):
+    """User-starred/favorited repositories for quick access."""
+
+    __tablename__ = "favorite_repos"
+    __table_args__ = (
+        UniqueConstraint("user_id", "repo_path", name="uq_user_favorite_repo"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    repo_path = Column(String(1000), nullable=False)
+    repo_name = Column(String(500), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<FavoriteRepo(user={self.user_id}, repo={self.repo_path})>"
+
+
+class InvitationLink(Base):
+    """Shareable invitation links with expiration and usage limits."""
+
+    __tablename__ = "invitation_links"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    token = Column(String(255), nullable=False, unique=True, index=True)
+    role = Column(String(20), nullable=False, default="member")  # viewer, member, admin
+    max_uses = Column(Integer, nullable=True)  # null = unlimited
+    use_count = Column(Integer, nullable=False, default=0)
+    expires_at = Column(DateTime, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<InvitationLink(org={self.org_id}, role={self.role}, uses={self.use_count}/{self.max_uses})>"
