@@ -270,6 +270,7 @@ class User(Base):
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     last_login = Column(DateTime, nullable=True)
+    onboarding_completed = Column(Boolean, nullable=False, default=False)
 
     # Relationships
     memberships = relationship("OrganizationMember", back_populates="user", cascade="all, delete-orphan")
@@ -497,3 +498,21 @@ class Notification(Base):
 
     def __repr__(self):
         return f"<Notification(id={self.id}, type={self.type}, read={self.is_read})>"
+
+
+class NotificationPreference(Base):
+    """Per-user notification type preferences."""
+
+    __tablename__ = "notification_preferences"
+    __table_args__ = (
+        UniqueConstraint("user_id", "notification_type", name="uq_notif_pref_user_type"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    notification_type = Column(String(50), nullable=False)  # matches Notification.type values
+    enabled = Column(Boolean, nullable=False, default=True)
+    updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<NotificationPreference(user={self.user_id}, type={self.notification_type}, enabled={self.enabled})>"

@@ -31,6 +31,7 @@ export interface UserProfile {
   is_active: boolean;
   is_verified: boolean;
   role: string;
+  onboarding_completed: boolean;
   created_at: string;
   last_login: string | null;
   organization: OrganizationInfo | null;
@@ -268,5 +269,44 @@ export async function removeMember(
   userId: number
 ): Promise<{ success: boolean }> {
   const { data } = await api.delete(`/org/members/${userId}`);
+  return data;
+}
+
+// Onboarding API functions
+export async function completeOnboarding(): Promise<{ success: boolean }> {
+  const { data } = await api.post("/auth/onboarding-complete");
+  return data;
+}
+
+export async function getOnboardingStatus(): Promise<{ completed: boolean }> {
+  const { data } = await api.get("/auth/onboarding-status");
+  return data;
+}
+
+// Account deletion
+export async function deleteAccount(
+  password: string
+): Promise<{ success: boolean }> {
+  const { data } = await api.delete("/auth/account", {
+    data: { password },
+  });
+  return data;
+}
+
+// Notification preferences
+export async function getNotificationPreferences(): Promise<{
+  preferences: Record<string, boolean>;
+  available_types: string[];
+}> {
+  const { data } = await api.get("/notifications/preferences");
+  return data;
+}
+
+export async function updateNotificationPreferences(
+  preferences: Record<string, boolean>
+): Promise<{ preferences: Record<string, boolean> }> {
+  const { data } = await api.put("/notifications/preferences", {
+    preferences,
+  });
   return data;
 }

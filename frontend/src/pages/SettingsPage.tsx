@@ -28,9 +28,11 @@ import { TeamTab } from "../components/Settings/TeamTab";
 import { ProfileTab } from "../components/Settings/ProfileTab";
 import { AuditLogTab } from "../components/Settings/AuditLogTab";
 import { WebhookTab } from "../components/Settings/WebhookTab";
+import { NotificationPreferencesTab } from "../components/Settings/NotificationPreferencesTab";
+import { AccountDangerZone } from "../components/Settings/AccountDangerZone";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks";
+type SettingsTabKey = "profile" | "team" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "account";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("profile");
@@ -183,6 +185,15 @@ export default function SettingsPage() {
               </Tab>
 
               <Tab
+                eventKey="notifications"
+                title={<TabTitleText>Notifications</TabTitleText>}
+              >
+                {activeTab === "notifications" && (
+                  <NotificationPreferencesTab />
+                )}
+              </Tab>
+
+              <Tab
                 eventKey="visual"
                 title={<TabTitleText>Visual</TabTitleText>}
               >
@@ -197,6 +208,17 @@ export default function SettingsPage() {
               >
                 {activeTab === "advanced" && config && (
                   <AdvancedTab config={config} />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="account"
+                title={<TabTitleText>Account</TabTitleText>}
+              >
+                {activeTab === "account" && (
+                  <div style={{ paddingTop: "1rem" }}>
+                    <AccountDangerZone />
+                  </div>
                 )}
               </Tab>
             </Tabs>

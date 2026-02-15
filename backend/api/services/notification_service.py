@@ -6,7 +6,7 @@ from typing import Optional
 from sqlalchemy import select, desc, func, update
 from sqlalchemy.orm import Session
 
-from ..models.db_models import Notification
+from ..models.db_models import Notification, NotificationPreference
 
 # Notification types
 NOTIFICATION_TYPES = [
@@ -115,3 +115,48 @@ def delete_notification(db: Session, notification_id: int, user_id: int) -> bool
         db.flush()
         return True
     return False
+
+
+# ── Notification Preferences ──
+
+
+def get_preferences(db: Session, user_id: int) -> dict[str, bool]:
+    """Get notification preferences. Returns dict of type -> enabled."""
+    stmt = select(NotificationPreference).where(
+        NotificationPreference.user_id == user_id
+    )
+    prefs = db.execute(stmt).scalars().all()
+    saved = {p.notification_type: p.enabled for p in prefs}
+
+    # Return all types with defaults (enabled=True for unsaved)
+    return {t: saved.get(t, True) for t in NOTIFICATION_TYPES}
+
+
+def update_preferences(
+    db: Session,
+    user_id: int,
+    preferences: dict[str, bool],
+) -> dict[str, bool]:
+    """Update notification preferences. Creates or updates per-type records."""
+    for notif_type, enabled in preferences.items():
+        if notif_type not in NOTIFICATION_TYPES:
+            continue
+
+        stmt = select(NotificationPreference).where(
+            NotificationPreference.user_id == user_id,
+            NotificationPreference.notification_type == notif_type,
+        )
+        pref = db.execute(stmt).scalar_one_or_none()
+
+        if pref:
+            pref.enabled = enabled
+        else:
+            pref = NotificationPreference(
+                user_id=user_id,
+                notification_type=notif_type,
+                enabled=enabled,
+            )
+            db.add(pref)
+
+    db.flush()
+    return get_preferences(db, user_id)

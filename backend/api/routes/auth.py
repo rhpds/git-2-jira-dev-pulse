@@ -3,11 +3,12 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException, Depends, Request
 from jose import JWTError
+from pydantic import BaseModel
 from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models.db_models import User, Organization, OrganizationMember, Subscription, APIKey
+from ..models.db_models import User, Organization, OrganizationMember, Subscription, APIKey, Notification, NotificationPreference, AuditLog, Webhook
 from ..models.auth_models import (
     UserRegisterRequest,
     UserLoginRequest,
@@ -172,6 +173,7 @@ async def get_profile(
         is_active=user.is_active,
         is_verified=user.is_verified,
         role=user.role,
+        onboarding_completed=bool(user.onboarding_completed),
         created_at=user.created_at,
         last_login=user.last_login,
         organization=org_response,
@@ -282,3 +284,77 @@ async def revoke_api_key(
     db.commit()
 
     return {"success": True, "message": "API key revoked"}
+
+
+class DeleteAccountRequest(BaseModel):
+    password: str
+
+
+@router.delete("/account")
+async def delete_account(
+    request: DeleteAccountRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Delete the current user's account and associated data."""
+    if not verify_password(request.password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Password is incorrect")
+
+    user_id = user.id
+
+    # Clean up user data
+    db.execute(
+        select(Notification).where(Notification.user_id == user_id)
+    )
+    db.query(Notification).filter(Notification.user_id == user_id).delete()
+    db.query(NotificationPreference).filter(NotificationPreference.user_id == user_id).delete()
+
+    # Check if user is sole owner of any org
+    memberships = db.execute(
+        select(OrganizationMember).where(OrganizationMember.user_id == user_id)
+    ).scalars().all()
+
+    for membership in memberships:
+        if membership.role == "owner":
+            # Check if there are other owners
+            other_owners = db.execute(
+                select(func.count(OrganizationMember.id)).where(
+                    OrganizationMember.org_id == membership.org_id,
+                    OrganizationMember.role == "owner",
+                    OrganizationMember.user_id != user_id,
+                )
+            ).scalar() or 0
+
+            if other_owners == 0:
+                org_id = membership.org_id
+                # Delete org and all associated data
+                db.query(Webhook).filter(Webhook.org_id == org_id).delete()
+                db.query(AuditLog).filter(AuditLog.org_id == org_id).delete()
+                db.query(Subscription).filter(Subscription.org_id == org_id).delete()
+                db.query(OrganizationMember).filter(OrganizationMember.org_id == org_id).delete()
+                db.query(Organization).filter(Organization.id == org_id).delete()
+
+    # Delete user (cascades to API keys, remaining memberships)
+    db.delete(user)
+    db.commit()
+
+    return {"success": True, "message": "Account deleted"}
+
+
+@router.post("/onboarding-complete")
+async def complete_onboarding(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Mark onboarding as completed for the current user."""
+    user.onboarding_completed = True
+    db.commit()
+    return {"success": True}
+
+
+@router.get("/onboarding-status")
+async def get_onboarding_status(
+    user: User = Depends(get_current_user),
+) -> dict:
+    """Check if user has completed onboarding."""
+    return {"completed": bool(user.onboarding_completed)}

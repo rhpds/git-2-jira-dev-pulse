@@ -7,11 +7,14 @@ from sqlalchemy.orm import Session
 from ..database import get_db
 from ..models.db_models import User
 from ..services.notification_service import (
+    NOTIFICATION_TYPES,
     get_notifications,
     get_unread_count,
     mark_as_read,
     mark_all_as_read,
     delete_notification,
+    get_preferences,
+    update_preferences,
 )
 from ..middleware.auth_middleware import get_current_user
 
@@ -88,3 +91,28 @@ async def remove_notification(
     """Delete a notification."""
     success = delete_notification(db, notification_id, user.id)
     return {"success": success}
+
+
+@router.get("/preferences")
+async def get_notification_preferences(
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get notification preferences for the current user."""
+    prefs = get_preferences(db, user.id)
+    return {
+        "preferences": prefs,
+        "available_types": NOTIFICATION_TYPES,
+    }
+
+
+@router.put("/preferences")
+async def update_notification_preferences(
+    body: dict,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Update notification preferences."""
+    preferences = body.get("preferences", {})
+    updated = update_preferences(db, user.id, preferences)
+    return {"preferences": updated}

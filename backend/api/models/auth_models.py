@@ -38,6 +38,7 @@ class UserProfile(BaseModel):
     is_active: bool
     is_verified: bool
     role: str
+    onboarding_completed: bool = False
     created_at: datetime
     last_login: Optional[datetime] = None
     organization: Optional[OrganizationInfo] = None
