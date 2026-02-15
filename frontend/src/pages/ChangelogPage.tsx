@@ -21,6 +21,18 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.12.0",
+    date: "2026-02-15",
+    title: "Intelligence Suite",
+    type: "major",
+    highlights: [
+      "AI Standup Generator - auto-generate daily standups and sprint reports from git + Jira activity",
+      "Developer Flow State Analytics - detect deep work patterns, peak productivity hours, and interruption tracking",
+      "Cross-Repo Impact Intelligence - dependency graph, shared package clusters, and risk hotspot detection",
+      "Repo Health Scoring Engine - automated 0-100 health scores with 5-factor analysis and recommendations",
+    ],
+  },
+  {
     version: "0.11.0",
     date: "2026-02-14",
     title: "Productivity Features",

@@ -13,6 +13,10 @@ import ActivityFeedPage from "./pages/ActivityFeedPage";
 import IntegrationsPage from "./pages/IntegrationsPage";
 import ShortcutsPage from "./pages/ShortcutsPage";
 import ChangelogPage from "./pages/ChangelogPage";
+import StandupPage from "./pages/StandupPage";
+import FlowAnalyticsPage from "./pages/FlowAnalyticsPage";
+import ImpactGraphPage from "./pages/ImpactGraphPage";
+import HealthScoresPage from "./pages/HealthScoresPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -49,6 +53,10 @@ export default function App() {
                   <Route path="/integrations" element={<IntegrationsPage />} />
                   <Route path="/shortcuts" element={<ShortcutsPage />} />
                   <Route path="/changelog" element={<ChangelogPage />} />
+                  <Route path="/standups" element={<StandupPage />} />
+                  <Route path="/flow" element={<FlowAnalyticsPage />} />
+                  <Route path="/impact" element={<ImpactGraphPage />} />
+                  <Route path="/health" element={<HealthScoresPage />} />
                 </Route>
               </Routes>
             </BrowserRouter>

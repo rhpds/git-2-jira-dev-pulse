@@ -29,8 +29,10 @@ const baseNavItems = [
   { path: "/", label: "Repositories" },
   { path: "/dashboard", label: "Dashboard" },
   { path: "/activity", label: "Activity" },
-  { path: "/results", label: "Results" },
-  { path: "/history", label: "History" },
+  { path: "/standups", label: "Standups" },
+  { path: "/flow", label: "Flow" },
+  { path: "/impact", label: "Impact" },
+  { path: "/health", label: "Health" },
   { path: "/integrations", label: "Integrations" },
   { path: "/settings", label: "Settings" },
 ];

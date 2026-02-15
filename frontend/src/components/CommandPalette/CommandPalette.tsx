@@ -35,6 +35,10 @@ export function CommandPalette() {
     { id: "nav-admin", label: "Go to Admin", description: "Admin dashboard", category: "navigation", action: () => navigate("/admin") },
     { id: "nav-shortcuts", label: "Keyboard Shortcuts", description: "View all keyboard shortcuts", category: "navigation", shortcut: "?", action: () => navigate("/shortcuts") },
     { id: "nav-changelog", label: "What's New", description: "View changelog and release notes", category: "navigation", action: () => navigate("/changelog") },
+    { id: "nav-standups", label: "Go to Standups", description: "Generate daily standups and sprint reports", category: "navigation", action: () => navigate("/standups") },
+    { id: "nav-flow", label: "Go to Flow Analytics", description: "Analyze deep work patterns and productivity", category: "navigation", action: () => navigate("/flow") },
+    { id: "nav-impact", label: "Go to Impact Graph", description: "Cross-repo dependency and impact analysis", category: "navigation", action: () => navigate("/impact") },
+    { id: "nav-health", label: "Go to Health Scores", description: "Repository health scoring engine", category: "navigation", action: () => navigate("/health") },
     // Actions
     { id: "act-scan", label: "Start New Scan", description: "Scan all repositories", category: "action", action: () => navigate("/") },
     { id: "act-report", label: "Download Report", description: "Generate organization report", category: "action", action: () => { downloadReport(); } },
