@@ -23,6 +23,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "../NotificationBell/NotificationBell";
 import { GlobalSearch } from "../GlobalSearch/GlobalSearch";
 import { useAuth } from "../../context/AuthContext";
+import { CommandPalette } from "../CommandPalette/CommandPalette";
 
 const baseNavItems = [
   { path: "/", label: "Repositories" },
@@ -155,6 +156,7 @@ export default function AppLayout() {
 
   return (
     <Page masthead={header}>
+      <CommandPalette />
       <PageSection hasBodyWrapper={false}>
         <Outlet />
       </PageSection>

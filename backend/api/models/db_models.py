@@ -526,3 +526,45 @@ class NotificationPreference(Base):
 
     def __repr__(self):
         return f"<NotificationPreference(user={self.user_id}, type={self.notification_type}, enabled={self.enabled})>"
+
+
+class UserSession(Base):
+    """Active login sessions for session management."""
+
+    __tablename__ = "user_sessions"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    token_hash = Column(String(255), nullable=False, unique=True, index=True)
+    ip_address = Column(String(45), nullable=True)
+    user_agent = Column(String(500), nullable=True)
+    device_name = Column(String(200), nullable=True)
+    is_current = Column(Boolean, nullable=False, default=False)
+    last_active = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime, nullable=True)
+
+    def __repr__(self):
+        return f"<UserSession(id={self.id}, user={self.user_id}, device={self.device_name})>"
+
+
+class ScanSchedule(Base):
+    """Scheduled scan configurations."""
+
+    __tablename__ = "scan_schedules"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    frequency = Column(String(20), nullable=False, default="daily")  # daily, weekly, monthly
+    day_of_week = Column(Integer, nullable=True)  # 0=Mon, 6=Sun (for weekly)
+    hour = Column(Integer, nullable=False, default=9)  # UTC hour (0-23)
+    directories = Column(JSONType, nullable=True)  # List of paths to scan, null = all
+    enabled = Column(Boolean, nullable=False, default=True)
+    last_run = Column(DateTime, nullable=True)
+    next_run = Column(DateTime, nullable=True)
+    created_by = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<ScanSchedule(id={self.id}, name={self.name}, freq={self.frequency})>"
