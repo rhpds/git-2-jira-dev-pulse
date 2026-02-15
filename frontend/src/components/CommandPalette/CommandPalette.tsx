@@ -39,6 +39,8 @@ export function CommandPalette() {
     { id: "nav-flow", label: "Go to Flow Analytics", description: "Analyze deep work patterns and productivity", category: "navigation", action: () => navigate("/flow") },
     { id: "nav-impact", label: "Go to Impact Graph", description: "Cross-repo dependency and impact analysis", category: "navigation", action: () => navigate("/impact") },
     { id: "nav-health", label: "Go to Health Scores", description: "Repository health scoring engine", category: "navigation", action: () => navigate("/health") },
+    { id: "nav-recommendations", label: "Go to Recommendations", description: "AI-powered actionable suggestions", category: "navigation", action: () => navigate("/recommendations") },
+    { id: "nav-team", label: "Go to Team", description: "Team collaboration, annotations, and bookmarks", category: "navigation", action: () => navigate("/team") },
     // Actions
     { id: "act-scan", label: "Start New Scan", description: "Scan all repositories", category: "action", action: () => navigate("/") },
     { id: "act-report", label: "Download Report", description: "Generate organization report", category: "action", action: () => { downloadReport(); } },

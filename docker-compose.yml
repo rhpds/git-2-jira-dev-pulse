@@ -1,41 +1,49 @@
-version: '3.8'
+version: "3.8"
 
 services:
   backend:
     build:
-      context: ./backend
-      target: development
+      context: .
+      dockerfile: Dockerfile
     ports:
-      - "8000:8000"
+      - "9000:9000"
     volumes:
       - ./backend:/app
       - ~/.rh-jira-mcp.env:/root/.rh-jira-mcp.env:ro
+      - ~/.git2jira.config.yaml:/root/.git2jira.config.yaml:ro
       - ~/repos:/root/repos:ro
     environment:
       - PYTHONUNBUFFERED=1
     networks:
       - app-network
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-      target: build
+    image: node:20-alpine
+    working_dir: /app
     ports:
-      - "5175:5173"
+      - "6100:6100"
     volumes:
       - ./frontend:/app
-      - /app/node_modules
+      - frontend_node_modules:/app/node_modules
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_API_URL=http://localhost:9000
     networks:
       - app-network
     depends_on:
       - backend
-    command: npm run dev -- --host 0.0.0.0
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0 --port 6100"
     restart: unless-stopped
 
 networks:
   app-network:
     driver: bridge
+
+volumes:
+  frontend_node_modules:

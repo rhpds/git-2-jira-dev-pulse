@@ -27,6 +27,7 @@ import { useAnalyzeFolders } from "../hooks/useGitAnalysis";
 import { useGitPull } from "../hooks/useGitPull";
 import { useRepoFilters } from "../hooks/useRepoFilters";
 import { RepoGrid } from "../components/ScanPage/RepoGrid";
+import { RepoListView } from "../components/ScanPage/RepoListView";
 import { PullBranchModal } from "../components/ScanPage/PullBranchModal";
 import { RepoFilters } from "../components/ScanPage/RepoFilters";
 import { setAnalysisResults } from "../utils/sessionStorage";
@@ -361,9 +362,14 @@ export default function ScanPage() {
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.3 }}
             >
-              <div style={{ padding: "2rem", textAlign: "center", color: "var(--pf-t--global--text--color--subtle)" }}>
-                List view coming soon...
-              </div>
+              <RepoListView
+                repos={filteredRepos}
+                selected={selected}
+                onToggle={toggle}
+                onOpenPullModal={openPullModal}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite}
+              />
             </motion.div>
           )}
 

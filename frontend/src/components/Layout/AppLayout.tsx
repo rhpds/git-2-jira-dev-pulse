@@ -24,15 +24,21 @@ import { NotificationBell } from "../NotificationBell/NotificationBell";
 import { GlobalSearch } from "../GlobalSearch/GlobalSearch";
 import { useAuth } from "../../context/AuthContext";
 import { CommandPalette } from "../CommandPalette/CommandPalette";
+import { ToastNotifications } from "../ToastNotifications/ToastNotifications";
+import { useWebSocket } from "../../hooks/useWebSocket";
 
 const baseNavItems = [
   { path: "/", label: "Repositories" },
   { path: "/dashboard", label: "Dashboard" },
+  { path: "/results", label: "Results" },
+  { path: "/history", label: "History" },
   { path: "/activity", label: "Activity" },
   { path: "/standups", label: "Standups" },
   { path: "/flow", label: "Flow" },
   { path: "/impact", label: "Impact" },
   { path: "/health", label: "Health" },
+  { path: "/recommendations", label: "Recommendations" },
+  { path: "/team", label: "Team" },
   { path: "/integrations", label: "Integrations" },
   { path: "/settings", label: "Settings" },
 ];
@@ -42,6 +48,7 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const { toasts, dismissToast, isConnected } = useWebSocket();
 
   const navItems = user?.role === "superadmin"
     ? [...baseNavItems, { path: "/admin", label: "Admin" }]
@@ -174,6 +181,10 @@ export default function AppLayout() {
   return (
     <Page masthead={header}>
       <CommandPalette />
+      <ToastNotifications toasts={toasts} onDismiss={dismissToast} />
+      {isConnected && (
+        <div style={{ position: "fixed", bottom: "8px", right: "8px", zIndex: 9990, width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e" }} title="Real-time connected" />
+      )}
       <PageSection hasBodyWrapper={false}>
         <Outlet />
       </PageSection>

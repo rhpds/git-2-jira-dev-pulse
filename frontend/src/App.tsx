@@ -17,6 +17,8 @@ import StandupPage from "./pages/StandupPage";
 import FlowAnalyticsPage from "./pages/FlowAnalyticsPage";
 import ImpactGraphPage from "./pages/ImpactGraphPage";
 import HealthScoresPage from "./pages/HealthScoresPage";
+import RecommendationsPage from "./pages/RecommendationsPage";
+import TeamPage from "./pages/TeamPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -57,6 +59,8 @@ export default function App() {
                   <Route path="/flow" element={<FlowAnalyticsPage />} />
                   <Route path="/impact" element={<ImpactGraphPage />} />
                   <Route path="/health" element={<HealthScoresPage />} />
+                  <Route path="/recommendations" element={<RecommendationsPage />} />
+                  <Route path="/team" element={<TeamPage />} />
                 </Route>
               </Routes>
             </BrowserRouter>

@@ -21,6 +21,21 @@ interface Release {
 
 const releases: Release[] = [
   {
+    version: "0.13.0",
+    date: "2026-02-15",
+    title: "Platform Completion",
+    type: "major",
+    highlights: [
+      "Real-time WebSocket notifications with live connection indicator",
+      "Sortable list view with virtualized scrolling for large repo sets",
+      "AI-powered recommendations engine with confidence scoring",
+      "Team collaboration hub - shared annotations, bookmarks, and member management",
+      "Mobile responsive layouts for tablet and phone (768px / 480px breakpoints)",
+      "Docker multi-stage build and GitHub Actions CI/CD pipeline",
+      "Comprehensive deployment configuration with health checks",
+    ],
+  },
+  {
     version: "0.12.0",
     date: "2026-02-15",
     title: "Intelligence Suite",
