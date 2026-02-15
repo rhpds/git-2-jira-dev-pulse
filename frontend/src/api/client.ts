@@ -17,6 +17,8 @@ import type {
 
 const api = axios.create({ baseURL: "/api" });
 
+export { api as apiClient };
+
 export async function getHealth(): Promise<HealthStatus> {
   const { data } = await api.get("/health");
   return data;

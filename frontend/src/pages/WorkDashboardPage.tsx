@@ -9,8 +9,13 @@ import {
   EmptyStateBody,
   EmptyStateFooter,
   EmptyStateActions,
+  Grid,
+  GridItem,
   Title,
+  ToggleGroup,
+  ToggleGroupItem,
 } from "@patternfly/react-core";
+import { motion, AnimatePresence } from "framer-motion";
 import type { TicketCreateRequest, TicketSuggestion, WorkSummary } from "../api/types";
 import { suggestTickets, createBatch } from "../api/client";
 import {
@@ -24,6 +29,14 @@ import DashboardToolbar from "../components/WorkDashboard/DashboardToolbar";
 import QuarterSummaryBar from "../components/WorkDashboard/QuarterSummaryBar";
 import RepoAccordion from "../components/WorkDashboard/RepoAccordion";
 import TicketDrawerPanel from "../components/WorkDashboard/TicketDrawer";
+import { CommitActivityChart } from "../components/WorkDashboard/CommitActivityChart";
+import { PRStatusChart } from "../components/WorkDashboard/PRStatusChart";
+import { JiraCoverageGauge } from "../components/WorkDashboard/JiraCoverageGauge";
+import { WeeklyBreakdownChart } from "../components/WorkDashboard/WeeklyBreakdownChart";
+import { IntegrationStatusCards } from "../components/WorkDashboard/IntegrationStatusCards";
+import { ExportButtons } from "../components/WorkDashboard/ExportButtons";
+
+type DashboardView = "overview" | "charts" | "repos";
 
 function getAnalysisResults(): WorkSummary[] {
   const raw = sessionStorage.getItem("analysisResults");
@@ -37,6 +50,7 @@ function setCreatedResults(data: unknown) {
 export default function WorkDashboardPage() {
   const navigate = useNavigate();
   const [results, setResults] = useState<WorkSummary[]>([]);
+  const [viewMode, setViewMode] = useState<DashboardView>("overview");
 
   // Quarter state
   const [quarterMode, setQuarterMode] = useState<QuarterMode>(() => {
@@ -107,7 +121,6 @@ export default function WorkDashboardPage() {
       (s, r) => s + r.pull_requests.length,
       0
     );
-    // Tracked = repos with any Jira refs in commits
     const trackedCount = filteredSummaries.filter((s) =>
       s.recent_commits.some((c) => c.jira_refs.length > 0)
     ).length;
@@ -122,12 +135,21 @@ export default function WorkDashboardPage() {
     };
   }, [filteredSummaries]);
 
+  // Aggregate data for charts
+  const allCommits = useMemo(
+    () => filteredSummaries.flatMap((s) => s.recent_commits),
+    [filteredSummaries]
+  );
+  const allPRs = useMemo(
+    () => filteredSummaries.flatMap((s) => s.pull_requests),
+    [filteredSummaries]
+  );
+
   // Ticket creation flow
   const handleOpenDrawer = async () => {
     setDrawerOpen(true);
     setSuggestLoading(true);
     try {
-      // Filter summaries to only repos with activity in the quarter
       const activeSummaries = filteredSummaries.filter(
         (s) => s.recent_commits.length > 0 || s.pull_requests.length > 0
       );
@@ -205,9 +227,42 @@ export default function WorkDashboardPage() {
     <Drawer isExpanded={drawerOpen} position="end">
       <DrawerContent panelContent={drawerPanel}>
         <DrawerContentBody>
-          <Title headingLevel="h1" size="2xl" style={{ marginBottom: 16 }}>
-            Work Dashboard
-          </Title>
+          {/* Header Row */}
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 16,
+            }}
+          >
+            <Title headingLevel="h1" size="2xl">
+              Work Dashboard
+            </Title>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+              <ToggleGroup aria-label="Dashboard view">
+                <ToggleGroupItem
+                  text="Overview"
+                  isSelected={viewMode === "overview"}
+                  onChange={() => setViewMode("overview")}
+                />
+                <ToggleGroupItem
+                  text="Charts"
+                  isSelected={viewMode === "charts"}
+                  onChange={() => setViewMode("charts")}
+                />
+                <ToggleGroupItem
+                  text="Repos"
+                  isSelected={viewMode === "repos"}
+                  onChange={() => setViewMode("repos")}
+                />
+              </ToggleGroup>
+              <ExportButtons
+                workSummaries={filteredSummaries}
+                variant="work-summaries"
+              />
+            </div>
+          </div>
 
           <DashboardToolbar
             quarters={quarters}
@@ -235,12 +290,110 @@ export default function WorkDashboardPage() {
             />
           </div>
 
-          <RepoAccordion
-            summaries={filteredSummaries}
-            quarter={selectedQuarter}
-            selectedWeek={selectedWeek}
-            projectKey={projectKey}
-          />
+          <AnimatePresence mode="wait">
+            {/* Overview: Charts + Repos */}
+            {viewMode === "overview" && (
+              <motion.div
+                key="overview"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                {/* Visualization Row */}
+                <Grid hasGutter style={{ marginBottom: "1.5rem" }}>
+                  <GridItem span={12} lg={5}>
+                    <CommitActivityChart
+                      commits={allCommits}
+                      quarter={selectedQuarter}
+                    />
+                  </GridItem>
+                  <GridItem span={12} lg={4}>
+                    <PRStatusChart pullRequests={allPRs} />
+                  </GridItem>
+                  <GridItem span={12} lg={3}>
+                    <JiraCoverageGauge
+                      trackedCount={stats.trackedCount}
+                      totalCount={stats.repoCount}
+                    />
+                  </GridItem>
+                </Grid>
+
+                {/* Integration Status */}
+                <div style={{ marginBottom: "1.5rem" }}>
+                  <IntegrationStatusCards />
+                </div>
+
+                {/* Repo Accordion */}
+                <RepoAccordion
+                  summaries={filteredSummaries}
+                  quarter={selectedQuarter}
+                  selectedWeek={selectedWeek}
+                  projectKey={projectKey}
+                />
+              </motion.div>
+            )}
+
+            {/* Charts Only */}
+            {viewMode === "charts" && (
+              <motion.div
+                key="charts"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Grid hasGutter>
+                  <GridItem span={12} lg={8}>
+                    <CommitActivityChart
+                      commits={allCommits}
+                      quarter={selectedQuarter}
+                      height={350}
+                    />
+                  </GridItem>
+                  <GridItem span={12} lg={4}>
+                    <JiraCoverageGauge
+                      trackedCount={stats.trackedCount}
+                      totalCount={stats.repoCount}
+                      height={300}
+                    />
+                  </GridItem>
+                  <GridItem span={12} lg={8}>
+                    <WeeklyBreakdownChart
+                      summaries={filteredSummaries}
+                      quarter={selectedQuarter}
+                      height={350}
+                    />
+                  </GridItem>
+                  <GridItem span={12} lg={4}>
+                    <PRStatusChart pullRequests={allPRs} height={300} />
+                  </GridItem>
+                </Grid>
+
+                <div style={{ marginTop: "1.5rem" }}>
+                  <IntegrationStatusCards />
+                </div>
+              </motion.div>
+            )}
+
+            {/* Repos Only */}
+            {viewMode === "repos" && (
+              <motion.div
+                key="repos"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3 }}
+              >
+                <RepoAccordion
+                  summaries={filteredSummaries}
+                  quarter={selectedQuarter}
+                  selectedWeek={selectedWeek}
+                  projectKey={projectKey}
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
         </DrawerContentBody>
       </DrawerContent>
     </Drawer>
