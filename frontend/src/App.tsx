@@ -6,6 +6,7 @@ import WorkDashboardPage from "./pages/WorkDashboardPage";
 import ResultsPage from "./pages/ResultsPage";
 import HistoryPage from "./pages/HistoryPage";
 import SettingsPage from "./pages/SettingsPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -35,6 +36,7 @@ export default function App() {
                   <Route path="/results" element={<ResultsPage />} />
                   <Route path="/history" element={<HistoryPage />} />
                   <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/admin" element={<AdminDashboardPage />} />
                 </Route>
               </Routes>
             </BrowserRouter>

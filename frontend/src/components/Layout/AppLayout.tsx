@@ -21,9 +21,10 @@ import {
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { ThemeToggle } from "./ThemeToggle";
 import { NotificationBell } from "../NotificationBell/NotificationBell";
+import { GlobalSearch } from "../GlobalSearch/GlobalSearch";
 import { useAuth } from "../../context/AuthContext";
 
-const navItems = [
+const baseNavItems = [
   { path: "/", label: "Repositories" },
   { path: "/dashboard", label: "Dashboard" },
   { path: "/results", label: "Results" },
@@ -36,6 +37,10 @@ export default function AppLayout() {
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  const navItems = user?.role === "superadmin"
+    ? [...baseNavItems, { path: "/admin", label: "Admin" }]
+    : baseNavItems;
 
   const header = (
     <Masthead>
@@ -67,6 +72,9 @@ export default function AppLayout() {
                 ))}
               </NavList>
             </Nav>
+          </FlexItem>
+          <FlexItem>
+            <GlobalSearch />
           </FlexItem>
           <FlexItem>
             <ThemeToggle />
