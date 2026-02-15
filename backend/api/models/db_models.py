@@ -613,3 +613,25 @@ class InvitationLink(Base):
 
     def __repr__(self):
         return f"<InvitationLink(org={self.org_id}, role={self.role}, uses={self.use_count}/{self.max_uses})>"
+
+
+class FilterPreset(Base):
+    """Saved filter presets for repository scanning."""
+
+    __tablename__ = "filter_presets"
+    __table_args__ = (
+        UniqueConstraint("user_id", "name", name="uq_user_filter_preset_name"),
+    )
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    name = Column(String(200), nullable=False)
+    search_term = Column(String(500), nullable=True, default="")
+    activity_filter = Column(String(20), nullable=False, default="all")  # all, active, inactive
+    status_filter = Column(String(20), nullable=False, default="all")  # all, clean, dirty
+    branch_filter = Column(String(200), nullable=True, default="all")
+    is_default = Column(Boolean, nullable=False, default=False)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<FilterPreset(user={self.user_id}, name={self.name})>"

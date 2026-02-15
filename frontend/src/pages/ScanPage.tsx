@@ -15,6 +15,10 @@ import {
   GridItem,
   ToggleGroup,
   ToggleGroupItem,
+  Dropdown,
+  DropdownList,
+  DropdownItem,
+  MenuToggle,
 } from "@patternfly/react-core";
 import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -43,6 +47,7 @@ export default function ScanPage() {
   const { favorites, toggleFavorite } = useFavorites();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [isBulkOpen, setIsBulkOpen] = useState(false);
 
   const {
     pullRepo,
@@ -94,6 +99,44 @@ export default function ScanPage() {
     const results = await analyzeMutation.mutateAsync(paths);
     setAnalysisResults(results);
     navigate("/dashboard");
+  };
+
+  const handleBulkExport = () => {
+    if (!filteredRepos || selected.size === 0) return;
+    const selectedRepos = filteredRepos.filter(r => selected.has(r.path));
+    const csv = [
+      "Name,Path,Branch,Status,Commits,Uncommitted",
+      ...selectedRepos.map(r =>
+        `"${r.name}","${r.path}","${r.current_branch}","${r.status}",${r.recent_commit_count},${r.uncommitted_count}`
+      ),
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `repos_export_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setIsBulkOpen(false);
+  };
+
+  const handleBulkFavorite = async () => {
+    for (const path of selected) {
+      if (!favorites.has(path)) {
+        const repo = filteredRepos.find(r => r.path === path);
+        await toggleFavorite(path, repo?.name);
+      }
+    }
+    setIsBulkOpen(false);
+  };
+
+  const handleBulkUnfavorite = async () => {
+    for (const path of selected) {
+      if (favorites.has(path)) {
+        await toggleFavorite(path);
+      }
+    }
+    setIsBulkOpen(false);
   };
 
   if (isLoading) return <Spinner aria-label="Loading repos..." />;
@@ -243,6 +286,37 @@ export default function ScanPage() {
                 />
               </ToggleGroup>
             </ToolbarItem>
+            {selected.size > 0 && (
+              <ToolbarItem>
+                <Dropdown
+                  isOpen={isBulkOpen}
+                  onSelect={() => setIsBulkOpen(false)}
+                  onOpenChange={setIsBulkOpen}
+                  toggle={(toggleRef) => (
+                    <MenuToggle
+                      ref={toggleRef}
+                      onClick={() => setIsBulkOpen(!isBulkOpen)}
+                      isExpanded={isBulkOpen}
+                      variant="secondary"
+                    >
+                      Bulk Actions ({selected.size})
+                    </MenuToggle>
+                  )}
+                >
+                  <DropdownList>
+                    <DropdownItem key="export" onClick={handleBulkExport}>
+                      Export Selected (CSV)
+                    </DropdownItem>
+                    <DropdownItem key="fav" onClick={handleBulkFavorite}>
+                      Favorite All Selected
+                    </DropdownItem>
+                    <DropdownItem key="unfav" onClick={handleBulkUnfavorite}>
+                      Unfavorite All Selected
+                    </DropdownItem>
+                  </DropdownList>
+                </Dropdown>
+              </ToolbarItem>
+            )}
             <ToolbarItem align={{ default: "alignEnd" }}>
               <Button
                 variant="primary"

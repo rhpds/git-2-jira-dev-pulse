@@ -125,6 +125,20 @@ export default function AppLayout() {
                   >
                     Organization
                   </DropdownItem>
+                  <DropdownItem
+                    key="shortcuts"
+                    description="Keyboard shortcuts"
+                    onClick={() => navigate("/shortcuts")}
+                  >
+                    Shortcuts
+                  </DropdownItem>
+                  <DropdownItem
+                    key="changelog"
+                    description="Release notes"
+                    onClick={() => navigate("/changelog")}
+                  >
+                    What's New
+                  </DropdownItem>
                   <Divider key="divider" />
                   <DropdownItem
                     key="logout"
