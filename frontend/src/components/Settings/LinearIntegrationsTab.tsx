@@ -24,7 +24,8 @@ import {
   ModalVariant,
   Select,
   SelectOption,
-  SelectVariant,
+  SelectList,
+  MenuToggle,
 } from "@patternfly/react-core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -326,21 +327,34 @@ export function LinearIntegrationsTab() {
         <Form>
           <FormGroup label="Select Team" isRequired fieldId="team-select">
             <Select
-              variant={SelectVariant.single}
-              onToggle={(_event, isOpen) => setIsTeamSelectOpen(isOpen)}
-              onSelect={(_event, selection) => {
-                setSelectedTeamId(selection as string);
+              id="team-select"
+              isOpen={isTeamSelectOpen}
+              selected={selectedTeamId}
+              onSelect={(_event, value) => {
+                setSelectedTeamId(value as string);
                 setIsTeamSelectOpen(false);
               }}
-              selections={selectedTeamId}
-              isOpen={isTeamSelectOpen}
-              placeholderText="Choose a team"
+              onOpenChange={(isOpen) => setIsTeamSelectOpen(isOpen)}
+              toggle={(toggleRef) => (
+                <MenuToggle
+                  ref={toggleRef}
+                  onClick={() => setIsTeamSelectOpen(!isTeamSelectOpen)}
+                  isExpanded={isTeamSelectOpen}
+                  style={{ width: "100%" }}
+                >
+                  {selectedTeamId
+                    ? teams.find((t: any) => t.id === selectedTeamId)?.name || selectedTeamId
+                    : "Choose a team"}
+                </MenuToggle>
+              )}
             >
-              {teams.map((team: any) => (
-                <SelectOption key={team.id} value={team.id}>
-                  {team.name} ({team.key})
-                </SelectOption>
-              ))}
+              <SelectList>
+                {teams.map((team: any) => (
+                  <SelectOption key={team.id} value={team.id}>
+                    {team.name} ({team.key})
+                  </SelectOption>
+                ))}
+              </SelectList>
             </Select>
           </FormGroup>
 

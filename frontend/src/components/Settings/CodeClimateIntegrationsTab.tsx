@@ -24,7 +24,8 @@ import {
   ModalVariant,
   Select,
   SelectOption,
-  SelectVariant,
+  SelectList,
+  MenuToggle,
 } from "@patternfly/react-core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
@@ -339,21 +340,34 @@ export function CodeClimateIntegrationsTab() {
         <Form>
           <FormGroup label="Select Repository" isRequired fieldId="repo-select">
             <Select
-              variant={SelectVariant.single}
-              onToggle={(_event, isOpen) => setIsRepoSelectOpen(isOpen)}
-              onSelect={(_event, selection) => {
-                setSelectedRepoId(selection as string);
+              id="repo-select"
+              isOpen={isRepoSelectOpen}
+              selected={selectedRepoId}
+              onSelect={(_event, value) => {
+                setSelectedRepoId(value as string);
                 setIsRepoSelectOpen(false);
               }}
-              selections={selectedRepoId}
-              isOpen={isRepoSelectOpen}
-              placeholderText="Choose a repository"
+              onOpenChange={(isOpen) => setIsRepoSelectOpen(isOpen)}
+              toggle={(toggleRef) => (
+                <MenuToggle
+                  ref={toggleRef}
+                  onClick={() => setIsRepoSelectOpen(!isRepoSelectOpen)}
+                  isExpanded={isRepoSelectOpen}
+                  style={{ width: "100%" }}
+                >
+                  {selectedRepoId
+                    ? repos.find((r: any) => r.id === selectedRepoId)?.name || selectedRepoId
+                    : "Choose a repository"}
+                </MenuToggle>
+              )}
             >
-              {repos.map((repo: any) => (
-                <SelectOption key={repo.id} value={repo.id}>
-                  {repo.name} ({repo.slug})
-                </SelectOption>
-              ))}
+              <SelectList>
+                {repos.map((repo: any) => (
+                  <SelectOption key={repo.id} value={repo.id}>
+                    {repo.name} ({repo.slug})
+                  </SelectOption>
+                ))}
+              </SelectList>
             </Select>
           </FormGroup>
 
