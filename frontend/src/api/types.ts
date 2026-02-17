@@ -233,6 +233,7 @@ export interface JiraConfig {
 export interface Git2JiraConfig {
   version: string;
   scan_directories: ScanDirectory[];
+  hidden_repos: string[];
   auto_discovery: AutoDiscoveryConfig;
   ui: UIPreferences;
   performance: PerformanceConfig;

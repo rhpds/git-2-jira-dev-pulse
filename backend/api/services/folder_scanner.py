@@ -53,8 +53,11 @@ class FolderScanner:
             self.base_path = None
             self.scan_config = None
 
-    def scan(self) -> list[RepoInfo]:
+    def scan(self, include_hidden: bool = False) -> list[RepoInfo]:
         """Scan for git repositories.
+
+        Args:
+            include_hidden: If True, include repos that are hidden by the user
 
         Returns:
             List of discovered repositories
@@ -70,6 +73,13 @@ class FolderScanner:
             for scan_dir in config.scan_directories:
                 if scan_dir.enabled:
                     repos.extend(self._scan_directory(scan_dir))
+
+        # Filter out hidden repos unless explicitly requested
+        if not include_hidden:
+            config = self.config_service.get_config()
+            hidden = set(config.hidden_repos)
+            if hidden:
+                repos = [r for r in repos if r.name not in hidden]
 
         return repos
 

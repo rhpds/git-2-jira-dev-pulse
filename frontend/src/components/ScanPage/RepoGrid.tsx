@@ -6,7 +6,9 @@ import {
   Checkbox,
   Gallery,
   Label,
+  Tooltip,
 } from "@patternfly/react-core";
+import { TimesIcon } from "@patternfly/react-icons";
 import { useQuery } from "@tanstack/react-query";
 import type { RepoInfo } from "../../api/types";
 import { getConfig } from "../../api/client";
@@ -18,6 +20,7 @@ interface RepoGridProps {
   selected: Set<string>;
   onToggle: (path: string) => void;
   onOpenPullModal: (repo: RepoInfo) => void;
+  onHideRepo?: (repoName: string) => void;
 }
 
 export function RepoGrid({
@@ -25,6 +28,7 @@ export function RepoGrid({
   selected,
   onToggle,
   onOpenPullModal,
+  onHideRepo,
 }: RepoGridProps) {
   const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig });
   const isGlassmorphic = config?.ui.theme === "glassmorphic";
@@ -48,8 +52,21 @@ export function RepoGrid({
               key={repo.path}
               variant={isSelected ? "border-gradient" : "default"}
               onClick={() => onToggle(repo.path)}
-              style={{ cursor: "pointer" }}
+              style={{ cursor: "pointer", position: "relative" }}
             >
+              {onHideRepo && (
+                <Tooltip content="Hide this repo">
+                  <Button
+                    variant="plain"
+                    size="sm"
+                    aria-label={`Hide ${repo.name}`}
+                    onClick={(e) => { e.stopPropagation(); onHideRepo(repo.name); }}
+                    style={{ position: "absolute", top: "0.25rem", right: "0.25rem", padding: "0.15rem" }}
+                  >
+                    <TimesIcon />
+                  </Button>
+                </Tooltip>
+              )}
               <div style={{ padding: "0.75rem" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
                   <RepoIdentityIcon size={24} color={statusColor} animate />
@@ -103,8 +120,21 @@ export function RepoGrid({
             isSelectable
             isSelected={isSelected}
             onClick={() => onToggle(repo.path)}
-            style={{ cursor: "pointer" }}
+            style={{ cursor: "pointer", position: "relative" }}
           >
+            {onHideRepo && (
+              <Tooltip content="Hide this repo">
+                <Button
+                  variant="plain"
+                  size="sm"
+                  aria-label={`Hide ${repo.name}`}
+                  onClick={(e) => { e.stopPropagation(); onHideRepo(repo.name); }}
+                  style={{ position: "absolute", top: "0.25rem", right: "0.25rem", padding: "0.15rem" }}
+                >
+                  <TimesIcon />
+                </Button>
+              </Tooltip>
+            )}
             <CardTitle>
               <Checkbox
                 id={`cb-${repo.name}`}

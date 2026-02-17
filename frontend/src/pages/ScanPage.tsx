@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Alert,
+  AlertActionCloseButton,
+  AlertActionLink,
   Button,
   Checkbox,
   EmptyState,
   EmptyStateBody,
+  Label,
   Spinner,
   Toolbar,
   ToolbarContent,
@@ -16,7 +20,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@patternfly/react-core";
-import { useQuery } from "@tanstack/react-query";
+import { EyeSlashIcon } from "@patternfly/react-icons";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFolders } from "../hooks/useFolders";
 import { useAnalyzeFolders } from "../hooks/useGitAnalysis";
@@ -26,7 +31,7 @@ import { RepoGrid } from "../components/ScanPage/RepoGrid";
 import { PullBranchModal } from "../components/ScanPage/PullBranchModal";
 import { RepoFilters } from "../components/ScanPage/RepoFilters";
 import { setAnalysisResults } from "../utils/sessionStorage";
-import { getConfig } from "../api/client";
+import { getConfig, getHiddenRepos, hideRepo, unhideRepo } from "../api/client";
 import { GlassCard } from "../components/GlassCard/GlassCard";
 import { PulseIcon, ActivityBurstIcon, StatusIcon, CodeFlowIcon } from "../components/CustomIcons";
 import { ActivityHeatmap } from "../components/Visualizations/ActivityHeatmap";
@@ -36,11 +41,32 @@ type ViewMode = "grid" | "list" | "visualization";
 
 export default function ScanPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: repos, isLoading, error, refetch } = useFolders();
   const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig });
+  const { data: hiddenData } = useQuery({ queryKey: ["hiddenRepos"], queryFn: getHiddenRepos });
   const analyzeMutation = useAnalyzeFolders();
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
+  const [showHidden, setShowHidden] = useState(false);
+
+  const hideMutation = useMutation({
+    mutationFn: hideRepo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      queryClient.invalidateQueries({ queryKey: ["hiddenRepos"] });
+    },
+  });
+
+  const unhideMutation = useMutation({
+    mutationFn: unhideRepo,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
+      queryClient.invalidateQueries({ queryKey: ["hiddenRepos"] });
+    },
+  });
+
+  const hiddenRepos = hiddenData?.hidden_repos ?? [];
 
   const {
     pullRepo,
@@ -255,6 +281,40 @@ export default function ScanPage() {
         </Toolbar>
       </StackItem>
 
+      {/* Hidden Repos Banner */}
+      {hiddenRepos.length > 0 && (
+        <StackItem>
+          <Alert
+            variant="info"
+            isInline
+            isPlain
+            title={
+              <span>
+                <EyeSlashIcon /> {hiddenRepos.length} hidden repo{hiddenRepos.length !== 1 ? "s" : ""}
+              </span>
+            }
+            actionLinks={
+              <AlertActionLink onClick={() => setShowHidden(!showHidden)}>
+                {showHidden ? "Hide list" : "Show hidden"}
+              </AlertActionLink>
+            }
+          />
+          {showHidden && (
+            <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", padding: "0.5rem 0" }}>
+              {hiddenRepos.map((name) => (
+                <Label
+                  key={name}
+                  color="grey"
+                  onClose={() => unhideMutation.mutate(name)}
+                >
+                  {name}
+                </Label>
+              ))}
+            </div>
+          )}
+        </StackItem>
+      )}
+
       {/* Content Area with Animated Transitions */}
       <StackItem isFilled>
         <AnimatePresence mode="wait">
@@ -271,6 +331,7 @@ export default function ScanPage() {
                 selected={selected}
                 onToggle={toggle}
                 onOpenPullModal={openPullModal}
+                onHideRepo={(name) => hideMutation.mutate(name)}
               />
             </motion.div>
           )}

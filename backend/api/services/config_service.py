@@ -15,8 +15,8 @@ class ScanDirectory(BaseModel):
     """Configuration for a single scan directory."""
     path: str
     enabled: bool = True
-    recursive: bool = False
-    max_depth: int = 1
+    recursive: bool = True
+    max_depth: int = 3
     exclude_patterns: List[str] = Field(default_factory=lambda: ["node_modules", ".venv", ".git", "__pycache__", ".pytest_cache"])
     exclude_folders: List[str] = Field(default_factory=list)
 
@@ -97,6 +97,7 @@ class Git2JiraConfig(BaseModel):
     """Complete Git-2-Jira configuration."""
     version: str = "1.0"
     scan_directories: List[ScanDirectory]
+    hidden_repos: List[str] = Field(default_factory=list)
     auto_discovery: AutoDiscoveryConfig = Field(default_factory=AutoDiscoveryConfig)
     ui: UIPreferences = Field(default_factory=UIPreferences)
     performance: PerformanceConfig = Field(default_factory=PerformanceConfig)
@@ -185,8 +186,8 @@ class ConfigService:
                 ScanDirectory(
                     path="~/repos",
                     enabled=True,
-                    recursive=False,
-                    max_depth=1
+                    recursive=True,
+                    max_depth=3
                 )
             ]
         )
@@ -305,6 +306,44 @@ class ConfigService:
         self.save_config(config)
 
         return config
+
+    def hide_repo(self, repo_name: str) -> Git2JiraConfig:
+        """Hide a repository from scan results.
+
+        Args:
+            repo_name: Name of the repository to hide
+
+        Returns:
+            Updated configuration
+        """
+        config = self.get_config()
+        if repo_name not in config.hidden_repos:
+            config.hidden_repos.append(repo_name)
+            self.save_config(config)
+        return config
+
+    def unhide_repo(self, repo_name: str) -> Git2JiraConfig:
+        """Restore a hidden repository to scan results.
+
+        Args:
+            repo_name: Name of the repository to unhide
+
+        Returns:
+            Updated configuration
+        """
+        config = self.get_config()
+        config.hidden_repos = [r for r in config.hidden_repos if r != repo_name]
+        self.save_config(config)
+        return config
+
+    def get_hidden_repos(self) -> List[str]:
+        """Get list of hidden repository names.
+
+        Returns:
+            List of hidden repo names
+        """
+        config = self.get_config()
+        return config.hidden_repos
 
     def get_all_scan_paths(self) -> List[Path]:
         """Get all enabled scan directory paths.

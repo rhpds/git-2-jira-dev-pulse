@@ -27,6 +27,21 @@ export async function getFolders(): Promise<RepoInfo[]> {
   return data;
 }
 
+export async function hideRepo(repoName: string): Promise<{ success: boolean; hidden: string }> {
+  const { data } = await api.post("/folders/hide", { repo_name: repoName });
+  return data;
+}
+
+export async function unhideRepo(repoName: string): Promise<{ success: boolean; restored: string }> {
+  const { data } = await api.delete(`/folders/hide/${encodeURIComponent(repoName)}`);
+  return data;
+}
+
+export async function getHiddenRepos(): Promise<{ hidden_repos: string[] }> {
+  const { data } = await api.get("/folders/hidden");
+  return data;
+}
+
 export async function analyzeFolders(
   paths: string[],
   maxCommits = 100,

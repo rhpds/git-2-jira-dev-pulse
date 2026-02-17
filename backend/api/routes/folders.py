@@ -2,17 +2,24 @@ from typing import Optional, Literal
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 
 from ..config import settings
 from ..dependencies import get_folder_scanner, get_git_analyzer
 from ..models.git_models import AnalyzeRequest, WorkSummary, RepoStatus
 from ..services.folder_scanner import FolderScanner
 from ..services.git_analyzer import GitAnalyzer
+from ..services.config_service import get_config_service
 from ..logging_config import get_logger
 
 logger = get_logger(__name__)
 
 router = APIRouter(prefix="/api/folders", tags=["folders"])
+
+
+class HideRepoRequest(BaseModel):
+    """Request body for hiding a repo."""
+    repo_name: str
 
 
 @router.get("/")
@@ -111,6 +118,32 @@ def analyze_folders(
     else:
         # Sequential execution
         return [analyze_repo(path) for path in req.paths]
+
+
+@router.get("/hidden")
+def get_hidden_repos():
+    """Get list of hidden repositories."""
+    config_service = get_config_service()
+    return {"hidden_repos": config_service.get_hidden_repos()}
+
+
+@router.post("/hide")
+def hide_repo(request: HideRepoRequest):
+    """Hide a repository from scan results.
+
+    The repo is not deleted — it's just excluded from the UI.
+    """
+    config_service = get_config_service()
+    config_service.hide_repo(request.repo_name)
+    return {"success": True, "hidden": request.repo_name}
+
+
+@router.delete("/hide/{repo_name}")
+def unhide_repo(repo_name: str):
+    """Restore a hidden repository to scan results."""
+    config_service = get_config_service()
+    config_service.unhide_repo(repo_name)
+    return {"success": True, "restored": repo_name}
 
 
 @router.post("/clear-cache")

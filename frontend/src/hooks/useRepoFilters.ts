@@ -22,9 +22,12 @@ export function useRepoFilters(repos: RepoInfo[] | undefined) {
     if (!repos) return [];
 
     return repos.filter((repo) => {
-      // Search filter
-      if (searchTerm && !repo.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-        return false;
+      // Search filter (matches name or path)
+      if (searchTerm) {
+        const term = searchTerm.toLowerCase();
+        if (!repo.name.toLowerCase().includes(term) && !repo.path.toLowerCase().includes(term)) {
+          return false;
+        }
       }
 
       // Activity filter

@@ -15,6 +15,9 @@ import {
   Switch,
   Label,
   Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   ModalVariant,
   Form,
   FormGroup,
@@ -34,7 +37,7 @@ interface ScanDirectoriesTabProps {
 export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [newPath, setNewPath] = useState("");
-  const [newRecursive, setNewRecursive] = useState(false);
+  const [newRecursive, setNewRecursive] = useState(true);
   const [newMaxDepth, setNewMaxDepth] = useState(3);
   const queryClient = useQueryClient();
 
@@ -112,7 +115,7 @@ export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
                         {dir.enabled ? "Enabled" : "Disabled"}
                       </Label>
                       <Button
-                        variant="danger"
+                        variant="link"
                         isDanger
                         icon={<TrashIcon />}
                         onClick={() => removeMutation.mutate(dir.path)}
@@ -144,63 +147,64 @@ export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
       {/* Add Directory Modal */}
       <Modal
         variant={ModalVariant.medium}
-        title="Add Scan Directory"
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
-        actions={[
+      >
+        <ModalHeader title="Add Scan Directory" />
+        <ModalBody>
+          <Form>
+            <FormGroup label="Directory Path" isRequired fieldId="path">
+              <TextInput
+                id="path"
+                value={newPath}
+                onChange={(_e, value) => setNewPath(value)}
+                placeholder="~/repos or /path/to/repos"
+              />
+            </FormGroup>
+
+            <FormGroup label="Scan Settings" fieldId="recursive">
+              <Checkbox
+                id="recursive"
+                label="Recursive scanning"
+                isChecked={newRecursive}
+                onChange={(_e, checked) => setNewRecursive(checked)}
+              />
+            </FormGroup>
+
+            {newRecursive && (
+              <FormGroup label="Maximum Depth" fieldId="max-depth">
+                <NumberInput
+                  value={newMaxDepth}
+                  min={1}
+                  max={10}
+                  onMinus={() => setNewMaxDepth(Math.max(1, newMaxDepth - 1))}
+                  onPlus={() => setNewMaxDepth(Math.min(10, newMaxDepth + 1))}
+                  onChange={(e) => {
+                    const val = Number((e.target as HTMLInputElement).value);
+                    if (!isNaN(val)) setNewMaxDepth(Math.min(10, Math.max(1, val)));
+                  }}
+                  inputName="max-depth"
+                  inputAriaLabel="maximum depth"
+                  minusBtnAriaLabel="minus"
+                  plusBtnAriaLabel="plus"
+                />
+              </FormGroup>
+            )}
+          </Form>
+        </ModalBody>
+        <ModalFooter>
           <Button
-            key="add"
             variant="primary"
             onClick={handleAdd}
             isDisabled={!newPath}
             isLoading={addMutation.isPending}
           >
             Add Directory
-          </Button>,
-          <Button key="cancel" variant="link" onClick={() => setIsAddModalOpen(false)}>
+          </Button>
+          <Button variant="link" onClick={() => setIsAddModalOpen(false)}>
             Cancel
-          </Button>,
-        ]}
-      >
-        <Form>
-          <FormGroup label="Directory Path" isRequired fieldId="path">
-            <TextInput
-              id="path"
-              value={newPath}
-              onChange={(_e, value) => setNewPath(value)}
-              placeholder="~/repos or /path/to/repos"
-            />
-          </FormGroup>
-
-          <FormGroup label="Scan Settings" fieldId="recursive">
-            <Checkbox
-              id="recursive"
-              label="Recursive scanning"
-              isChecked={newRecursive}
-              onChange={(_e, checked) => setNewRecursive(checked)}
-            />
-          </FormGroup>
-
-          {newRecursive && (
-            <FormGroup label="Maximum Depth" fieldId="max-depth">
-              <NumberInput
-                value={newMaxDepth}
-                min={1}
-                max={10}
-                onMinus={() => setNewMaxDepth(Math.max(1, newMaxDepth - 1))}
-                onPlus={() => setNewMaxDepth(Math.min(10, newMaxDepth + 1))}
-                onChange={(e) => {
-                  const val = Number((e.target as HTMLInputElement).value);
-                  if (!isNaN(val)) setNewMaxDepth(Math.min(10, Math.max(1, val)));
-                }}
-                inputName="max-depth"
-                inputAriaLabel="maximum depth"
-                minusBtnAriaLabel="minus"
-                plusBtnAriaLabel="plus"
-              />
-            </FormGroup>
-          )}
-        </Form>
+          </Button>
+        </ModalFooter>
       </Modal>
     </>
   );
