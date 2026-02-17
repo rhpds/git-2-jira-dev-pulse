@@ -130,38 +130,57 @@ export default function ScanPage() {
 
   const isGlassmorphic = config?.ui.theme === "glassmorphic";
   const showVisualizations = config?.ui.show_visualizations ?? true;
-  const cleanCount = filteredRepos.filter(r => r.status === "clean").length;
-  const dirtyCount = filteredRepos.filter(r => r.status === "dirty").length;
-  const totalCommits = filteredRepos.reduce((sum, r) => sum + r.recent_commit_count, 0);
-  const totalUncommitted = filteredRepos.reduce((sum, r) => sum + r.uncommitted_count, 0);
+
+  // Compute stats from selected repos when selection active, otherwise from filtered
+  const selectedRepos = filteredRepos.filter(r => selected.has(r.path));
+  const hasSelection = selected.size > 0;
+  const displayRepos = hasSelection ? selectedRepos : filteredRepos;
+  const displayCount = hasSelection ? selected.size : totalCount;
+  const displayCommits = displayRepos.reduce((sum, r) => sum + r.recent_commit_count, 0);
+  const displayUncommitted = displayRepos.reduce((sum, r) => sum + r.uncommitted_count, 0);
+  const displayClean = displayRepos.filter(r => r.status === "clean").length;
 
   const StatCard = isGlassmorphic ? GlassCard : motion.div;
 
   return (
     <Stack hasGutter>
-      {/* Statistics Summary Cards */}
+      {/* Statistics Summary Cards — dynamic based on selection */}
       <StackItem>
+        {hasSelection && (
+          <div style={{ fontSize: "0.8rem", color: "var(--pf-t--global--text--color--subtle)", marginBottom: "0.5rem" }}>
+            Showing stats for {selected.size} selected repo{selected.size !== 1 ? "s" : ""} (of {totalCount} total)
+          </div>
+        )}
         <Grid hasGutter>
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "gradient" : undefined} gradient="primary">
+            <StatCard
+              variant={isGlassmorphic ? "gradient" : undefined}
+              gradient="primary"
+              style={{ cursor: "pointer" }}
+              onClick={() => { clearFilters(); setSelected(new Set()); }}
+            >
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <PulseIcon size={40} color={isGlassmorphic ? "white" : "var(--pf-t--color--blue--40)"} animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold", color: isGlassmorphic ? "white" : undefined }}>
-                  {totalCount}
+                  {displayCount}
                 </div>
                 <div style={{ fontSize: "0.875rem", opacity: 0.9, color: isGlassmorphic ? "white" : "var(--pf-t--global--text--color--subtle)" }}>
-                  Total Repositories
+                  {hasSelection ? "Selected" : "Total"} Repositories
                 </div>
               </div>
             </StatCard>
           </GridItem>
 
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined}>
+            <StatCard
+              variant={isGlassmorphic ? "border-gradient" : undefined}
+              style={{ cursor: "pointer" }}
+              onClick={() => setActivityFilter("active")}
+            >
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <ActivityBurstIcon size={40} color="var(--pf-t--color--purple--40)" animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold" }}>
-                  {totalCommits}
+                  {displayCommits}
                 </div>
                 <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)" }}>
                   Recent Commits
@@ -171,11 +190,15 @@ export default function ScanPage() {
           </GridItem>
 
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined}>
+            <StatCard
+              variant={isGlassmorphic ? "border-gradient" : undefined}
+              style={{ cursor: "pointer" }}
+              onClick={() => setStatusFilter("dirty")}
+            >
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <StatusIcon size={40} color="var(--pf-t--color--orange--40)" animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold" }}>
-                  {totalUncommitted}
+                  {displayUncommitted}
                 </div>
                 <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)" }}>
                   Uncommitted Changes
@@ -185,11 +208,15 @@ export default function ScanPage() {
           </GridItem>
 
           <GridItem span={3}>
-            <StatCard variant={isGlassmorphic ? "border-gradient" : undefined}>
+            <StatCard
+              variant={isGlassmorphic ? "border-gradient" : undefined}
+              style={{ cursor: "pointer" }}
+              onClick={() => setStatusFilter("clean")}
+            >
               <div style={{ padding: "1.5rem", textAlign: "center" }}>
                 <CodeFlowIcon size={40} color="var(--pf-t--color--green--40)" animate />
                 <div style={{ marginTop: "0.5rem", fontSize: "2rem", fontWeight: "bold" }}>
-                  {cleanCount}
+                  {displayClean}
                 </div>
                 <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)" }}>
                   Clean Repos

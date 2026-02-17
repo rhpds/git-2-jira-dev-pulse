@@ -1,5 +1,6 @@
 import {
   Button,
+  Label,
   Switch,
   Toolbar,
   ToolbarContent,
@@ -8,6 +9,7 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@patternfly/react-core";
+import { PlusCircleIcon } from "@patternfly/react-icons";
 import type { Quarter, QuarterMode, Week } from "../../utils/quarterUtils";
 import { getQuarterLabel } from "../../utils/quarterUtils";
 
@@ -22,6 +24,8 @@ interface DashboardToolbarProps {
   onSelectWeek: (w: number | null) => void;
   onCreateTickets: () => void;
   ticketCount: number;
+  projectKey?: string;
+  projectName?: string;
 }
 
 export default function DashboardToolbar({
@@ -35,6 +39,8 @@ export default function DashboardToolbar({
   onSelectWeek,
   onCreateTickets,
   ticketCount,
+  projectKey,
+  projectName,
 }: DashboardToolbarProps) {
   return (
     <Toolbar>
@@ -89,9 +95,20 @@ export default function DashboardToolbar({
         </ToolbarGroup>
 
         <ToolbarItem align={{ default: "alignEnd" }}>
-          <Button variant="primary" onClick={onCreateTickets}>
-            Create Tickets{ticketCount > 0 ? ` (${ticketCount})` : ""}
-          </Button>
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {projectKey && (
+              <Label color="blue" isCompact>
+                {projectName || projectKey}
+              </Label>
+            )}
+            <Button
+              variant={ticketCount > 0 ? "primary" : "secondary"}
+              icon={<PlusCircleIcon />}
+              onClick={onCreateTickets}
+            >
+              Create Tickets{ticketCount > 0 ? ` (${ticketCount})` : ""}
+            </Button>
+          </div>
         </ToolbarItem>
       </ToolbarContent>
     </Toolbar>

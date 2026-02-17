@@ -3,7 +3,7 @@
  * Manage scan directory configuration
  */
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Stack,
   StackItem,
@@ -12,7 +12,6 @@ import {
   CardBody,
   Grid,
   GridItem,
-  Switch,
   Label,
   Modal,
   ModalBody,
@@ -24,14 +23,36 @@ import {
   TextInput,
   Checkbox,
   NumberInput,
+  Spinner,
+  TreeView,
+  TreeViewDataItem,
 } from "@patternfly/react-core";
-import { PlusIcon, TrashIcon } from "@patternfly/react-icons";
+import { PlusIcon, TrashIcon, FolderIcon, FolderOpenIcon } from "@patternfly/react-icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Git2JiraConfig, ScanDirectory } from "../../api/types";
-import { addScanDirectory, removeScanDirectory } from "../../api/client";
+import { addScanDirectory, removeScanDirectory, getDirectoryTree, DirectoryTreeEntry } from "../../api/client";
 
 interface ScanDirectoriesTabProps {
   config: Git2JiraConfig;
+}
+
+function buildTreeData(entries: DirectoryTreeEntry[]): TreeViewDataItem[] {
+  return entries.map((entry) => ({
+    name: (
+      <span>
+        {entry.name}
+        {entry.is_git_repo && (
+          <Label color="blue" isCompact style={{ marginLeft: 8 }}>
+            git repo
+          </Label>
+        )}
+      </span>
+    ),
+    id: entry.path,
+    icon: entry.is_git_repo ? <FolderOpenIcon /> : <FolderIcon />,
+    children: entry.children.length > 0 ? buildTreeData(entry.children) : undefined,
+    defaultExpanded: false,
+  }));
 }
 
 export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
@@ -39,16 +60,46 @@ export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
   const [newPath, setNewPath] = useState("");
   const [newRecursive, setNewRecursive] = useState(true);
   const [newMaxDepth, setNewMaxDepth] = useState(3);
+  const [treeData, setTreeData] = useState<TreeViewDataItem[]>([]);
+  const [treeLoading, setTreeLoading] = useState(false);
+  const [treeError, setTreeError] = useState("");
   const queryClient = useQueryClient();
+
+  // Debounced directory tree preview
+  useEffect(() => {
+    if (!newPath || newPath.length < 2) {
+      setTreeData([]);
+      setTreeError("");
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setTreeLoading(true);
+      setTreeError("");
+      try {
+        const result = await getDirectoryTree(newPath, 2);
+        setTreeData(buildTreeData(result.children));
+      } catch {
+        setTreeData([]);
+        setTreeError("Directory not found or not accessible");
+      } finally {
+        setTreeLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [newPath]);
 
   const addMutation = useMutation({
     mutationFn: addScanDirectory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config"] });
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
       setIsAddModalOpen(false);
       setNewPath("");
-      setNewRecursive(false);
+      setNewRecursive(true);
       setNewMaxDepth(3);
+      setTreeData([]);
     },
   });
 
@@ -56,6 +107,7 @@ export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
     mutationFn: removeScanDirectory,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["config"] });
+      queryClient.invalidateQueries({ queryKey: ["folders"] });
     },
   });
 
@@ -104,7 +156,7 @@ export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
                       </div>
                       <div style={{ fontSize: "0.875rem", color: "var(--pf-t--global--text--color--subtle)" }}>
                         {dir.recursive ? `Recursive (depth: ${dir.max_depth})` : "Non-recursive"}
-                        {" • "}
+                        {" \u2022 "}
                         {dir.exclude_patterns.length} exclusion patterns
                       </div>
                     </div>
@@ -161,6 +213,29 @@ export function ScanDirectoriesTab({ config }: ScanDirectoriesTabProps) {
                 placeholder="~/repos or /path/to/repos"
               />
             </FormGroup>
+
+            {/* Directory Tree Preview */}
+            {newPath && (
+              <FormGroup label="Directory Contents" fieldId="tree-preview">
+                {treeLoading ? (
+                  <div style={{ padding: "0.5rem" }}>
+                    <Spinner size="md" /> Loading...
+                  </div>
+                ) : treeError ? (
+                  <div style={{ padding: "0.5rem", color: "var(--pf-t--global--color--status--danger--default)", fontSize: "0.875rem" }}>
+                    {treeError}
+                  </div>
+                ) : treeData.length > 0 ? (
+                  <div style={{ maxHeight: "200px", overflowY: "auto", border: "1px solid var(--pf-t--global--border--color--default)", borderRadius: 4, padding: "0.5rem" }}>
+                    <TreeView data={treeData} />
+                  </div>
+                ) : newPath.length >= 2 ? (
+                  <div style={{ padding: "0.5rem", color: "var(--pf-t--global--text--color--subtle)", fontSize: "0.875rem" }}>
+                    No subdirectories found
+                  </div>
+                ) : null}
+              </FormGroup>
+            )}
 
             <FormGroup label="Scan Settings" fieldId="recursive">
               <Checkbox

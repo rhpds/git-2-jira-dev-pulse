@@ -1,4 +1,4 @@
-import { Label, Spinner } from "@patternfly/react-core";
+import { Label, Spinner, Alert, AlertVariant } from "@patternfly/react-core";
 import type { RepoJiraTicket } from "../../api/types";
 
 interface JiraTableProps {
@@ -13,8 +13,19 @@ export default function JiraTable({ tickets, isLoading }: JiraTableProps) {
 
   if (tickets.length === 0) {
     return (
-      <div style={{ padding: 16, color: "var(--pf-t--global--text--color--subtle)" }}>
-        No Jira tickets found for this repo.
+      <div style={{ padding: 16 }}>
+        <Alert
+          variant={AlertVariant.info}
+          title="No Jira tickets found for this repository"
+          isInline
+          isPlain
+        >
+          This means no Jira tickets have summaries matching this repo name.
+          Commits without PROJ-123 references in their messages are not
+          automatically linked. Use the "Create Tickets" button in the toolbar
+          or the Ticket Preview panel below to generate ticket suggestions
+          for this work.
+        </Alert>
       </div>
     );
   }

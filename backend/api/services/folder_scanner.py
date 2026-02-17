@@ -63,23 +63,61 @@ class FolderScanner:
             List of discovered repositories
         """
         repos: list[RepoInfo] = []
+        seen_paths: set[str] = set()
+        # Track paths that were explicitly added (not broad scan directories)
+        # These get priority and bypass hidden filtering
+        explicit_paths: set[str] = set()
 
         if self.legacy_mode:
             # Legacy mode: scan single directory
             repos.extend(self._scan_directory(self.scan_config))
         else:
             # Multi-directory mode: scan all enabled directories
+            # Process specific/nested paths first so they take priority
             config = self.config_service.get_config()
+            broad_dirs = []
+            specific_dirs = []
+
             for scan_dir in config.scan_directories:
-                if scan_dir.enabled:
-                    repos.extend(self._scan_directory(scan_dir))
+                if not scan_dir.enabled:
+                    continue
+                scan_path = Path(scan_dir.path)
+                # A "specific" dir is one that is inside a git repo or is a git repo
+                # (i.e., not a broad parent directory containing many repos)
+                if (scan_path / ".git").exists():
+                    specific_dirs.append(scan_dir)
+                else:
+                    # Check if it's inside a git repo
+                    is_nested = any((p / ".git").exists() for p in scan_path.parents)
+                    if is_nested:
+                        specific_dirs.append(scan_dir)
+                    else:
+                        broad_dirs.append(scan_dir)
+
+            # Scan specific dirs first — they get priority
+            for scan_dir in specific_dirs:
+                for repo in self._scan_directory(scan_dir):
+                    if repo.path not in seen_paths:
+                        seen_paths.add(repo.path)
+                        explicit_paths.add(repo.path)
+                        repos.append(repo)
+
+            # Then scan broad directories
+            for scan_dir in broad_dirs:
+                for repo in self._scan_directory(scan_dir):
+                    if repo.path not in seen_paths:
+                        seen_paths.add(repo.path)
+                        repos.append(repo)
 
         # Filter out hidden repos unless explicitly requested
         if not include_hidden:
             config = self.config_service.get_config()
             hidden = set(config.hidden_repos)
             if hidden:
-                repos = [r for r in repos if r.name not in hidden]
+                # Never hide repos from explicitly added scan paths
+                repos = [r for r in repos
+                         if r.path in explicit_paths
+                         or r.name not in hidden]
 
         return repos
 
@@ -97,6 +135,22 @@ class FolderScanner:
 
         if not base_path.is_dir():
             return repos
+
+        # Check if the scan path itself is a git repo
+        if (base_path / ".git").exists():
+            info = self._scan_repo(base_path)
+            if info:
+                repos.append(info)
+            return repos
+
+        # Check if the scan path is inside a git repo (e.g. a subfolder)
+        # Walk up to find the nearest .git directory
+        for parent in base_path.parents:
+            if (parent / ".git").exists():
+                info = self._scan_repo(parent, display_name=base_path.name)
+                if info:
+                    repos.append(info)
+                return repos
 
         if scan_config.recursive:
             # Recursive scan with depth limit

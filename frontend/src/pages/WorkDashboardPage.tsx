@@ -11,8 +11,9 @@ import {
   EmptyStateActions,
   Title,
 } from "@patternfly/react-core";
+import { useQuery } from "@tanstack/react-query";
 import type { TicketCreateRequest, TicketSuggestion, WorkSummary } from "../api/types";
-import { suggestTickets, createBatch } from "../api/client";
+import { suggestTickets, createBatch, getConfig } from "../api/client";
 import {
   getCurrentQuarter,
   getRecentQuarters,
@@ -24,6 +25,8 @@ import DashboardToolbar from "../components/WorkDashboard/DashboardToolbar";
 import QuarterSummaryBar from "../components/WorkDashboard/QuarterSummaryBar";
 import RepoAccordion from "../components/WorkDashboard/RepoAccordion";
 import TicketDrawerPanel from "../components/WorkDashboard/TicketDrawer";
+import TicketPreviewPanel from "../components/WorkDashboard/TicketPreviewPanel";
+import { getJiraCredentials } from "../api/client";
 
 function getAnalysisResults(): WorkSummary[] {
   const raw = sessionStorage.getItem("analysisResults");
@@ -53,7 +56,20 @@ export default function WorkDashboardPage() {
   const [suggestLoading, setSuggestLoading] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
 
-  const projectKey = "RHDPOPS";
+  // Preview panel state
+  const [previewSuggestions, setPreviewSuggestions] = useState<TicketSuggestion[]>([]);
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  // Read Jira project from config instead of hardcoding
+  const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig });
+  const defaultProject = config?.jira?.projects?.find((p) => p.default) ?? config?.jira?.projects?.[0];
+  const projectKey = defaultProject?.key ?? "";
+
+  // Read Jira credentials for URL
+  const { data: jiraCredentials } = useQuery({
+    queryKey: ["jira-credentials"],
+    queryFn: getJiraCredentials,
+  });
 
   useEffect(() => {
     setResults(getAnalysisResults());
@@ -122,17 +138,56 @@ export default function WorkDashboardPage() {
     };
   }, [filteredSummaries]);
 
+  // Auto-generate preview suggestions when data changes
+  useEffect(() => {
+    if (!projectKey || filteredSummaries.length === 0) {
+      setPreviewSuggestions([]);
+      return;
+    }
+    const activeSummaries = filteredSummaries.filter(
+      (s) => s.recent_commits.length > 0 || s.pull_requests.length > 0
+    );
+    if (activeSummaries.length === 0) {
+      setPreviewSuggestions([]);
+      return;
+    }
+
+    let cancelled = false;
+    setPreviewLoading(true);
+    suggestTickets(activeSummaries, projectKey)
+      .then((suggestions) => {
+        if (!cancelled) {
+          setPreviewSuggestions(suggestions);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewSuggestions([]);
+      })
+      .finally(() => {
+        if (!cancelled) setPreviewLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [filteredSummaries, projectKey]);
+
   // Ticket creation flow
   const handleOpenDrawer = async () => {
     setDrawerOpen(true);
+    // Use preview suggestions if available, otherwise fetch fresh
+    if (previewSuggestions.length > 0) {
+      setTicketSuggestions(previewSuggestions);
+      return;
+    }
     setSuggestLoading(true);
     try {
-      // Filter summaries to only repos with activity in the quarter
       const activeSummaries = filteredSummaries.filter(
         (s) => s.recent_commits.length > 0 || s.pull_requests.length > 0
       );
       const suggestions = await suggestTickets(activeSummaries, projectKey);
       setTicketSuggestions(suggestions);
+      setPreviewSuggestions(suggestions);
     } catch {
       setTicketSuggestions([]);
     } finally {
@@ -198,6 +253,8 @@ export default function WorkDashboardPage() {
       onCreateTickets={handleCreateTickets}
       isLoading={suggestLoading}
       isCreating={createLoading}
+      projectKey={projectKey}
+      projectName={defaultProject?.name}
     />
   ) : undefined;
 
@@ -223,6 +280,8 @@ export default function WorkDashboardPage() {
             onSelectWeek={setSelectedWeek}
             onCreateTickets={handleOpenDrawer}
             ticketCount={stats.needTicketsCount}
+            projectKey={projectKey}
+            projectName={defaultProject?.name}
           />
 
           <div style={{ marginTop: 16 }}>
@@ -232,6 +291,7 @@ export default function WorkDashboardPage() {
               prCount={stats.prCount}
               trackedCount={stats.trackedCount}
               needTicketsCount={stats.needTicketsCount}
+              onCreateTickets={handleOpenDrawer}
             />
           </div>
 
@@ -240,6 +300,16 @@ export default function WorkDashboardPage() {
             quarter={selectedQuarter}
             selectedWeek={selectedWeek}
             projectKey={projectKey}
+          />
+
+          <TicketPreviewPanel
+            summaries={filteredSummaries}
+            suggestions={previewSuggestions}
+            isLoading={previewLoading}
+            projectKey={projectKey}
+            projectName={defaultProject?.name}
+            jiraUrl={jiraCredentials?.jira_url}
+            onOpenDrawer={handleOpenDrawer}
           />
         </DrawerContentBody>
       </DrawerContent>

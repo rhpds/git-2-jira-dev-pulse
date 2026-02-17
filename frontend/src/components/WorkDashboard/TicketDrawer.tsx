@@ -5,10 +5,11 @@ import {
   DrawerHead,
   DrawerPanelBody,
   DrawerPanelContent,
+  Label,
   Spinner,
   Title,
 } from "@patternfly/react-core";
-import type { TicketCreateRequest, TicketSuggestion } from "../../api/types";
+import type { TicketSuggestion } from "../../api/types";
 import TicketSuggestionRow from "./TicketSuggestionRow";
 
 interface TicketDrawerProps {
@@ -18,6 +19,8 @@ interface TicketDrawerProps {
   onCreateTickets: () => void;
   isLoading: boolean;
   isCreating: boolean;
+  projectKey?: string;
+  projectName?: string;
 }
 
 export default function TicketDrawerPanel({
@@ -27,15 +30,29 @@ export default function TicketDrawerPanel({
   onCreateTickets,
   isLoading,
   isCreating,
+  projectKey,
+  projectName,
 }: TicketDrawerProps) {
   const selectedCount = tickets.filter((t) => t.selected).length;
 
   return (
     <DrawerPanelContent widths={{ default: "width_50" }}>
       <DrawerHead>
-        <Title headingLevel="h2" size="lg">
-          Ticket Suggestions
-        </Title>
+        <div>
+          <Title headingLevel="h2" size="lg">
+            Ticket Suggestions
+          </Title>
+          {projectKey && (
+            <div style={{ marginTop: 4 }}>
+              <Label color="blue" isCompact>
+                {projectName || projectKey}
+              </Label>
+              <span style={{ marginLeft: 8, fontSize: "0.85rem", color: "var(--pf-t--global--text--color--subtle)" }}>
+                Tickets will be created in {projectKey}
+              </span>
+            </div>
+          )}
+        </div>
         <DrawerActions>
           <DrawerCloseButton onClick={onClose} />
         </DrawerActions>

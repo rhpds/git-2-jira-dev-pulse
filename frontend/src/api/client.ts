@@ -186,6 +186,23 @@ export async function removeScanDirectory(
   return data;
 }
 
+export interface DirectoryTreeEntry {
+  name: string;
+  path: string;
+  is_git_repo: boolean;
+  children: DirectoryTreeEntry[];
+}
+
+export async function getDirectoryTree(
+  path: string,
+  maxDepth: number = 2
+): Promise<{ path: string; children: DirectoryTreeEntry[] }> {
+  const { data } = await api.get("/config/directory-tree", {
+    params: { path, max_depth: maxDepth },
+  });
+  return data;
+}
+
 export async function updateUIPreferences(
   preferences: UIPreferences
 ): Promise<Git2JiraConfig> {
@@ -238,6 +255,49 @@ export async function updateJiraConfig(request: {
   jira_config: any;
 }): Promise<Git2JiraConfig> {
   const { data } = await api.put("/config/jira", request);
+  return data;
+}
+
+// Jira Credentials API
+export interface JiraCredentialsResponse {
+  jira_url: string;
+  jira_api_token_masked: string;
+  jira_email: string;
+  has_token: boolean;
+}
+
+export interface JiraTestResult {
+  connected: boolean;
+  user: string;
+  email: string;
+  server: string;
+  error: string;
+}
+
+export async function getJiraCredentials(): Promise<JiraCredentialsResponse> {
+  const { data } = await api.get("/config/jira/credentials");
+  return data;
+}
+
+export async function saveJiraCredentials(credentials: {
+  jira_url: string;
+  jira_api_token: string;
+  jira_email: string;
+}): Promise<{
+  saved: boolean;
+  credentials: JiraCredentialsResponse;
+  test_result: JiraTestResult;
+}> {
+  const { data } = await api.put("/config/jira/credentials", credentials);
+  return data;
+}
+
+export async function testJiraConnection(credentials?: {
+  jira_url: string;
+  jira_api_token: string;
+  jira_email: string;
+}): Promise<JiraTestResult> {
+  const { data } = await api.post("/config/jira/test-connection", credentials ?? null);
   return data;
 }
 

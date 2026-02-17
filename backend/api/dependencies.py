@@ -19,7 +19,7 @@ def get_settings() -> Settings:
 
 
 def get_folder_scanner() -> FolderScanner:
-    return FolderScanner(settings.repos_base_path)
+    return FolderScanner()
 
 
 def get_git_analyzer() -> GitAnalyzer:

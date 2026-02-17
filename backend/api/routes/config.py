@@ -1,6 +1,9 @@
 """Configuration management API endpoints."""
 
-from typing import Dict, Any, List
+import os
+import stat
+from pathlib import Path
+from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
@@ -10,9 +13,9 @@ from ..services.config_service import (
     ScanDirectory,
     UIPreferences,
     JiraProject,
-    JiraBoard,
     JiraConfig,
 )
+from ..services.jira_client import JiraClient
 from ..services.watcher_service import get_watcher_service
 from ..logging_config import get_logger
 
@@ -116,6 +119,52 @@ async def migrate_from_env() -> MigrateResponse:
         )
     except FileNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
+
+
+@router.get("/directory-tree")
+async def get_directory_tree(path: str, max_depth: int = 2) -> Dict[str, Any]:
+    """List subdirectories and detect git repos for a given path.
+
+    Args:
+        path: Directory path to inspect
+        max_depth: Maximum depth to traverse (default 2)
+
+    Returns:
+        Tree structure of subdirectories with git repo detection
+    """
+    expanded = Path(os.path.expanduser(os.path.expandvars(path))).resolve()
+    if not expanded.is_dir():
+        raise HTTPException(status_code=404, detail=f"Directory not found: {path}")
+
+    skip = {"node_modules", ".venv", ".git", "__pycache__", ".pytest_cache", ".tox", "venv", ".mypy_cache"}
+
+    def scan_tree(dir_path: Path, depth: int) -> List[Dict[str, Any]]:
+        if depth >= max_depth:
+            return []
+        children = []
+        try:
+            for child in sorted(dir_path.iterdir()):
+                if not child.is_dir() or child.name.startswith(".") or child.name in skip:
+                    continue
+                is_git = (child / ".git").exists()
+                entry: Dict[str, Any] = {
+                    "name": child.name,
+                    "path": str(child),
+                    "is_git_repo": is_git,
+                }
+                if not is_git:
+                    entry["children"] = scan_tree(child, depth + 1)
+                else:
+                    entry["children"] = []
+                children.append(entry)
+        except (PermissionError, OSError):
+            pass
+        return children
+
+    return {
+        "path": str(expanded),
+        "children": scan_tree(expanded, 0),
+    }
 
 
 @router.post("/auto-discovery/toggle")
@@ -369,3 +418,189 @@ async def set_default_jira_project(project_key: str) -> Git2JiraConfig:
     config_service.save_config(config)
     logger.info(f"Set default Jira project: {project_key}")
     return config
+
+
+# ============================================
+# Jira Credentials Endpoints
+# ============================================
+
+CREDENTIALS_FILE = Path.home() / ".rh-jira-mcp.env"
+
+
+class JiraCredentials(BaseModel):
+    """Jira connection credentials."""
+    jira_url: str
+    jira_api_token: str
+    jira_email: str = ""
+
+
+class JiraCredentialsResponse(BaseModel):
+    """Response with masked credentials."""
+    jira_url: str
+    jira_api_token_masked: str
+    jira_email: str
+    has_token: bool
+
+
+class JiraTestResult(BaseModel):
+    """Result of a Jira connection test."""
+    connected: bool
+    user: str = ""
+    email: str = ""
+    server: str = ""
+    error: str = ""
+
+
+def _mask_token(token: str) -> str:
+    """Mask a token, showing only first 4 and last 4 characters."""
+    if not token or len(token) <= 12:
+        return "*" * len(token) if token else ""
+    return token[:4] + "*" * (len(token) - 8) + token[-4:]
+
+
+def _read_credentials() -> Dict[str, str]:
+    """Read credentials from the env file."""
+    creds: Dict[str, str] = {}
+    if CREDENTIALS_FILE.exists():
+        with open(CREDENTIALS_FILE, "r") as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith("#") and "=" in line:
+                    key, value = line.split("=", 1)
+                    creds[key.strip()] = value.strip().strip('"').strip("'")
+    return creds
+
+
+def _write_credentials(creds: Dict[str, str]) -> None:
+    """Write credentials to the env file with restricted permissions."""
+    lines = []
+    lines.append("# Git-2-Jira credentials")
+    lines.append(f'JIRA_URL="{creds.get("JIRA_URL", "")}"')
+    lines.append(f'JIRA_API_TOKEN="{creds.get("JIRA_API_TOKEN", "")}"')
+    lines.append(f'JIRA_EMAIL="{creds.get("JIRA_EMAIL", "")}"')
+    # Preserve any additional keys
+    reserved = {"JIRA_URL", "JIRA_API_TOKEN", "JIRA_EMAIL"}
+    for key, value in creds.items():
+        if key not in reserved:
+            lines.append(f'{key}="{value}"')
+
+    with open(CREDENTIALS_FILE, "w") as f:
+        f.write("\n".join(lines) + "\n")
+
+    # Set file permissions to owner-only read/write (600)
+    os.chmod(CREDENTIALS_FILE, stat.S_IRUSR | stat.S_IWUSR)
+
+
+@router.get("/jira/credentials", response_model=JiraCredentialsResponse)
+async def get_jira_credentials() -> JiraCredentialsResponse:
+    """Get current Jira credentials (token masked).
+
+    Returns:
+        Credentials with masked token
+    """
+    creds = _read_credentials()
+    token = creds.get("JIRA_API_TOKEN", "")
+    return JiraCredentialsResponse(
+        jira_url=creds.get("JIRA_URL", ""),
+        jira_api_token_masked=_mask_token(token),
+        jira_email=creds.get("JIRA_EMAIL", ""),
+        has_token=bool(token),
+    )
+
+
+@router.put("/jira/credentials")
+async def save_jira_credentials(credentials: JiraCredentials) -> Dict[str, Any]:
+    """Save Jira credentials and test connection.
+
+    The token is stored in ~/.rh-jira-mcp.env with owner-only permissions (600).
+    After saving, a connection test is automatically run.
+
+    Args:
+        credentials: Jira URL, API token, and email
+
+    Returns:
+        Save result including connection test
+    """
+    # Read existing credentials to preserve extra keys
+    existing = _read_credentials()
+
+    # Update with new values
+    existing["JIRA_URL"] = credentials.jira_url.rstrip("/")
+    existing["JIRA_EMAIL"] = credentials.jira_email
+
+    # Only update token if a new one is provided (not masked)
+    if credentials.jira_api_token and "*" not in credentials.jira_api_token:
+        existing["JIRA_API_TOKEN"] = credentials.jira_api_token
+
+    _write_credentials(existing)
+    logger.info("Jira credentials saved")
+
+    # Update runtime settings so the app uses new creds immediately
+    from ..config import settings
+    settings.jira_url = existing["JIRA_URL"]
+    if "JIRA_API_TOKEN" in existing and existing["JIRA_API_TOKEN"]:
+        settings.jira_api_token = existing["JIRA_API_TOKEN"]
+
+    # Auto-test connection
+    test_result = _test_jira_connection(
+        existing["JIRA_URL"],
+        existing.get("JIRA_API_TOKEN", ""),
+    )
+
+    return {
+        "saved": True,
+        "credentials": JiraCredentialsResponse(
+            jira_url=existing["JIRA_URL"],
+            jira_api_token_masked=_mask_token(existing.get("JIRA_API_TOKEN", "")),
+            jira_email=existing.get("JIRA_EMAIL", ""),
+            has_token=bool(existing.get("JIRA_API_TOKEN")),
+        ).model_dump(),
+        "test_result": test_result,
+    }
+
+
+@router.post("/jira/test-connection", response_model=JiraTestResult)
+async def test_jira_connection(
+    credentials: Optional[JiraCredentials] = None,
+) -> JiraTestResult:
+    """Test Jira connection with provided or saved credentials.
+
+    Args:
+        credentials: Optional credentials to test. If not provided, uses saved creds.
+
+    Returns:
+        Connection test result
+    """
+    if credentials:
+        url = credentials.jira_url.rstrip("/")
+        token = credentials.jira_api_token
+        # If token is masked, use saved token
+        if "*" in token:
+            saved = _read_credentials()
+            token = saved.get("JIRA_API_TOKEN", "")
+    else:
+        saved = _read_credentials()
+        url = saved.get("JIRA_URL", "")
+        token = saved.get("JIRA_API_TOKEN", "")
+
+    result = _test_jira_connection(url, token)
+    return JiraTestResult(**result)
+
+
+def _test_jira_connection(url: str, token: str) -> Dict[str, Any]:
+    """Perform the actual Jira connection test."""
+    if not url or not token:
+        return {
+            "connected": False,
+            "error": "Jira URL and API token are required",
+            "server": url,
+        }
+    try:
+        client = JiraClient(server=url, token=token)
+        return client.check_connection()
+    except Exception as e:
+        return {
+            "connected": False,
+            "error": str(e),
+            "server": url,
+        }

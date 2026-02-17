@@ -128,6 +128,11 @@ function RepoRow({
         <Badge isRead>{filteredCommitCount} commits</Badge>
         <Badge isRead>{filteredPRCount} PRs</Badge>
         <Badge isRead>{jiraTickets.length} Jira</Badge>
+        {filteredCommits.filter((c) => c.jira_refs.length > 0).length > 0 && (
+          <Badge isRead>
+            {filteredCommits.filter((c) => c.jira_refs.length > 0).length} refs
+          </Badge>
+        )}
       </div>
 
       {isOpen && (

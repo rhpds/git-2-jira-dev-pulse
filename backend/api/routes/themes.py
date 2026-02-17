@@ -138,32 +138,35 @@ async def get_theme_css(theme_id: str):
     css_vars = []
     colors = theme.colors.model_dump()
 
+    def _is_self_ref(var_name: str, value: str) -> bool:
+        """Skip self-referential declarations that create circular CSS references."""
+        return value.strip() == f"var({var_name})"
+
     # PatternFly global color overrides
-    if colors.get("background"):
-        css_vars.append(f"  --pf-t--global--background--color--primary: {colors['background']};")
+    pf_mappings = [
+        ("background", "--pf-t--global--background--color--primary"),
+        ("text_primary", "--pf-t--global--text--color--regular"),
+        ("text_secondary", "--pf-t--global--text--color--secondary"),
+        ("text_subtle", "--pf-t--global--text--color--subtle"),
+        ("text_on_dark", "--pf-t--global--text--color--on-dark"),
+        ("primary", "--pf-t--global--color--brand--default"),
+        ("success", "--pf-t--global--color--status--success--default"),
+        ("warning", "--pf-t--global--color--status--warning--default"),
+        ("danger", "--pf-t--global--color--status--danger--default"),
+        ("info", "--pf-t--global--color--status--info--default"),
+        ("border", "--pf-t--global--border--color--default"),
+    ]
+
+    for color_key, css_var in pf_mappings:
+        value = colors.get(color_key)
+        if value and not _is_self_ref(css_var, value):
+            css_vars.append(f"  {css_var}: {value};")
+
     if colors.get("surface"):
-        css_vars.append(f"  --pf-t--global--background--color--secondary: {colors['surface']};")
-        css_vars.append(f"  --pf-v6-c-card--BackgroundColor: {colors['surface']};")
-    if colors.get("text_primary"):
-        css_vars.append(f"  --pf-t--global--text--color--regular: {colors['text_primary']};")
-    if colors.get("text_secondary"):
-        css_vars.append(f"  --pf-t--global--text--color--secondary: {colors['text_secondary']};")
-    if colors.get("text_subtle"):
-        css_vars.append(f"  --pf-t--global--text--color--subtle: {colors['text_subtle']};")
-    if colors.get("text_on_dark"):
-        css_vars.append(f"  --pf-t--global--text--color--on-dark: {colors['text_on_dark']};")
-    if colors.get("primary"):
-        css_vars.append(f"  --pf-t--global--color--brand--default: {colors['primary']};")
-    if colors.get("success"):
-        css_vars.append(f"  --pf-t--global--color--status--success--default: {colors['success']};")
-    if colors.get("warning"):
-        css_vars.append(f"  --pf-t--global--color--status--warning--default: {colors['warning']};")
-    if colors.get("danger"):
-        css_vars.append(f"  --pf-t--global--color--status--danger--default: {colors['danger']};")
-    if colors.get("info"):
-        css_vars.append(f"  --pf-t--global--color--status--info--default: {colors['info']};")
-    if colors.get("border"):
-        css_vars.append(f"  --pf-t--global--border--color--default: {colors['border']};")
+        surface = colors["surface"]
+        if not _is_self_ref("--pf-t--global--background--color--secondary", surface):
+            css_vars.append(f"  --pf-t--global--background--color--secondary: {surface};")
+        css_vars.append(f"  --pf-v6-c-card--BackgroundColor: {surface};")
 
     # Custom theme variables (for custom components)
     for key, value in colors.items():

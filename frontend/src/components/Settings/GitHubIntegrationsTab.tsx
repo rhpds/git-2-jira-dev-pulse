@@ -22,6 +22,9 @@ import {
   ListItem,
   Spinner,
   Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   ModalVariant,
 } from "@patternfly/react-core";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -41,6 +44,7 @@ export function GitHubIntegrationsTab() {
   const [githubOwner, setGithubOwner] = useState("");
   const [githubRepo, setGithubRepo] = useState("");
   const [autoDetect, setAutoDetect] = useState(true);
+  const [githubToken, setGithubToken] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -183,16 +187,32 @@ export function GitHubIntegrationsTab() {
                 </p>
               </Alert>
             ) : (
-              <Alert variant="warning" title="GitHub Not Connected" isInline>
-                <p>
-                  Set GITHUB_TOKEN environment variable to enable GitHub integration.
-                </p>
-                {connectionStatus?.error && (
-                  <p style={{ marginTop: "0.5rem", fontSize: "0.9em" }}>
-                    Error: {connectionStatus.error}
+              <>
+                <Alert variant="warning" title="GitHub Not Connected" isInline>
+                  <p>
+                    A GitHub personal access token is required to enable GitHub integration.
                   </p>
-                )}
-              </Alert>
+                  {connectionStatus?.error && (
+                    <p style={{ marginTop: "0.5rem", fontSize: "0.9em" }}>
+                      Error: {connectionStatus.error}
+                    </p>
+                  )}
+                </Alert>
+                <Form style={{ marginTop: "1rem" }}>
+                  <FormGroup label="GitHub Token" fieldId="github-token">
+                    <TextInput
+                      id="github-token"
+                      type="password"
+                      value={githubToken}
+                      onChange={(_event, value) => setGithubToken(value)}
+                      placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                    />
+                    <div style={{ fontSize: "0.8rem", color: "var(--pf-t--global--text--color--subtle)", marginTop: "0.25rem" }}>
+                      Set GITHUB_TOKEN in your environment or ~/.git2jira.env to persist across restarts.
+                    </div>
+                  </FormGroup>
+                </Form>
+              </>
             )}
           </CardBody>
         </Card>
@@ -209,7 +229,7 @@ export function GitHubIntegrationsTab() {
               onClick={() => setShowAddModal(true)}
               isDisabled={!connectionStatus?.connected}
             >
-              + Add Repository
+              Link Repository
             </Button>
           </CardTitle>
           <CardBody>
@@ -219,7 +239,7 @@ export function GitHubIntegrationsTab() {
               </div>
             ) : integrations.length === 0 ? (
               <p style={{ color: "var(--pf-t--global--text--color--subtle)", textAlign: "center", padding: "2rem" }}>
-                No GitHub integrations configured. Click "Add Repository" to get started.
+                No GitHub integrations configured. Click "Link Repository" to get started.
               </p>
             ) : (
               <List isPlain isBordered>
@@ -276,26 +296,68 @@ export function GitHubIntegrationsTab() {
         </Card>
       </StackItem>
 
-      {/* Add Integration Modal */}
+      {/* Link Repository Modal */}
       <Modal
         variant={ModalVariant.medium}
-        title="Add GitHub Integration"
         isOpen={showAddModal}
         onClose={() => {
           setShowAddModal(false);
           resetForm();
         }}
-        actions={[
+      >
+        <ModalHeader title="Link Local Repository to GitHub" />
+        <ModalBody>
+          <Form>
+            <FormGroup label="Repository Path" isRequired fieldId="repo-path">
+              <TextInput
+                id="repo-path"
+                value={repoPath}
+                onChange={(_event, value) => setRepoPath(value)}
+                placeholder="/path/to/your/repo"
+              />
+            </FormGroup>
+
+            <FormGroup fieldId="auto-detect">
+              <Switch
+                id="auto-detect"
+                label="Auto-detect GitHub repository from git remote"
+                isChecked={autoDetect}
+                onChange={(_event, checked) => setAutoDetect(checked)}
+              />
+            </FormGroup>
+
+            {!autoDetect && (
+              <>
+                <FormGroup label="GitHub Owner" isRequired fieldId="github-owner">
+                  <TextInput
+                    id="github-owner"
+                    value={githubOwner}
+                    onChange={(_event, value) => setGithubOwner(value)}
+                    placeholder="octocat"
+                  />
+                </FormGroup>
+
+                <FormGroup label="GitHub Repository" isRequired fieldId="github-repo">
+                  <TextInput
+                    id="github-repo"
+                    value={githubRepo}
+                    onChange={(_event, value) => setGithubRepo(value)}
+                    placeholder="hello-world"
+                  />
+                </FormGroup>
+              </>
+            )}
+          </Form>
+        </ModalBody>
+        <ModalFooter>
           <Button
-            key="add"
             variant="primary"
             onClick={handleEnable}
             isLoading={enableMutation.isPending}
           >
-            Enable Integration
-          </Button>,
+            Link Repository
+          </Button>
           <Button
-            key="cancel"
             variant="link"
             onClick={() => {
               setShowAddModal(false);
@@ -303,50 +365,8 @@ export function GitHubIntegrationsTab() {
             }}
           >
             Cancel
-          </Button>,
-        ]}
-      >
-        <Form>
-          <FormGroup label="Repository Path" isRequired fieldId="repo-path">
-            <TextInput
-              id="repo-path"
-              value={repoPath}
-              onChange={(_event, value) => setRepoPath(value)}
-              placeholder="/path/to/your/repo"
-            />
-          </FormGroup>
-
-          <FormGroup fieldId="auto-detect">
-            <Switch
-              id="auto-detect"
-              label="Auto-detect GitHub repository from git remote"
-              isChecked={autoDetect}
-              onChange={(_event, checked) => setAutoDetect(checked)}
-            />
-          </FormGroup>
-
-          {!autoDetect && (
-            <>
-              <FormGroup label="GitHub Owner" isRequired fieldId="github-owner">
-                <TextInput
-                  id="github-owner"
-                  value={githubOwner}
-                  onChange={(_event, value) => setGithubOwner(value)}
-                  placeholder="octocat"
-                />
-              </FormGroup>
-
-              <FormGroup label="GitHub Repository" isRequired fieldId="github-repo">
-                <TextInput
-                  id="github-repo"
-                  value={githubRepo}
-                  onChange={(_event, value) => setGithubRepo(value)}
-                  placeholder="hello-world"
-                />
-              </FormGroup>
-            </>
-          )}
-        </Form>
+          </Button>
+        </ModalFooter>
       </Modal>
     </Stack>
   );

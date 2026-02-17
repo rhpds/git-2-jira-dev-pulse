@@ -235,7 +235,7 @@ class ConfigService:
         Returns:
             Updated configuration
         """
-        config = self.get_config()
+        config = self.get_config(force_reload=True)
 
         # Check if directory already exists
         existing_paths = {Path(d.path) for d in config.scan_directories}
