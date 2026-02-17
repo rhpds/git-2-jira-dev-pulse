@@ -89,6 +89,7 @@ export function JiraSettingsTab() {
     queryFn: getJiraCredentials,
   });
   const [credUrl, setCredUrl] = useState('');
+  const [credApiUrl, setCredApiUrl] = useState('');
   const [credToken, setCredToken] = useState('');
   const [credEmail, setCredEmail] = useState('');
   const [credEditing, setCredEditing] = useState(false);
@@ -96,10 +97,16 @@ export function JiraSettingsTab() {
   const [credSaving, setCredSaving] = useState(false);
   const [credTesting, setCredTesting] = useState(false);
 
+  // Board fields for Add Project modal
+  const [boardId, setBoardId] = useState('');
+  const [boardName, setBoardName] = useState('');
+  const [boardType, setBoardType] = useState<'kanban' | 'scrum'>('kanban');
+
   // Populate credential fields from saved data
   useEffect(() => {
     if (savedCredentials && !credEditing) {
       setCredUrl(savedCredentials.jira_url || '');
+      setCredApiUrl(savedCredentials.jira_api_url || '');
       setCredToken(savedCredentials.has_token ? savedCredentials.jira_api_token_masked : '');
       setCredEmail(savedCredentials.jira_email || '');
     }
@@ -118,16 +125,32 @@ export function JiraSettingsTab() {
   const resetForm = () => {
     setProjectKey('');
     setProjectName('');
+    setBoardId('');
+    setBoardName('');
+    setBoardType('kanban');
   };
 
   const handleAddProject = () => {
     if (!config || !projectKey || !projectName) return;
 
+    // Build boards array — include a board if the user provided a Board ID
+    const boards: JiraBoard[] = [];
+    if (boardId) {
+      const parsedBoardId = parseInt(boardId, 10);
+      if (!isNaN(parsedBoardId)) {
+        boards.push({
+          id: parsedBoardId,
+          name: boardName || `Board ${parsedBoardId}`,
+          type: boardType,
+        });
+      }
+    }
+
     const newProject: JiraProject = {
       key: projectKey.toUpperCase(),
       name: projectName,
       default: config.jira.projects.length === 0,
-      boards: [],
+      boards,
       custom_fields: {},
       enabled_issue_types: ['Story', 'Task', 'Bug', 'Epic'],
     };
@@ -188,6 +211,7 @@ export function JiraSettingsTab() {
     // Reset to saved values
     if (savedCredentials) {
       setCredUrl(savedCredentials.jira_url || '');
+      setCredApiUrl(savedCredentials.jira_api_url || '');
       setCredToken(savedCredentials.has_token ? savedCredentials.jira_api_token_masked : '');
       setCredEmail(savedCredentials.jira_email || '');
     }
@@ -199,6 +223,7 @@ export function JiraSettingsTab() {
     try {
       const result = await saveJiraCredentials({
         jira_url: credUrl,
+        jira_api_url: credApiUrl,
         jira_api_token: credToken,
         jira_email: credEmail,
       });
@@ -226,6 +251,7 @@ export function JiraSettingsTab() {
     try {
       const result = await testJiraConnection({
         jira_url: credUrl,
+        jira_api_url: credApiUrl,
         jira_api_token: credToken,
         jira_email: credEmail,
       });
@@ -282,12 +308,31 @@ export function JiraSettingsTab() {
             </CardTitle>
             <CardBody>
               <Form>
-                <FormGroup label="Jira Server URL" isRequired fieldId="jira-url">
+                <FormGroup
+                  label="Jira Base URL (JIRA_BASE_URL)"
+                  isRequired
+                  fieldId="jira-url"
+                  helperText="The root URL of your Jira instance, e.g. https://issues.redhat.com"
+                >
                   <TextInput
                     id="jira-url"
                     value={credUrl}
                     onChange={(_event, value) => setCredUrl(value)}
                     placeholder="https://issues.redhat.com"
+                    isDisabled={!credEditing && savedCredentials?.has_token}
+                  />
+                </FormGroup>
+
+                <FormGroup
+                  label="Jira API URL (JIRA_API_URL)"
+                  fieldId="jira-api-url"
+                  helperText="REST API endpoint. Auto-derived from Base URL if left empty (appends /rest/api/2/)."
+                >
+                  <TextInput
+                    id="jira-api-url"
+                    value={credApiUrl}
+                    onChange={(_event, value) => setCredApiUrl(value)}
+                    placeholder={credUrl ? `${credUrl.replace(/\/+$/, '')}/rest/api/2/` : 'https://issues.redhat.com/rest/api/2/'}
                     isDisabled={!credEditing && savedCredentials?.has_token}
                   />
                 </FormGroup>
@@ -488,9 +533,14 @@ export function JiraSettingsTab() {
                               <div style={{ marginTop: '0.5rem' }}>
                                 {project.boards.map((board) => (
                                   <Label key={board.id} color="purple" isCompact style={{ marginRight: '0.5rem' }}>
-                                    {board.name} ({board.type})
+                                    Board ID: {board.id} - {board.name} ({board.type})
                                   </Label>
                                 ))}
+                              </div>
+                            )}
+                            {project.boards.length === 0 && (
+                              <div style={{ marginTop: '0.25rem', fontSize: '0.8rem', color: 'var(--pf-t--global--text--color--subtle)' }}>
+                                No board configured
                               </div>
                             )}
                           </div>
@@ -536,12 +586,14 @@ export function JiraSettingsTab() {
         <ModalHeader title="Add Jira Project" />
         <ModalBody>
           <Form>
-            <FormGroup label="Project Key" isRequired fieldId="project-key">
+            <FormGroup label="Project Key (PROJECT_KEY)" isRequired fieldId="project-key"
+              helperText="The Jira project key, e.g. RHDPOPS"
+            >
               <TextInput
                 id="project-key"
                 value={projectKey}
                 onChange={(_event, value) => setProjectKey(value)}
-                placeholder="e.g., TEAM, DEV, OPS"
+                placeholder="e.g., RHDPOPS, TEAM, DEV"
               />
             </FormGroup>
 
@@ -551,6 +603,41 @@ export function JiraSettingsTab() {
                 value={projectName}
                 onChange={(_event, value) => setProjectName(value)}
                 placeholder="e.g., Team Project, Development"
+              />
+            </FormGroup>
+
+            <FormGroup label="Board ID (BOARD_ID)" fieldId="board-id"
+              helperText="Numeric Jira board ID, e.g. 21616. Leave empty to skip."
+            >
+              <TextInput
+                id="board-id"
+                value={boardId}
+                onChange={(_event, value) => setBoardId(value.replace(/\D/g, ''))}
+                placeholder="e.g., 21616"
+                type="text"
+              />
+            </FormGroup>
+
+            <FormGroup label="Board Name" fieldId="board-name"
+              helperText="Friendly name for the board (optional, defaults to 'Board <ID>')."
+            >
+              <TextInput
+                id="board-name"
+                value={boardName}
+                onChange={(_event, value) => setBoardName(value)}
+                placeholder="e.g., RHDPOPS Kanban"
+                isDisabled={!boardId}
+              />
+            </FormGroup>
+
+            <FormGroup label="Board Type" fieldId="board-type">
+              <Switch
+                id="board-type-switch"
+                label="Scrum"
+                labelOff="Kanban"
+                isChecked={boardType === 'scrum'}
+                onChange={(_event, checked) => setBoardType(checked ? 'scrum' : 'kanban')}
+                isDisabled={!boardId}
               />
             </FormGroup>
           </Form>

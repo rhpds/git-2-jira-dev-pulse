@@ -261,6 +261,7 @@ export async function updateJiraConfig(request: {
 // Jira Credentials API
 export interface JiraCredentialsResponse {
   jira_url: string;
+  jira_api_url: string;
   jira_api_token_masked: string;
   jira_email: string;
   has_token: boolean;
@@ -281,6 +282,7 @@ export async function getJiraCredentials(): Promise<JiraCredentialsResponse> {
 
 export async function saveJiraCredentials(credentials: {
   jira_url: string;
+  jira_api_url: string;
   jira_api_token: string;
   jira_email: string;
 }): Promise<{
@@ -294,6 +296,7 @@ export async function saveJiraCredentials(credentials: {
 
 export async function testJiraConnection(credentials?: {
   jira_url: string;
+  jira_api_url: string;
   jira_api_token: string;
   jira_email: string;
 }): Promise<JiraTestResult> {

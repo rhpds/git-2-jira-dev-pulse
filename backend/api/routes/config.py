@@ -429,7 +429,8 @@ CREDENTIALS_FILE = Path.home() / ".rh-jira-mcp.env"
 
 class JiraCredentials(BaseModel):
     """Jira connection credentials."""
-    jira_url: str
+    jira_url: str  # JIRA_BASE_URL — e.g. https://issues.redhat.com
+    jira_api_url: str = ""  # JIRA_API_URL — e.g. https://issues.redhat.com/rest/api/2/
     jira_api_token: str
     jira_email: str = ""
 
@@ -437,6 +438,7 @@ class JiraCredentials(BaseModel):
 class JiraCredentialsResponse(BaseModel):
     """Response with masked credentials."""
     jira_url: str
+    jira_api_url: str
     jira_api_token_masked: str
     jira_email: str
     has_token: bool
@@ -471,15 +473,22 @@ def _read_credentials() -> Dict[str, str]:
     return creds
 
 
+def _derive_api_url(base_url: str) -> str:
+    """Derive JIRA_API_URL from JIRA_BASE_URL by appending /rest/api/2/."""
+    base = base_url.rstrip("/")
+    return f"{base}/rest/api/2/"
+
+
 def _write_credentials(creds: Dict[str, str]) -> None:
     """Write credentials to the env file with restricted permissions."""
     lines = []
     lines.append("# Git-2-Jira credentials")
     lines.append(f'JIRA_URL="{creds.get("JIRA_URL", "")}"')
+    lines.append(f'JIRA_API_URL="{creds.get("JIRA_API_URL", "")}"')
     lines.append(f'JIRA_API_TOKEN="{creds.get("JIRA_API_TOKEN", "")}"')
     lines.append(f'JIRA_EMAIL="{creds.get("JIRA_EMAIL", "")}"')
     # Preserve any additional keys
-    reserved = {"JIRA_URL", "JIRA_API_TOKEN", "JIRA_EMAIL"}
+    reserved = {"JIRA_URL", "JIRA_API_URL", "JIRA_API_TOKEN", "JIRA_EMAIL"}
     for key, value in creds.items():
         if key not in reserved:
             lines.append(f'{key}="{value}"')
@@ -500,8 +509,14 @@ async def get_jira_credentials() -> JiraCredentialsResponse:
     """
     creds = _read_credentials()
     token = creds.get("JIRA_API_TOKEN", "")
+    base_url = creds.get("JIRA_URL", "")
+    api_url = creds.get("JIRA_API_URL", "")
+    # Auto-derive API URL from base URL if not explicitly set
+    if not api_url and base_url:
+        api_url = _derive_api_url(base_url)
     return JiraCredentialsResponse(
-        jira_url=creds.get("JIRA_URL", ""),
+        jira_url=base_url,
+        jira_api_url=api_url,
         jira_api_token_masked=_mask_token(token),
         jira_email=creds.get("JIRA_EMAIL", ""),
         has_token=bool(token),
@@ -528,6 +543,12 @@ async def save_jira_credentials(credentials: JiraCredentials) -> Dict[str, Any]:
     existing["JIRA_URL"] = credentials.jira_url.rstrip("/")
     existing["JIRA_EMAIL"] = credentials.jira_email
 
+    # Handle JIRA_API_URL: save explicit value or auto-derive from base URL
+    if credentials.jira_api_url:
+        existing["JIRA_API_URL"] = credentials.jira_api_url.rstrip("/") + "/"
+    else:
+        existing["JIRA_API_URL"] = _derive_api_url(existing["JIRA_URL"])
+
     # Only update token if a new one is provided (not masked)
     if credentials.jira_api_token and "*" not in credentials.jira_api_token:
         existing["JIRA_API_TOKEN"] = credentials.jira_api_token
@@ -538,6 +559,7 @@ async def save_jira_credentials(credentials: JiraCredentials) -> Dict[str, Any]:
     # Update runtime settings so the app uses new creds immediately
     from ..config import settings
     settings.jira_url = existing["JIRA_URL"]
+    settings.jira_api_url = existing["JIRA_API_URL"]
     if "JIRA_API_TOKEN" in existing and existing["JIRA_API_TOKEN"]:
         settings.jira_api_token = existing["JIRA_API_TOKEN"]
 
@@ -551,6 +573,7 @@ async def save_jira_credentials(credentials: JiraCredentials) -> Dict[str, Any]:
         "saved": True,
         "credentials": JiraCredentialsResponse(
             jira_url=existing["JIRA_URL"],
+            jira_api_url=existing.get("JIRA_API_URL", ""),
             jira_api_token_masked=_mask_token(existing.get("JIRA_API_TOKEN", "")),
             jira_email=existing.get("JIRA_EMAIL", ""),
             has_token=bool(existing.get("JIRA_API_TOKEN")),

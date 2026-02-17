@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     jira_url: str = "https://issues.redhat.com"
+    jira_api_url: str = ""  # e.g. https://issues.redhat.com/rest/api/2/  — auto-derived from jira_url if empty
     jira_api_token: str = ""
     jira_default_project: str = "RHDPOPS"
     jira_default_assignee: str = ""
