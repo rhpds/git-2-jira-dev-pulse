@@ -84,4 +84,6 @@ class BatchCreateResult(BaseModel):
 
 class DuplicateCheckResult(BaseModel):
     is_duplicate: bool
+    confidence: str = "none"  # none, low, medium, high
     existing_keys: list[str] = Field(default_factory=list)
+    matches: list[ExistingJiraMatch] = Field(default_factory=list)

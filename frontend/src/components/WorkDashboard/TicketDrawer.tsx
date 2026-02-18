@@ -1,4 +1,5 @@
 import {
+  Alert,
   Button,
   DrawerActions,
   DrawerCloseButton,
@@ -34,6 +35,8 @@ export default function TicketDrawerPanel({
   projectName,
 }: TicketDrawerProps) {
   const selectedCount = tickets.filter((t) => t.selected).length;
+  const duplicateCount = tickets.filter((t) => t.already_tracked).length;
+  const newCount = tickets.filter((t) => !t.already_tracked).length;
 
   return (
     <DrawerPanelContent widths={{ default: "width_50" }}>
@@ -61,10 +64,28 @@ export default function TicketDrawerPanel({
         {isLoading ? (
           <div style={{ textAlign: "center", padding: 32 }}>
             <Spinner aria-label="Generating suggestions..." />
-            <div style={{ marginTop: 8 }}>Analyzing work and generating suggestions...</div>
+            <div style={{ marginTop: 8 }}>Analyzing work and checking for duplicates...</div>
           </div>
         ) : (
           <>
+            {/* Duplicate summary banner */}
+            {duplicateCount > 0 && (
+              <Alert
+                variant="warning"
+                isInline
+                isPlain
+                title={`${duplicateCount} potential duplicate${duplicateCount !== 1 ? "s" : ""} detected`}
+                style={{ marginBottom: 12 }}
+              >
+                {duplicateCount} suggestion{duplicateCount !== 1 ? "s" : ""}{" "}
+                match existing Jira tickets and have been deselected.{" "}
+                {newCount > 0
+                  ? `${newCount} new ticket${newCount !== 1 ? "s" : ""} ready for creation.`
+                  : "All suggestions appear to be duplicates."}
+                {" "}You can override by selecting them manually.
+              </Alert>
+            )}
+
             {tickets.length === 0 && (
               <div style={{ padding: 16, color: "var(--pf-t--global--text--color--subtle)" }}>
                 No ticket suggestions generated. Try selecting repos with more recent activity.
@@ -78,7 +99,7 @@ export default function TicketDrawerPanel({
               />
             ))}
             {tickets.length > 0 && (
-              <div style={{ marginTop: 16, display: "flex", gap: 8 }}>
+              <div style={{ marginTop: 16, display: "flex", gap: 8, alignItems: "center" }}>
                 <Button
                   variant="primary"
                   onClick={onCreateTickets}
@@ -87,6 +108,11 @@ export default function TicketDrawerPanel({
                 >
                   Create {selectedCount} Ticket{selectedCount !== 1 ? "s" : ""}
                 </Button>
+                {duplicateCount > 0 && selectedCount > 0 && (
+                  <span style={{ fontSize: "0.8rem", color: "var(--pf-t--global--text--color--subtle)" }}>
+                    Duplicates will be skipped during creation
+                  </span>
+                )}
                 <Button variant="link" onClick={onClose}>
                   Cancel
                 </Button>

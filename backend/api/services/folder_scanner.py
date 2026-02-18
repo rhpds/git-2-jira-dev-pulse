@@ -1,12 +1,13 @@
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional, Literal
 import fnmatch
 
 from git import Repo, InvalidGitRepositoryError
 
-from ..models.git_models import RepoInfo, RepoStatus
+from ..models.git_models import RepoInfo, RepoStatus, StaleBranch
 from .config_service import get_config_service, ScanDirectory
 
 
@@ -68,7 +69,7 @@ class FolderScanner:
         # These get priority and bypass hidden filtering
         explicit_paths: set[str] = set()
 
-        if self.legacy_mode:
+        if self.legacy_mode and self.scan_config is not None:
             # Legacy mode: scan single directory
             repos.extend(self._scan_directory(self.scan_config))
         else:
@@ -331,18 +332,80 @@ class FolderScanner:
             except ValueError:
                 has_commits = False
 
+            unpushed_count = 0
+            untracked_count = 0
+            stale_branches: list[StaleBranch] = []
+
             if has_commits:
                 is_dirty = repo.is_dirty(untracked_files=True)
+                untracked_count = len(repo.untracked_files)
                 uncommitted = (
                     len(repo.index.diff("HEAD"))
                     + len(repo.index.diff(None))
-                    + len(repo.untracked_files)
+                    + untracked_count
                 )
                 branch = str(repo.active_branch) if not repo.head.is_detached else "HEAD"
                 commit_count = sum(1 for _ in repo.iter_commits(max_count=30))
+
+                # Detect unpushed commits on current branch
+                if not repo.head.is_detached and repo.remotes:
+                    try:
+                        active = repo.active_branch
+                        tracking = active.tracking_branch()
+                        if tracking:
+                            unpushed_count = sum(
+                                1 for _ in repo.iter_commits(
+                                    f"{tracking.name}..{active.name}"
+                                )
+                            )
+                    except Exception:
+                        pass
+
+                # Detect stale branches (unmerged, older than 30 days)
+                now = datetime.now(timezone.utc)
+                cutoff = now - timedelta(days=30)
+                default_branch_name = None
+                for candidate in ("main", "master", "develop", "development"):
+                    if candidate in [b.name for b in repo.heads]:
+                        default_branch_name = candidate
+                        break
+                if not default_branch_name and not repo.head.is_detached:
+                    default_branch_name = repo.active_branch.name
+
+                if default_branch_name:
+                    try:
+                        default_ref = repo.heads[default_branch_name]
+                        default_shas = set()
+                        for c in repo.iter_commits(default_ref, max_count=200):
+                            default_shas.add(c.hexsha)
+
+                        for b in repo.heads:
+                            if b.name == default_branch_name:
+                                continue
+                            try:
+                                last_c = b.commit
+                                last_dt = datetime.fromtimestamp(
+                                    last_c.committed_date, tz=timezone.utc
+                                )
+                                if last_dt >= cutoff:
+                                    continue
+                                if last_c.hexsha not in default_shas:
+                                    stale_branches.append(
+                                        StaleBranch(
+                                            name=b.name,
+                                            last_commit_date=last_dt,
+                                            days_stale=(now - last_dt).days,
+                                            is_merged=False,
+                                        )
+                                    )
+                            except Exception:
+                                continue
+                    except Exception:
+                        pass
             else:
                 is_dirty = len(repo.untracked_files) > 0
-                uncommitted = len(repo.untracked_files)
+                untracked_count = len(repo.untracked_files)
+                uncommitted = untracked_count
                 branch = "main"
                 commit_count = 0
 
@@ -354,6 +417,9 @@ class FolderScanner:
                 uncommitted_count=uncommitted,
                 recent_commit_count=commit_count,
                 has_remote=len(repo.remotes) > 0,
+                unpushed_count=unpushed_count,
+                untracked_count=untracked_count,
+                stale_branches=stale_branches,
             )
         except (InvalidGitRepositoryError, Exception):
             return None

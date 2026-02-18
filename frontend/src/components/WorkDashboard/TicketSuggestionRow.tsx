@@ -1,5 +1,6 @@
 import { useState } from "react";
 import {
+  Alert,
   Checkbox,
   ExpandableSection,
   FormGroup,
@@ -9,6 +10,7 @@ import {
   TextArea,
   TextInput,
 } from "@patternfly/react-core";
+import { ExternalLinkAltIcon } from "@patternfly/react-icons";
 import type { TicketSuggestion } from "../../api/types";
 import { AVAILABLE_LABELS } from "../../api/types";
 
@@ -64,16 +66,48 @@ export default function TicketSuggestionRow({ ticket, onUpdate }: TicketSuggesti
         </FormSelect>
       </div>
 
+      {/* Duplicate warning with linked existing tickets */}
       {ticket.already_tracked && ticket.existing_jira.length > 0 && (
-        <div style={{ marginLeft: 32, marginTop: 4 }}>
-          {ticket.existing_jira.map((ej) => (
-            <Label key={ej.key} color="orange" isCompact style={{ marginRight: 4 }}>
-              <a href={ej.url} target="_blank" rel="noopener noreferrer">
-                {ej.key}
-              </a>
-            </Label>
-          ))}
-        </div>
+        <Alert
+          variant="warning"
+          isInline
+          isPlain
+          title="Potential duplicate"
+          style={{ marginLeft: 32, marginTop: 6, marginBottom: 2 }}
+        >
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+            {ticket.existing_jira.map((ej) => (
+              <div
+                key={ej.key}
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "2px 8px",
+                  borderRadius: 4,
+                  background: "var(--pf-t--global--background--color--secondary--default)",
+                  fontSize: "0.8rem",
+                }}
+              >
+                <a
+                  href={ej.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{ fontWeight: 600 }}
+                >
+                  {ej.key} <ExternalLinkAltIcon style={{ fontSize: "0.7rem" }} />
+                </a>
+                <span style={{ color: "var(--pf-t--global--text--color--subtle)" }}>
+                  {ej.summary.length > 60 ? ej.summary.slice(0, 60) + "..." : ej.summary}
+                </span>
+                <Label color="grey" isCompact>{ej.status}</Label>
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: 4, fontSize: "0.75rem", color: "var(--pf-t--global--text--color--subtle)" }}>
+            Select the checkbox to override and create anyway.
+          </div>
+        </Alert>
       )}
 
       <div style={{ marginLeft: 32, marginTop: 4 }}>

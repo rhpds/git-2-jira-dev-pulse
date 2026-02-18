@@ -17,7 +17,9 @@ from ..models.git_models import (
     CommitInfo,
     FileChange,
     PullRequestInfo,
+    StaleBranch,
     UncommittedChanges,
+    UnpushedCommit,
     WorkSummary,
 )
 from ..logging_config import get_logger
@@ -48,6 +50,8 @@ class GitAnalyzer:
             recent_commits=self._get_recent_commits(repo, max_commits, since_days),
             branches=self._get_branches(repo),
             pull_requests=GitAnalyzer._get_pull_requests(path),
+            unpushed_commits=self._get_unpushed_commits(repo),
+            stale_branches=self._get_stale_branches(repo),
         )
 
     def get_work_summary_cached(
@@ -224,6 +228,104 @@ class GitAnalyzer:
                 "error": str(e),
             }
 
+    def _get_unpushed_commits(self, repo: Repo) -> list[UnpushedCommit]:
+        """Detect commits on the current branch that haven't been pushed to remote."""
+        unpushed: list[UnpushedCommit] = []
+        try:
+            if repo.head.is_detached:
+                return []
+            active = repo.active_branch
+            tracking = active.tracking_branch()
+            if not tracking:
+                return []
+            # Commits in local but not in remote tracking branch
+            for commit in repo.iter_commits(f"{tracking.name}..{active.name}"):
+                commit_dt = datetime.fromtimestamp(
+                    commit.committed_date, tz=timezone.utc
+                )
+                msg = (
+                    commit.message
+                    if isinstance(commit.message, str)
+                    else commit.message.decode("utf-8", errors="replace")
+                )
+                unpushed.append(
+                    UnpushedCommit(
+                        sha=commit.hexsha,
+                        short_sha=commit.hexsha[:7],
+                        message=msg.strip().split("\n")[0][:120],
+                        author=str(commit.author),
+                        date=commit_dt,
+                    )
+                )
+        except Exception:
+            pass
+        return unpushed
+
+    def _get_stale_branches(
+        self, repo: Repo, stale_days: int = 30
+    ) -> list[StaleBranch]:
+        """Find branches not merged into the default branch and older than stale_days."""
+        stale: list[StaleBranch] = []
+        now = datetime.now(timezone.utc)
+        cutoff = now - timedelta(days=stale_days)
+
+        # Determine the default branch
+        default_branch_name = None
+        if not repo.head.is_detached:
+            active_name = repo.active_branch.name
+            for candidate in ("main", "master", "develop", "development"):
+                if candidate in [b.name for b in repo.heads]:
+                    default_branch_name = candidate
+                    break
+            if not default_branch_name:
+                default_branch_name = active_name
+
+        if not default_branch_name:
+            return []
+
+        try:
+            default_ref = repo.heads[default_branch_name]
+        except (IndexError, AttributeError):
+            return []
+
+        default_commits = set()
+        try:
+            for c in repo.iter_commits(default_ref, max_count=500):
+                default_commits.add(c.hexsha)
+        except Exception:
+            return []
+
+        for branch in repo.heads:
+            if branch.name == default_branch_name:
+                continue
+            try:
+                last_commit = branch.commit
+                last_date = datetime.fromtimestamp(
+                    last_commit.committed_date, tz=timezone.utc
+                )
+                if last_date >= cutoff:
+                    continue  # Not stale yet
+
+                # Check if merged (tip commit is in default branch history)
+                is_merged = last_commit.hexsha in default_commits
+
+                if not is_merged:
+                    days_since = (now - last_date).days
+                    stale.append(
+                        StaleBranch(
+                            name=branch.name,
+                            last_commit_date=last_date,
+                            days_stale=days_since,
+                            is_merged=False,
+                        )
+                    )
+            except Exception:
+                continue
+
+        # Sort by staleness descending
+        stale.sort(key=lambda b: b.days_stale, reverse=True)
+        return stale
+
     def _get_uncommitted(self, repo: Repo) -> UncommittedChanges:
         staged: list[FileChange] = []
         unstaged: list[FileChange] = []
@@ -278,7 +380,7 @@ class GitAnalyzer:
                 CommitInfo(
                     sha=commit.hexsha,
                     short_sha=commit.hexsha[:7],
-                    message=commit.message.strip(),
+                    message=msg.strip(),
                     author=str(commit.author),
                     author_email=commit.author.email or "",
                     date=commit_dt,

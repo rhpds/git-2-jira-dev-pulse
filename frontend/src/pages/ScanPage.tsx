@@ -20,7 +20,12 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@patternfly/react-core";
-import { EyeSlashIcon } from "@patternfly/react-icons";
+import {
+  EyeSlashIcon,
+  ExclamationTriangleIcon,
+  ArrowUpIcon,
+  CodeBranchIcon,
+} from "@patternfly/react-icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import { useFolders } from "../hooks/useFolders";
@@ -140,6 +145,23 @@ export default function ScanPage() {
   const displayUncommitted = displayRepos.reduce((sum, r) => sum + r.uncommitted_count, 0);
   const displayClean = displayRepos.filter(r => r.status === "clean").length;
 
+  // Work discovery stats
+  const reposWithUnpushed = filteredRepos.filter((r) => (r.unpushed_count ?? 0) > 0);
+  const reposWithUncommitted = filteredRepos.filter((r) => r.status === "dirty");
+  const reposWithStaleBranches = filteredRepos.filter(
+    (r) => (r.stale_branches ?? []).length > 0
+  );
+  const totalUnpushed = filteredRepos.reduce(
+    (sum, r) => sum + (r.unpushed_count ?? 0), 0
+  );
+  const totalStaleBranches = filteredRepos.reduce(
+    (sum, r) => sum + (r.stale_branches ?? []).length, 0
+  );
+  const hasHangingWork =
+    reposWithUnpushed.length > 0 ||
+    reposWithUncommitted.length > 0 ||
+    reposWithStaleBranches.length > 0;
+
   const StatCard = isGlassmorphic ? GlassCard : motion.div;
 
   return (
@@ -226,6 +248,85 @@ export default function ScanPage() {
           </GridItem>
         </Grid>
       </StackItem>
+
+      {/* Work Discovery Banner */}
+      {hasHangingWork && (
+        <StackItem>
+          <Alert
+            variant="warning"
+            isInline
+            title={
+              <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                <ExclamationTriangleIcon />
+                Work items need attention
+              </span>
+            }
+          >
+            <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginTop: 4 }}>
+              {reposWithUncommitted.length > 0 && (
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    background: "var(--pf-t--color--red--10)",
+                    color: "#1b1d21",
+                  }}
+                  onClick={() => setStatusFilter("dirty")}
+                >
+                  <span style={{ color: "var(--pf-t--color--red--40)", fontWeight: 600 }}>
+                    {reposWithUncommitted.length}
+                  </span>
+                  <span> repo{reposWithUncommitted.length !== 1 ? "s" : ""} with uncommitted changes</span>
+                </div>
+              )}
+              {reposWithUnpushed.length > 0 && (
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    cursor: "pointer",
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    background: "var(--pf-t--color--orange--10)",
+                    color: "#1b1d21",
+                  }}
+                  onClick={() => setActivityFilter("active")}
+                >
+                  <ArrowUpIcon style={{ color: "var(--pf-t--color--orange--40)" }} />
+                  <span style={{ color: "var(--pf-t--color--orange--40)", fontWeight: 600 }}>
+                    {totalUnpushed}
+                  </span>
+                  <span> unpushed commit{totalUnpushed !== 1 ? "s" : ""} across {reposWithUnpushed.length} repo{reposWithUnpushed.length !== 1 ? "s" : ""}</span>
+                </div>
+              )}
+              {reposWithStaleBranches.length > 0 && (
+                <div
+                  style={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: 6,
+                    padding: "4px 10px",
+                    borderRadius: 4,
+                    background: "var(--pf-t--color--blue--10)",
+                    color: "#1b1d21",
+                  }}
+                >
+                  <CodeBranchIcon style={{ color: "var(--pf-t--color--blue--40)" }} />
+                  <span style={{ color: "var(--pf-t--color--blue--40)", fontWeight: 600 }}>
+                    {totalStaleBranches}
+                  </span>
+                  <span> stale branch{totalStaleBranches !== 1 ? "es" : ""} in {reposWithStaleBranches.length} repo{reposWithStaleBranches.length !== 1 ? "s" : ""}</span>
+                </div>
+              )}
+            </div>
+          </Alert>
+        </StackItem>
+      )}
 
       {/* Visualizations Section */}
       {showVisualizations && filteredRepos.length > 0 && (

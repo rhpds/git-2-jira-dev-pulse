@@ -39,6 +39,13 @@ class BranchInfo(BaseModel):
     jira_refs: list[str] = Field(default_factory=list)
 
 
+class StaleBranch(BaseModel):
+    name: str
+    last_commit_date: datetime | None = None
+    days_stale: int = 0
+    is_merged: bool = False
+
+
 class RepoInfo(BaseModel):
     name: str
     path: str
@@ -47,6 +54,9 @@ class RepoInfo(BaseModel):
     uncommitted_count: int = 0
     recent_commit_count: int = 0
     has_remote: bool = False
+    unpushed_count: int = 0
+    untracked_count: int = 0
+    stale_branches: list[StaleBranch] = Field(default_factory=list)
 
 
 class UncommittedChanges(BaseModel):
@@ -66,6 +76,14 @@ class PullRequestInfo(BaseModel):
     closed_at: datetime | None = None
 
 
+class UnpushedCommit(BaseModel):
+    sha: str
+    short_sha: str
+    message: str
+    author: str
+    date: datetime
+
+
 class WorkSummary(BaseModel):
     repo_name: str
     repo_path: str
@@ -74,6 +92,8 @@ class WorkSummary(BaseModel):
     recent_commits: list[CommitInfo] = Field(default_factory=list)
     branches: list[BranchInfo] = Field(default_factory=list)
     pull_requests: list[PullRequestInfo] = Field(default_factory=list)
+    unpushed_commits: list[UnpushedCommit] = Field(default_factory=list)
+    stale_branches: list[StaleBranch] = Field(default_factory=list)
 
 
 class AnalyzeRequest(BaseModel):

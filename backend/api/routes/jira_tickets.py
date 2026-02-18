@@ -6,6 +6,8 @@ from ..models.git_models import WorkSummary
 from ..models.jira_models import (
     BatchCreateRequest,
     BatchCreateResult,
+    CreatedTicket,
+    DuplicateCheckResult,
     TicketCreateRequest,
     TicketSuggestion,
 )
@@ -18,6 +20,7 @@ router = APIRouter(prefix="/api/jira", tags=["jira"])
 class SuggestTicketsRequest(BaseModel):
     summaries: list[WorkSummary]
     project_key: str
+    check_duplicates: bool = True
 
 
 @router.post("/suggest", response_model=list[TicketSuggestion])
@@ -28,6 +31,9 @@ def suggest_tickets(
 ):
     suggestions = suggester.suggest(req.summaries, req.project_key)
 
+    if not req.check_duplicates:
+        return suggestions
+
     # Check each suggestion against existing Jira tickets
     for suggestion in suggestions:
         existing = jira.find_existing(
@@ -35,6 +41,7 @@ def suggest_tickets(
             repo_name=suggestion.source_repo,
             branch=suggestion.source_branch,
             pr_urls=suggestion.pr_urls,
+            commit_shas=suggestion.source_commits,
         )
         if existing:
             suggestion.existing_jira = existing
@@ -60,9 +67,21 @@ def create_batch(
     result = BatchCreateResult()
     for ticket in req.tickets:
         if req.skip_duplicates:
-            dup = jira.check_duplicate(ticket.summary, ticket.project_key)
-            if dup.is_duplicate:
+            dup = jira.check_duplicate(
+                ticket.summary,
+                ticket.project_key,
+                commit_shas=ticket.pr_urls,  # use PR URLs as additional signals
+            )
+            if dup.is_duplicate and dup.confidence in ("high", "medium"):
                 result.skipped_duplicates += 1
+                result.created.append(
+                    CreatedTicket(
+                        key=dup.existing_keys[0] if dup.existing_keys else "SKIP",
+                        url=dup.matches[0].url if dup.matches else "",
+                        summary=ticket.summary,
+                        duplicate=True,
+                    )
+                )
                 continue
 
         created = jira.create_ticket(ticket)
@@ -84,13 +103,13 @@ def repo_tickets(
     since: str = Query(default=""),
     jira: JiraClient = Depends(get_jira_client),
 ):
-    """Get Jira tickets related to a specific repo."""
-    clean_repo = repo_name.replace('"', '\\"')
-    jql = f'project = {project_key} AND summary ~ "{clean_repo}"'
-    if since:
-        jql += f' AND created >= "{since}"'
-    jql += " ORDER BY created DESC"
-    return jira.search_issues(jql, max_results=50)
+    """Get Jira tickets related to a specific repo (using sanitized search)."""
+    return jira.search_issues_safe(
+        project_key=project_key,
+        text=repo_name,
+        since=since,
+        max_results=50,
+    )
 
 
 @router.get("/search")
@@ -100,3 +119,13 @@ def search_issues(
     jira: JiraClient = Depends(get_jira_client),
 ):
     return jira.search_issues(jql, max_results)
+
+
+@router.post("/check-duplicate", response_model=DuplicateCheckResult)
+def check_duplicate(
+    project_key: str = Query(...),
+    summary: str = Query(...),
+    jira: JiraClient = Depends(get_jira_client),
+):
+    """Check if a ticket summary would be a duplicate."""
+    return jira.check_duplicate(summary, project_key)

@@ -1,5 +1,12 @@
 export type RepoStatus = "clean" | "dirty";
 
+export interface StaleBranch {
+  name: string;
+  last_commit_date?: string | null;
+  days_stale: number;
+  is_merged: boolean;
+}
+
 export type RepoInfo = {
   name: string;
   path: string;
@@ -8,6 +15,9 @@ export type RepoInfo = {
   uncommitted_count: number;
   recent_commit_count: number;
   has_remote: boolean;
+  unpushed_count: number;
+  untracked_count: number;
+  stale_branches: StaleBranch[];
 };
 
 export interface FileChange {
@@ -63,6 +73,14 @@ export interface RepoJiraTicket {
   url: string;
 }
 
+export interface UnpushedCommit {
+  sha: string;
+  short_sha: string;
+  message: string;
+  author: string;
+  date: string;
+}
+
 export interface WorkSummary {
   repo_name: string;
   repo_path: string;
@@ -71,6 +89,8 @@ export interface WorkSummary {
   recent_commits: CommitInfo[];
   branches: BranchInfo[];
   pull_requests: PullRequestInfo[];
+  unpushed_commits: UnpushedCommit[];
+  stale_branches: StaleBranch[];
 }
 
 export type IssueType = "Story" | "Task" | "Bug";

@@ -239,7 +239,9 @@ function TicketPreviewRow({
         <Label color="purple" isCompact>{ticket.source_branch}</Label>
 
         {ticket.already_tracked && (
-          <Label color="orange" isCompact>Already tracked</Label>
+          <Label color="orange" isCompact>
+            Duplicate ({ticket.existing_jira.length})
+          </Label>
         )}
 
         {ticket.pr_urls.length > 0 && (
