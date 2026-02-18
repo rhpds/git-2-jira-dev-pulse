@@ -26,10 +26,21 @@ mcp:
 cli:
 	cd cli && python main.py $(CMD)
 
-# Run backend + frontend together
+# Run backend + frontend together (backend must be healthy before frontend starts)
 all:
-	@echo "Starting backend and frontend..."
-	@make backend & make frontend
+	@echo "Starting backend..."
+	@$(MAKE) backend &
+	@echo "Waiting for backend to be ready..."
+	@for i in $$(seq 1 15); do \
+		curl -sf http://localhost:8000/api/health > /dev/null 2>&1 && break; \
+		echo "  Retry $$i/15..."; \
+		sleep 1; \
+	done
+	@curl -sf http://localhost:8000/api/health > /dev/null 2>&1 || \
+		{ echo "Backend failed to start after 15 seconds"; exit 1; }
+	@echo "Backend is ready."
+	@echo "Starting frontend..."
+	@$(MAKE) frontend
 
 # --- Testing ---
 test-backend:
