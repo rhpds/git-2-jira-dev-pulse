@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
+  Alert,
   Button,
   Drawer,
   DrawerContent,
@@ -59,6 +60,9 @@ export default function WorkDashboardPage() {
   // Preview panel state
   const [previewSuggestions, setPreviewSuggestions] = useState<TicketSuggestion[]>([]);
   const [previewLoading, setPreviewLoading] = useState(false);
+
+  // Error state
+  const [createErrorMsg, setCreateErrorMsg] = useState("");
 
   // Read Jira project from config instead of hardcoding
   const { data: config } = useQuery({ queryKey: ["config"], queryFn: getConfig });
@@ -138,7 +142,7 @@ export default function WorkDashboardPage() {
     };
   }, [filteredSummaries]);
 
-  // Auto-generate preview suggestions when data changes
+  // Auto-generate preview suggestions when data changes (debounced)
   useEffect(() => {
     if (!projectKey || filteredSummaries.length === 0) {
       setPreviewSuggestions([]);
@@ -153,22 +157,25 @@ export default function WorkDashboardPage() {
     }
 
     let cancelled = false;
-    setPreviewLoading(true);
-    suggestTickets(activeSummaries, projectKey)
-      .then((suggestions) => {
-        if (!cancelled) {
-          setPreviewSuggestions(suggestions);
-        }
-      })
-      .catch(() => {
-        if (!cancelled) setPreviewSuggestions([]);
-      })
-      .finally(() => {
-        if (!cancelled) setPreviewLoading(false);
-      });
+    const debounceTimer = setTimeout(() => {
+      setPreviewLoading(true);
+      suggestTickets(activeSummaries, projectKey, false)
+        .then((suggestions) => {
+          if (!cancelled) {
+            setPreviewSuggestions(suggestions);
+          }
+        })
+        .catch(() => {
+          if (!cancelled) setPreviewSuggestions([]);
+        })
+        .finally(() => {
+          if (!cancelled) setPreviewLoading(false);
+        });
+    }, 500);
 
     return () => {
       cancelled = true;
+      clearTimeout(debounceTimer);
     };
   }, [filteredSummaries, projectKey]);
 
@@ -185,7 +192,7 @@ export default function WorkDashboardPage() {
       const activeSummaries = filteredSummaries.filter(
         (s) => s.recent_commits.length > 0 || s.pull_requests.length > 0
       );
-      const suggestions = await suggestTickets(activeSummaries, projectKey);
+      const suggestions = await suggestTickets(activeSummaries, projectKey, true);
       setTicketSuggestions(suggestions);
       setPreviewSuggestions(suggestions);
     } catch {
@@ -206,6 +213,7 @@ export default function WorkDashboardPage() {
     if (selected.length === 0) return;
 
     setCreateLoading(true);
+    setCreateErrorMsg("");
     try {
       const reqs: TicketCreateRequest[] = selected.map((t) => ({
         project_key: projectKey,
@@ -216,13 +224,16 @@ export default function WorkDashboardPage() {
         labels: t.labels,
         assignee: t.assignee,
         pr_urls: t.pr_urls,
+        source_commits: t.source_commits,
       }));
       const result = await createBatch(reqs);
       setCreatedResults(result);
       setDrawerOpen(false);
       navigate("/results");
-    } catch {
-      // Stay on page
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Failed to create tickets. Please try again.";
+      setCreateErrorMsg(message);
     } finally {
       setCreateLoading(false);
     }
@@ -265,6 +276,22 @@ export default function WorkDashboardPage() {
           <Title headingLevel="h1" size="2xl" style={{ marginBottom: 16 }}>
             Work Dashboard
           </Title>
+
+          {createErrorMsg && (
+            <Alert
+              variant="danger"
+              isInline
+              title="Ticket creation failed"
+              style={{ marginBottom: 16 }}
+              actionClose={
+                <Button variant="plain" onClick={() => setCreateErrorMsg("")}>
+                  Dismiss
+                </Button>
+              }
+            >
+              {createErrorMsg}
+            </Alert>
+          )}
 
           <DashboardToolbar
             quarters={quarters}

@@ -80,7 +80,7 @@ function RepoStatusBadges({ repo }: { repo: RepoInfo }) {
       )}
       {untracked > 0 && (
         <Tooltip content={`${untracked} untracked file${untracked !== 1 ? "s" : ""}`}>
-          <Label color="grey" isCompact icon={<FolderOpenIcon />}>
+          <Label color="gray" isCompact icon={<FolderOpenIcon />}>
             {untracked} untracked
           </Label>
         </Tooltip>
@@ -100,8 +100,7 @@ export function RepoGrid({
   const isGlassmorphic = config?.ui.theme === "glassmorphic";
   const [expandedRepos, setExpandedRepos] = useState<Set<string>>(new Set());
 
-  const toggleExpanded = (path: string, e: React.MouseEvent) => {
-    e.stopPropagation();
+  const toggleExpanded = (path: string) => {
     setExpandedRepos((prev) => {
       const next = new Set(prev);
       if (next.has(path)) next.delete(path);
@@ -192,16 +191,14 @@ export function RepoGrid({
                 </div>
                 <RepoStatusBadges repo={repo} />
                 {hasWorkItems && (
-                  <div onClick={(e) => toggleExpanded(repo.path, e)}>
-                    <ExpandableSection
+                  <ExpandableSection
                       toggleText={isExpanded ? "Hide details" : "Show hanging work"}
                       isExpanded={isExpanded}
-                      onToggle={() => {}}
+                      onToggle={(e) => { e.stopPropagation(); toggleExpanded(repo.path); }}
                       style={{ marginTop: "0.25rem", fontSize: "0.7rem" }}
                     >
                       <RepoExpandedDetails repo={repo} />
                     </ExpandableSection>
-                  </div>
                 )}
               </div>
             </GlassCard>

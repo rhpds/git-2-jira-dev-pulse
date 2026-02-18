@@ -136,6 +136,30 @@ async def get_directory_tree(path: str, max_depth: int = 2) -> Dict[str, Any]:
     if not expanded.is_dir():
         raise HTTPException(status_code=404, detail=f"Directory not found: {path}")
 
+    # Validate the path is under an allowed scan directory or home
+    from ..config import settings as _settings
+    allowed_roots: list[Path] = []
+    config_service = get_config_service()
+    _cfg = config_service.get_config()
+    for scan_dir in _cfg.scan_directories:
+        if scan_dir.enabled:
+            allowed_roots.append(Path(scan_dir.path).resolve())
+    if _settings.repos_base_path:
+        allowed_roots.append(Path(os.path.expanduser(_settings.repos_base_path)).resolve())
+    # Also allow home directory for browsing
+    allowed_roots.append(Path.home())
+
+    path_allowed = False
+    for root in allowed_roots:
+        try:
+            expanded.relative_to(root)
+            path_allowed = True
+            break
+        except ValueError:
+            continue
+    if not path_allowed:
+        raise HTTPException(status_code=403, detail="Access denied: path is not under any allowed directory")
+
     skip = {"node_modules", ".venv", ".git", "__pycache__", ".pytest_cache", ".tox", "venv", ".mypy_cache"}
 
     def scan_tree(dir_path: Path, depth: int) -> List[Dict[str, Any]]:
@@ -426,6 +450,9 @@ async def set_default_jira_project(project_key: str) -> Git2JiraConfig:
 
 CREDENTIALS_FILE = Path.home() / ".rh-jira-mcp.env"
 
+# Sentinel value the frontend sends when the token has not been edited
+TOKEN_UNCHANGED = "__UNCHANGED__"
+
 
 class JiraCredentials(BaseModel):
     """Jira connection credentials."""
@@ -549,8 +576,8 @@ async def save_jira_credentials(credentials: JiraCredentials) -> Dict[str, Any]:
     else:
         existing["JIRA_API_URL"] = _derive_api_url(existing["JIRA_URL"])
 
-    # Only update token if a new one is provided (not masked)
-    if credentials.jira_api_token and "*" not in credentials.jira_api_token:
+    # Only update token if a new one is provided (not the sentinel value)
+    if credentials.jira_api_token and credentials.jira_api_token != TOKEN_UNCHANGED:
         existing["JIRA_API_TOKEN"] = credentials.jira_api_token
 
     _write_credentials(existing)
@@ -597,8 +624,8 @@ async def test_jira_connection(
     if credentials:
         url = credentials.jira_url.rstrip("/")
         token = credentials.jira_api_token
-        # If token is masked, use saved token
-        if "*" in token:
+        # If token is the sentinel (unchanged), use saved token
+        if token == TOKEN_UNCHANGED:
             saved = _read_credentials()
             token = saved.get("JIRA_API_TOKEN", "")
     else:

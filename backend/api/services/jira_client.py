@@ -19,7 +19,9 @@ def _sanitize_jql_text(value: str) -> str:
     """Sanitize a text value for safe inclusion in JQL queries.
 
     Escapes characters that have special meaning in JQL text searches
-    to prevent JQL injection attacks.
+    to prevent JQL injection attacks. The value is always wrapped in
+    double quotes in the JQL, so escaping quotes is sufficient --
+    JQL operators inside quoted strings are treated as literal text.
     """
     # Remove any control characters
     value = re.sub(r"[\x00-\x1f\x7f]", "", value)
@@ -27,9 +29,6 @@ def _sanitize_jql_text(value: str) -> str:
     value = value.replace("\\", "\\\\")
     value = value.replace('"', '\\"')
     value = value.replace("'", "\\'")
-    # Remove JQL operators that could be injected
-    # Strip sequences that look like JQL clauses
-    value = re.sub(r"\b(AND|OR|NOT|ORDER BY|IN|IS|WAS|CHANGED)\b", "", value, flags=re.IGNORECASE)
     return value.strip()
 
 

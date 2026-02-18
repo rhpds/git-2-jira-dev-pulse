@@ -62,26 +62,26 @@ lint: lint-backend lint-frontend
 
 # --- Docker ---
 docker-build:
-	docker-compose build
+	docker compose build
 
 docker-up:
-	docker-compose up -d
+	docker compose up -d
 
 docker-down:
-	docker-compose down
+	docker compose down
 
 docker-logs:
-	docker-compose logs -f
+	docker compose logs -f
 
 docker-clean:
-	docker-compose down -v
+	docker compose down -v
 	docker system prune -f
 
 dev:
-	docker-compose up
+	docker compose up
 
 dev-rebuild:
-	docker-compose up --build
+	docker compose up --build
 
 # --- CI ---
 ci: lint test-all

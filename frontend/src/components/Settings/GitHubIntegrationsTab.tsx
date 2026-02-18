@@ -47,6 +47,7 @@ export function GitHubIntegrationsTab() {
   const [githubToken, setGithubToken] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [confirmDisablePath, setConfirmDisablePath] = useState<string | null>(null);
 
   // Fetch GitHub integrations
   const { data: integrations = [], isLoading: integrationsLoading } = useQuery({
@@ -123,8 +124,13 @@ export function GitHubIntegrationsTab() {
   };
 
   const handleDisable = (repoPath: string) => {
-    if (confirm(`Disable GitHub integration for ${repoPath}?`)) {
-      disableMutation.mutate(repoPath);
+    setConfirmDisablePath(repoPath);
+  };
+
+  const handleConfirmDisable = () => {
+    if (confirmDisablePath) {
+      disableMutation.mutate(confirmDisablePath);
+      setConfirmDisablePath(null);
     }
   };
 
@@ -178,7 +184,7 @@ export function GitHubIntegrationsTab() {
       {/* Connection Status */}
       <StackItem>
         <Card>
-          <CardTitle>🔗 GitHub Connection Status</CardTitle>
+          <CardTitle><span aria-hidden="true">&#x1F517;</span> GitHub Connection Status</CardTitle>
           <CardBody>
             {connectionStatus?.connected ? (
               <Alert variant="success" title="GitHub Connected" isInline>
@@ -221,11 +227,11 @@ export function GitHubIntegrationsTab() {
       {/* Enabled Integrations */}
       <StackItem>
         <Card>
-          <CardTitle>
-            📦 Enabled GitHub Integrations
+          <CardTitle style={{ display: "flex", alignItems: "center" }}>
+            <span aria-hidden="true">&#x1F4E6;</span> Enabled GitHub Integrations
             <Button
               variant="primary"
-              style={{ float: "right" }}
+              style={{ marginLeft: "auto" }}
               onClick={() => setShowAddModal(true)}
               isDisabled={!connectionStatus?.connected}
             >
@@ -263,7 +269,7 @@ export function GitHubIntegrationsTab() {
                               onClick={() => handleSync(integration.repo_path)}
                               isLoading={syncMutation.isPending}
                             >
-                              🔄 Sync
+                              <span aria-hidden="true">&#x1F504;</span> Sync
                             </Button>
                             <Button
                               variant="danger"
@@ -283,7 +289,7 @@ export function GitHubIntegrationsTab() {
                             <p>Last synced: {new Date(integration.last_synced).toLocaleString()}</p>
                           )}
                           {integration.metadata?.stars !== undefined && (
-                            <p>⭐ {integration.metadata.stars} stars • 🍴 {integration.metadata.forks} forks</p>
+                            <p><span aria-hidden="true">&#x2B50;</span> {integration.metadata.stars} stars <span aria-hidden="true">&#x1F374;</span> {integration.metadata.forks} forks</p>
                           )}
                         </div>
                       </StackItem>
@@ -364,6 +370,31 @@ export function GitHubIntegrationsTab() {
               resetForm();
             }}
           >
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Confirm Disable Modal */}
+      <Modal
+        variant={ModalVariant.small}
+        isOpen={confirmDisablePath !== null}
+        onClose={() => setConfirmDisablePath(null)}
+      >
+        <ModalHeader title="Disable GitHub Integration" />
+        <ModalBody>
+          Are you sure you want to disable GitHub integration for{" "}
+          <strong>{confirmDisablePath}</strong>?
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            variant="danger"
+            onClick={handleConfirmDisable}
+            isLoading={disableMutation.isPending}
+          >
+            Disable
+          </Button>
+          <Button variant="link" onClick={() => setConfirmDisablePath(null)}>
             Cancel
           </Button>
         </ModalFooter>

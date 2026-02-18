@@ -3,6 +3,7 @@ import type {
   BatchCreateResult,
   CreatedTicket,
   HealthStatus,
+  JiraConfig,
   RepoInfo,
   RepoJiraTicket,
   TicketCreateRequest,
@@ -57,11 +58,13 @@ export async function analyzeFolders(
 
 export async function suggestTickets(
   summaries: WorkSummary[],
-  projectKey: string
+  projectKey: string,
+  checkDuplicates = true
 ): Promise<TicketSuggestion[]> {
   const { data } = await api.post("/jira/suggest", {
     summaries,
     project_key: projectKey,
+    check_duplicates: checkDuplicates,
   });
   return data;
 }
@@ -233,12 +236,21 @@ export async function getAutoDiscoveryStatus(): Promise<{
   return data;
 }
 
-export async function startAutoDiscovery(): Promise<any> {
+export interface AutoDiscoveryStatusResponse {
+  running: boolean;
+  enabled: boolean;
+  watch_paths: string[];
+  scan_interval_seconds: number;
+  discovered_count: number;
+  callback_count: number;
+}
+
+export async function startAutoDiscovery(): Promise<AutoDiscoveryStatusResponse> {
   const { data } = await api.post("/config/auto-discovery/start");
   return data;
 }
 
-export async function stopAutoDiscovery(): Promise<any> {
+export async function stopAutoDiscovery(): Promise<AutoDiscoveryStatusResponse> {
   const { data } = await api.post("/config/auto-discovery/stop");
   return data;
 }
@@ -252,7 +264,7 @@ export async function triggerManualDiscovery(): Promise<{
 }
 
 export async function updateJiraConfig(request: {
-  jira_config: any;
+  jira_config: JiraConfig;
 }): Promise<Git2JiraConfig> {
   const { data } = await api.put("/config/jira", request);
   return data;
@@ -346,7 +358,7 @@ export async function getThemeCSS(themeId: string): Promise<{ css: string }> {
 }
 
 export async function installCustomTheme(
-  themeData: any
+  themeData: Omit<ThemeDefinition, "id"> & { id?: string }
 ): Promise<ThemeDefinition> {
   const { data } = await api.post("/themes/install", themeData);
   return data;
@@ -369,7 +381,18 @@ export async function checkGitHubConnection(): Promise<{
   return data;
 }
 
-export async function getGitHubIntegrations(): Promise<any[]> {
+export interface GitHubIntegration {
+  id: number;
+  repo_path: string;
+  repo_name: string;
+  github_owner: string;
+  github_repo: string;
+  sync_enabled: boolean;
+  last_synced?: string | null;
+  metadata?: Record<string, unknown>;
+}
+
+export async function getGitHubIntegrations(): Promise<GitHubIntegration[]> {
   const { data } = await api.get("/github/integrations");
   return data;
 }

@@ -10,6 +10,8 @@ from .logging_config import setup_logging, get_logger
 from .database import init_db, get_db
 from .seed_templates import seed_default_templates
 from .middleware.logging_middleware import LoggingMiddleware
+from .middleware.csrf_middleware import CSRFMiddleware
+from .middleware.rate_limiter import RateLimitMiddleware
 from .services.watcher_service import get_watcher_service
 from .services.config_service import get_config_service
 
@@ -88,6 +90,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(RateLimitMiddleware)
+app.add_middleware(CSRFMiddleware)
 app.add_middleware(LoggingMiddleware)
 
 app.include_router(health.router)

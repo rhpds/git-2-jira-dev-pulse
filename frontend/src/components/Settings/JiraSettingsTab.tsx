@@ -47,30 +47,10 @@ import {
   testJiraConnection,
 } from '../../api/client';
 import type { JiraCredentialsResponse, JiraTestResult } from '../../api/client';
+import type { JiraBoard, JiraProject, JiraConfig } from '../../api/types';
 
-export interface JiraBoard {
-  id: number;
-  name: string;
-  type: 'kanban' | 'scrum';
-}
-
-export interface JiraProject {
-  key: string;
-  name: string;
-  default: boolean;
-  boards: JiraBoard[];
-  custom_fields: Record<string, string>;
-  enabled_issue_types: string[];
-}
-
-export interface JiraConfig {
-  enabled: boolean;
-  projects: JiraProject[];
-  auto_link_commits: boolean;
-  commit_message_pattern: string;
-  auto_transition: boolean;
-  transition_rules: Record<string, string>;
-}
+// Sentinel value — must match backend TOKEN_UNCHANGED constant
+const TOKEN_UNCHANGED = "__UNCHANGED__";
 
 export function JiraSettingsTab() {
   const { data: config } = useQuery({ queryKey: ['config'], queryFn: getConfig });
@@ -107,7 +87,7 @@ export function JiraSettingsTab() {
     if (savedCredentials && !credEditing) {
       setCredUrl(savedCredentials.jira_url || '');
       setCredApiUrl(savedCredentials.jira_api_url || '');
-      setCredToken(savedCredentials.has_token ? savedCredentials.jira_api_token_masked : '');
+      setCredToken(savedCredentials.has_token ? TOKEN_UNCHANGED : '');
       setCredEmail(savedCredentials.jira_email || '');
     }
   }, [savedCredentials, credEditing]);
@@ -212,7 +192,7 @@ export function JiraSettingsTab() {
     if (savedCredentials) {
       setCredUrl(savedCredentials.jira_url || '');
       setCredApiUrl(savedCredentials.jira_api_url || '');
-      setCredToken(savedCredentials.has_token ? savedCredentials.jira_api_token_masked : '');
+      setCredToken(savedCredentials.has_token ? TOKEN_UNCHANGED : '');
       setCredEmail(savedCredentials.jira_email || '');
     }
   };
@@ -293,14 +273,14 @@ export function JiraSettingsTab() {
         {/* Jira Credentials Card */}
         <GridItem>
           <Card>
-            <CardTitle>
+            <CardTitle style={{ display: 'flex', alignItems: 'center' }}>
               Jira Credentials
               {!credEditing && savedCredentials?.has_token && (
                 <Button
                   variant="link"
                   icon={<PencilAltIcon />}
                   onClick={handleStartEditing}
-                  style={{ float: 'right' }}
+                  style={{ marginLeft: 'auto' }}
                 >
                   Edit Credentials
                 </Button>
@@ -488,13 +468,13 @@ export function JiraSettingsTab() {
 
         <GridItem>
           <Card>
-            <CardTitle>
+            <CardTitle style={{ display: 'flex', alignItems: 'center' }}>
               Jira Projects
               <Button
                 variant="primary"
                 icon={<PlusIcon />}
                 onClick={() => setIsAddProjectModalOpen(true)}
-                style={{ float: 'right' }}
+                style={{ marginLeft: 'auto' }}
               >
                 Add Project
               </Button>

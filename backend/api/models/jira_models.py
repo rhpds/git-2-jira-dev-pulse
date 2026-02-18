@@ -61,6 +61,7 @@ class TicketCreateRequest(BaseModel):
     labels: list[str] = Field(default_factory=list)
     assignee: str = ""
     pr_urls: list[str] = Field(default_factory=list)
+    source_commits: list[str] = Field(default_factory=list)
 
 
 class BatchCreateRequest(BaseModel):

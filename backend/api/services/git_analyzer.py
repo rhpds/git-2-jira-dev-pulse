@@ -128,7 +128,16 @@ class GitAnalyzer:
         return repo.git.diff("HEAD")
 
     @staticmethod
-    def get_remote_branches(repo_path: str, author: str = "rhjcd") -> list[dict]:
+    def _get_git_user_name(repo_path: Path) -> str:
+        """Read the git user.name from the repo config or global config."""
+        try:
+            repo = Repo(repo_path)
+            return str(repo.config_reader().get_value("user", "name", default=""))
+        except Exception:
+            return ""
+
+    @staticmethod
+    def get_remote_branches(repo_path: str, author: str = "") -> list[dict]:
         """Get remote branches, filtering to those with PRs by the given author."""
         path = Path(repo_path).expanduser()
         try:
@@ -139,16 +148,24 @@ class GitAnalyzer:
         except Exception:
             pass
 
-        # Use gh to find branches that rhjcd has PRs on
+        # Resolve author from git config if not provided
+        if not author:
+            author = GitAnalyzer._get_git_user_name(path)
+
+        # Build gh command -- only filter by author if one is available
+        gh_cmd = [
+            "gh", "pr", "list",
+            "--state", "all",
+            "--limit", "50",
+            "--json", "headRefName,state,number,title,url",
+        ]
+        if author:
+            gh_cmd.insert(4, "--author")
+            gh_cmd.insert(5, author)
+
         try:
             result = subprocess.run(
-                [
-                    "gh", "pr", "list",
-                    "--state", "all",
-                    "--author", author,
-                    "--limit", "50",
-                    "--json", "headRefName,state,number,title,url",
-                ],
+                gh_cmd,
                 cwd=str(path),
                 capture_output=True,
                 text=True,
@@ -444,17 +461,24 @@ class GitAnalyzer:
             return None
 
     @staticmethod
-    def _get_pull_requests(repo_path: Path) -> list[PullRequestInfo]:
+    def _get_pull_requests(repo_path: Path, author: str = "") -> list[PullRequestInfo]:
         """Use gh CLI to list PRs associated with this repo."""
+        if not author:
+            author = GitAnalyzer._get_git_user_name(repo_path)
+
+        gh_cmd = [
+            "gh", "pr", "list",
+            "--state", "all",
+            "--limit", "50",
+            "--json", "number,title,url,headRefName,state,createdAt,mergedAt,closedAt",
+        ]
+        if author:
+            gh_cmd.insert(4, "--author")
+            gh_cmd.insert(5, author)
+
         try:
             result = subprocess.run(
-                [
-                    "gh", "pr", "list",
-                    "--state", "all",
-                    "--author", "rhjcd",
-                    "--limit", "50",
-                    "--json", "number,title,url,headRefName,state,createdAt,mergedAt,closedAt",
-                ],
+                gh_cmd,
                 cwd=str(repo_path),
                 capture_output=True,
                 text=True,

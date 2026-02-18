@@ -70,7 +70,7 @@ def create_batch(
             dup = jira.check_duplicate(
                 ticket.summary,
                 ticket.project_key,
-                commit_shas=ticket.pr_urls,  # use PR URLs as additional signals
+                commit_shas=ticket.source_commits,
             )
             if dup.is_duplicate and dup.confidence in ("high", "medium"):
                 result.skipped_duplicates += 1
@@ -114,18 +114,33 @@ def repo_tickets(
 
 @router.get("/search")
 def search_issues(
-    jql: str,
-    max_results: int = 20,
+    project_key: str = Query(..., description="Jira project key"),
+    text: str = Query("", description="Search text"),
+    since: str = Query("", description="Date filter (YYYY-MM-DD)"),
+    max_results: int = Query(20, le=100),
     jira: JiraClient = Depends(get_jira_client),
 ):
-    return jira.search_issues(jql, max_results)
+    """Search issues using safe parameterized inputs instead of raw JQL."""
+    return jira.search_issues_safe(
+        project_key=project_key,
+        text=text,
+        since=since,
+        max_results=max_results,
+    )
+
+
+class CheckDuplicateRequest(BaseModel):
+    project_key: str
+    summary: str
+    commit_shas: list[str] = []
 
 
 @router.post("/check-duplicate", response_model=DuplicateCheckResult)
 def check_duplicate(
-    project_key: str = Query(...),
-    summary: str = Query(...),
+    req: CheckDuplicateRequest,
     jira: JiraClient = Depends(get_jira_client),
 ):
     """Check if a ticket summary would be a duplicate."""
-    return jira.check_duplicate(summary, project_key)
+    return jira.check_duplicate(
+        req.summary, req.project_key, commit_shas=req.commit_shas
+    )

@@ -451,8 +451,8 @@ class TicketSuggester:
                 return ""
             year = int(parts[0])
             week = int(parts[1])
-            # Monday of that ISO week
-            monday = datetime.strptime(f"{year}-W{week:02d}-1", "%Y-W%W-%w")
+            # Monday of that ISO week using ISO calendar
+            monday = datetime.fromisocalendar(year, week, 1)
             sunday = monday + timedelta(days=6)
             return f"{monday.strftime('%b %d')} - {sunday.strftime('%b %d, %Y')}"
         except (ValueError, IndexError):
@@ -493,4 +493,4 @@ class TicketSuggester:
     @staticmethod
     def _make_id(*parts: str) -> str:
         raw = "-".join(parts)
-        return hashlib.md5(raw.encode()).hexdigest()[:12]
+        return hashlib.sha256(raw.encode()).hexdigest()[:12]

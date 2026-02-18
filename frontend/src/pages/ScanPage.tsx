@@ -19,6 +19,7 @@ import {
   GridItem,
   ToggleGroup,
   ToggleGroupItem,
+  Tooltip,
 } from "@patternfly/react-core";
 import {
   EyeSlashIcon,
@@ -162,7 +163,30 @@ export default function ScanPage() {
     reposWithUncommitted.length > 0 ||
     reposWithStaleBranches.length > 0;
 
-  const StatCard = isGlassmorphic ? GlassCard : motion.div;
+  // Wrapper that conditionally renders GlassCard or motion.div,
+  // filtering GlassCard-specific props when rendering motion.div.
+  const StatCard = ({
+    variant,
+    gradient,
+    children,
+    ...rest
+  }: {
+    variant?: string;
+    gradient?: string;
+    children: React.ReactNode;
+    style?: React.CSSProperties;
+    onClick?: () => void;
+  }) => {
+    if (isGlassmorphic) {
+      return (
+        <GlassCard variant={variant as any} gradient={gradient as any} {...rest}>
+          {children}
+        </GlassCard>
+      );
+    }
+    // motion.div does not need variant/gradient props
+    return <motion.div {...rest}>{children}</motion.div>;
+  };
 
   return (
     <Stack hasGutter>
@@ -371,7 +395,7 @@ export default function ScanPage() {
                 label={`Select all visible (${filteredCount})`}
                 isChecked={
                   filteredRepos.length > 0 &&
-                  selected.size === filteredRepos.length
+                  filteredRepos.every((r) => selected.has(r.path))
                 }
                 onChange={(_e, checked) => toggleAll(checked)}
               />
@@ -383,11 +407,14 @@ export default function ScanPage() {
                   isSelected={viewMode === "grid"}
                   onChange={() => setViewMode("grid")}
                 />
-                <ToggleGroupItem
-                  text="List"
-                  isSelected={viewMode === "list"}
-                  onChange={() => setViewMode("list")}
-                />
+                <Tooltip content="Coming soon">
+                  <ToggleGroupItem
+                    text="List"
+                    isSelected={viewMode === "list"}
+                    onChange={() => {}}
+                    isDisabled
+                  />
+                </Tooltip>
                 <ToggleGroupItem
                   text="Visualization"
                   isSelected={viewMode === "visualization"}
@@ -432,7 +459,7 @@ export default function ScanPage() {
               {hiddenRepos.map((name) => (
                 <Label
                   key={name}
-                  color="grey"
+                  color="gray"
                   onClose={() => unhideMutation.mutate(name)}
                 >
                   {name}
@@ -461,20 +488,6 @@ export default function ScanPage() {
                 onOpenPullModal={openPullModal}
                 onHideRepo={(name) => hideMutation.mutate(name)}
               />
-            </motion.div>
-          )}
-
-          {viewMode === "list" && (
-            <motion.div
-              key="list"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div style={{ padding: "2rem", textAlign: "center", color: "var(--pf-t--global--text--color--subtle)" }}>
-                List view coming soon...
-              </div>
             </motion.div>
           )}
 

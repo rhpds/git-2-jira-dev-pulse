@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 from ..config import settings
 from ..dependencies import get_folder_scanner, get_git_analyzer
-from ..models.git_models import AnalyzeRequest, WorkSummary, RepoStatus
+from ..models.git_models import AnalyzeRequest, WorkSummary, RepoStatus, UncommittedChanges
 from ..services.folder_scanner import FolderScanner
 from ..services.git_analyzer import GitAnalyzer
 from ..services.config_service import get_config_service
@@ -96,7 +96,7 @@ def analyze_folders(
                 repo_name=path.split("/")[-1],
                 repo_path=path,
                 current_branch="error",
-                uncommitted={"staged": [], "unstaged": [], "untracked": []},
+                uncommitted=UncommittedChanges(),
                 recent_commits=[],
                 branches=[],
             )

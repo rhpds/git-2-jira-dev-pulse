@@ -138,6 +138,7 @@ export interface TicketCreateRequest {
   labels: string[];
   assignee: string;
   pr_urls: string[];
+  source_commits: string[];
 }
 
 export interface CreatedTicket {
