@@ -327,7 +327,6 @@ export function LinearIntegrationsTab() {
         <Form>
           <FormGroup label="Select Team" isRequired fieldId="team-select">
             <Select
-<<<<<<< HEAD
               id="team-select"
               isOpen={isTeamSelectOpen}
               selected={selectedTeamId}
@@ -336,15 +335,6 @@ export function LinearIntegrationsTab() {
                 setIsTeamSelectOpen(false);
               }}
               onOpenChange={(isOpen) => setIsTeamSelectOpen(isOpen)}
-=======
-              isOpen={isTeamSelectOpen}
-              onOpenChange={(isOpen) => setIsTeamSelectOpen(isOpen)}
-              onSelect={(_event, selection) => {
-                setSelectedTeamId(selection as string);
-                setIsTeamSelectOpen(false);
-              }}
-              selected={selectedTeamId}
->>>>>>> 378c5f6 (fix: Replace PF5 SelectVariant with PF6 Select pattern and add Phase 4 E2E tests)
               toggle={(toggleRef) => (
                 <MenuToggle
                   ref={toggleRef}

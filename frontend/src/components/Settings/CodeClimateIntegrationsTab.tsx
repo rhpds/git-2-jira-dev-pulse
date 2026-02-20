@@ -340,7 +340,6 @@ export function CodeClimateIntegrationsTab() {
         <Form>
           <FormGroup label="Select Repository" isRequired fieldId="repo-select">
             <Select
-<<<<<<< HEAD
               id="repo-select"
               isOpen={isRepoSelectOpen}
               selected={selectedRepoId}
@@ -349,15 +348,6 @@ export function CodeClimateIntegrationsTab() {
                 setIsRepoSelectOpen(false);
               }}
               onOpenChange={(isOpen) => setIsRepoSelectOpen(isOpen)}
-=======
-              isOpen={isRepoSelectOpen}
-              onOpenChange={(isOpen) => setIsRepoSelectOpen(isOpen)}
-              onSelect={(_event, selection) => {
-                setSelectedRepoId(selection as string);
-                setIsRepoSelectOpen(false);
-              }}
-              selected={selectedRepoId}
->>>>>>> 378c5f6 (fix: Replace PF5 SelectVariant with PF6 Select pattern and add Phase 4 E2E tests)
               toggle={(toggleRef) => (
                 <MenuToggle
                   ref={toggleRef}
