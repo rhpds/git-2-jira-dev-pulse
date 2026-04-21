@@ -43,3 +43,7 @@ curl http://localhost:8000/api/health           # Backend health + Jira connecti
 curl http://localhost:8000/api/folders/          # List repos
 python cli/main.py scan                          # CLI repo scan
 ```
+
+## Notion Development Log
+
+Page ID: `30ab44c5-54f5-8129-86bc-c35d1542777f`

@@ -23,7 +23,6 @@ import { JiraSettingsTab } from "../components/Settings/JiraSettingsTab";
 import { GitHubIntegrationsTab } from "../components/Settings/GitHubIntegrationsTab";
 import { LinearIntegrationsTab } from "../components/Settings/LinearIntegrationsTab";
 import { CodeClimateIntegrationsTab } from "../components/Settings/CodeClimateIntegrationsTab";
-import { BillingTab } from "../components/Settings/BillingTab";
 import { TeamTab } from "../components/Settings/TeamTab";
 import { ProfileTab } from "../components/Settings/ProfileTab";
 import { AuditLogTab } from "../components/Settings/AuditLogTab";
@@ -36,7 +35,7 @@ import { ScheduleTab } from "../components/Settings/ScheduleTab";
 import { InviteLinksTab } from "../components/Settings/InviteLinksTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "profile" | "team" | "invites" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "billing" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "security" | "sessions" | "schedules" | "account";
+type SettingsTabKey = "profile" | "team" | "invites" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "security" | "sessions" | "schedules" | "account";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("profile");
@@ -113,15 +112,6 @@ export default function SettingsPage() {
               >
                 {activeTab === "invites" && (
                   <InviteLinksTab />
-                )}
-              </Tab>
-
-              <Tab
-                eventKey="billing"
-                title={<TabTitleText>Billing</TabTitleText>}
-              >
-                {activeTab === "billing" && (
-                  <BillingTab />
                 )}
               </Tab>
 
