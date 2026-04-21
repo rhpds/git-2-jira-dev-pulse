@@ -10,8 +10,10 @@ from datetime import datetime, timezone
 from typing import Set
 
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
+from jose import JWTError
 
 from ..logging_config import get_logger
+from ..services.auth_service import decode_token
 
 router = APIRouter(tags=["websocket"])
 logger = get_logger(__name__)
@@ -70,20 +72,30 @@ async def websocket_notifications(websocket: WebSocket):
     - scan_complete: Scan finished
     - system: System notification
     """
+    token = websocket.query_params.get("token")
+    if not token:
+        await websocket.close(code=4001, reason="Missing authentication token")
+        return
+    try:
+        payload = decode_token(token)
+        if payload.get("type") != "access":
+            await websocket.close(code=4001, reason="Invalid token type")
+            return
+    except (JWTError, KeyError, ValueError):
+        await websocket.close(code=4001, reason="Invalid or expired token")
+        return
+
     await manager.connect(websocket)
     try:
-        # Send welcome message
         await manager.send_personal(websocket, {
             "type": "system",
-            "message": "Connected to DevPulse Pro real-time notifications",
+            "message": "Connected to real-time notifications",
             "timestamp": datetime.now(timezone.utc).isoformat(),
         })
 
-        # Keep connection alive and listen for client messages
         while True:
             try:
                 data = await asyncio.wait_for(websocket.receive_text(), timeout=30)
-                # Handle ping/pong for keepalive
                 msg = json.loads(data)
                 if msg.get("type") == "ping":
                     await manager.send_personal(websocket, {
@@ -91,12 +103,10 @@ async def websocket_notifications(websocket: WebSocket):
                         "timestamp": datetime.now(timezone.utc).isoformat(),
                     })
             except asyncio.TimeoutError:
-                # Send keepalive ping
                 try:
                     await manager.send_personal(websocket, {
                         "type": "heartbeat",
                         "timestamp": datetime.now(timezone.utc).isoformat(),
-                        "connections": len(manager.active_connections),
                     })
                 except Exception:
                     break
