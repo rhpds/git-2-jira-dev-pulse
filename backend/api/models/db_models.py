@@ -128,6 +128,24 @@ class GitHubIntegration(Base):
         return f"<GitHubIntegration(repo={self.repo_name}, github={self.github_owner}/{self.github_repo})>"
 
 
+class GitHubOrg(Base):
+    """Tracked GitHub organizations for repo discovery."""
+
+    __tablename__ = "github_orgs"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    org_login = Column(String(100), nullable=False, unique=True, index=True)
+    display_name = Column(String(200), nullable=True)
+    avatar_url = Column(String(1000), nullable=True)
+    description = Column(Text, nullable=True)
+    public_repos = Column(Integer, nullable=True)
+    last_synced = Column(DateTime, nullable=True)
+    created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
+
+    def __repr__(self):
+        return f"<GitHubOrg(login={self.org_login}, repos={self.public_repos})>"
+
+
 class GitHubPullRequest(Base):
     """Stores cached GitHub pull request data."""
 
