@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     jwt_secret_key: str = ""
     auth_enabled: bool = False  # Opt-in auth for backward compatibility
 
+    # Path security
+    allowed_scan_paths: str = str(Path.home() / "repos")
+
     model_config = {
         "env_file": str(Path.home() / ".git2jira.env"),
         "env_file_encoding": "utf-8",

@@ -18,7 +18,10 @@ from ..logging_config import get_logger
 logger = get_logger(__name__)
 
 # Configuration
-SECRET_KEY = os.getenv("JWT_SECRET_KEY", secrets.token_urlsafe(64))
+SECRET_KEY = os.getenv("JWT_SECRET_KEY", "")
+if not SECRET_KEY:
+    SECRET_KEY = secrets.token_urlsafe(64)
+    logger.warning("JWT_SECRET_KEY not set -- using ephemeral key (tokens will not survive restarts)")
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60
 REFRESH_TOKEN_EXPIRE_DAYS = 30
