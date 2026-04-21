@@ -25,6 +25,8 @@ from ..models.linear_models import (
     CreateLinearIssueRequest,
 )
 from ..services.linear_client import LinearClient
+from ..middleware.auth_middleware import get_current_user
+from ..models.db_models import User
 
 router = APIRouter(prefix="/api/linear", tags=["linear"])
 
@@ -40,6 +42,7 @@ def get_linear_client() -> LinearClient:
 @router.get("/health")
 async def check_linear_connection(
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> LinearConnectionStatus:
     """Check Linear API connection status."""
     result = client.check_connection()
@@ -49,6 +52,7 @@ async def check_linear_connection(
 @router.get("/teams")
 async def get_teams(
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> list[LinearTeam]:
     """Get all Linear teams accessible to the user."""
     teams = client.get_teams()
@@ -59,6 +63,7 @@ async def get_teams(
 async def get_projects(
     team_id: Optional[str] = None,
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> list[LinearProject]:
     """Get Linear projects, optionally filtered by team."""
     projects = client.get_projects(team_id=team_id)
@@ -72,6 +77,7 @@ async def get_issues(
     state: Optional[str] = None,
     limit: int = 50,
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> list[LinearIssue]:
     """Get Linear issues with optional filters."""
     issues = client.get_issues(
@@ -87,6 +93,7 @@ async def get_issues(
 async def get_issue(
     issue_id: str,
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> LinearIssueDetails:
     """Get detailed information about a specific Linear issue."""
     issue = client.get_issue(issue_id)
@@ -99,6 +106,7 @@ async def get_issue(
 async def create_issue(
     request: CreateLinearIssueRequest,
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> dict:
     """Create a new Linear issue."""
     result = client.create_issue(
@@ -120,6 +128,7 @@ async def enable_linear_integration(
     request: EnableLinearIntegrationRequest,
     db: Session = Depends(get_db),
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> dict:
     """Enable Linear integration for a team."""
     # Auto-detect team info if not provided
@@ -171,6 +180,7 @@ async def enable_linear_integration(
 async def disable_linear_integration(
     team_id: str,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> dict:
     """Disable Linear integration for a team."""
     stmt = select(LinearIntegration).where(LinearIntegration.team_id == team_id)
@@ -188,6 +198,7 @@ async def disable_linear_integration(
 @router.get("/integrations")
 async def list_linear_integrations(
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[dict]:
     """List all Linear integrations."""
     stmt = select(LinearIntegration)
@@ -215,6 +226,7 @@ async def sync_linear_data(
     limit: int = 100,
     db: Session = Depends(get_db),
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> LinearSyncResult:
     """Sync Linear data (issues) for a team."""
     stmt = select(LinearIntegration).where(LinearIntegration.team_id == team_id)
@@ -312,6 +324,7 @@ async def get_team_issues(
     team_id: str,
     state: Optional[str] = None,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[dict]:
     """Get cached Linear issues for a team."""
     stmt = select(LinearIntegration).where(LinearIntegration.team_id == team_id)
@@ -355,6 +368,7 @@ async def link_issue_to_jira(
     request: LinkLinearToJiraRequest,
     db: Session = Depends(get_db),
     client: LinearClient = Depends(get_linear_client),
+    user: User = Depends(get_current_user),
 ) -> LinkLinearToJiraResponse:
     """Link a Linear issue to a Jira ticket."""
     # Get Linear issue from database

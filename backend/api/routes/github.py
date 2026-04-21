@@ -28,6 +28,8 @@ from ..models.github_models import (
 )
 from ..services.github_client import GitHubClient
 from ..services.jira_client import JiraClient
+from ..middleware.auth_middleware import get_current_user
+from ..models.db_models import User
 
 router = APIRouter(prefix="/api/github", tags=["github"])
 
@@ -43,6 +45,7 @@ def get_github_client() -> GitHubClient:
 @router.get("/health")
 async def check_github_connection(
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> GitHubConnectionStatus:
     """Check GitHub API connection status."""
     result = client.check_connection()
@@ -54,6 +57,7 @@ async def enable_github_integration(
     request: EnableGitHubIntegrationRequest,
     db: Session = Depends(get_db),
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> dict:
     """Enable GitHub integration for a repository."""
     # Auto-detect GitHub repo from git remote if not provided
@@ -134,6 +138,7 @@ async def enable_github_integration(
 async def disable_github_integration(
     repo_path: str,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> dict:
     """Disable GitHub integration for a repository."""
     stmt = select(GitHubIntegration).where(GitHubIntegration.repo_path == repo_path)
@@ -151,6 +156,7 @@ async def disable_github_integration(
 @router.get("/integrations")
 async def list_github_integrations(
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[dict]:
     """List all GitHub integrations."""
     stmt = select(GitHubIntegration)
@@ -178,6 +184,7 @@ async def sync_github_data(
     since_days: int = 30,
     db: Session = Depends(get_db),
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> GitHubSyncResult:
     """Sync GitHub data (PRs, commits) for a repository."""
     stmt = select(GitHubIntegration).where(GitHubIntegration.repo_path == repo_path)
@@ -284,6 +291,7 @@ async def get_repository_prs(
     repo_path: str,
     state: str = "all",
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[dict]:
     """Get cached pull requests for a repository."""
     stmt = select(GitHubIntegration).where(GitHubIntegration.repo_path == repo_path)
@@ -322,6 +330,7 @@ async def link_pr_to_jira(
     request: LinkPRToJiraRequest,
     db: Session = Depends(get_db),
     github_client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> LinkPRToJiraResponse:
     """Link a GitHub PR to a Jira ticket."""
     # Get GitHub integration
@@ -374,6 +383,7 @@ async def get_github_repo_info(
     owner: str,
     repo: str,
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> GitHubRepoInfo:
     """Get GitHub repository information."""
     info = client.get_repo_info(owner, repo)
@@ -389,6 +399,7 @@ async def get_live_pull_requests(
     state: str = "all",
     since_days: int = 30,
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> list[GitHubPullRequest]:
     """Get pull requests directly from GitHub (not cached)."""
     prs = client.get_pull_requests(owner, repo, state=state, since_days=since_days)
@@ -402,6 +413,7 @@ async def get_live_commits(
     since_days: int = 30,
     branch: Optional[str] = None,
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> list[GitHubCommit]:
     """Get commits directly from GitHub."""
     commits = client.get_commits(owner, repo, since_days=since_days, branch=branch)
@@ -413,6 +425,7 @@ async def get_live_branches(
     owner: str,
     repo: str,
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> list[GitHubBranch]:
     """Get branches directly from GitHub."""
     branches = client.get_branches(owner, repo)
@@ -425,6 +438,7 @@ async def get_live_workflow_runs(
     repo: str,
     since_days: int = 30,
     client: GitHubClient = Depends(get_github_client),
+    user: User = Depends(get_current_user),
 ) -> list[GitHubWorkflowRun]:
     """Get GitHub Actions workflow runs directly from GitHub."""
     runs = client.get_workflow_runs(owner, repo, since_days=since_days)

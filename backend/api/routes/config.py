@@ -1,7 +1,7 @@
 """Configuration management API endpoints."""
 
 from typing import Dict, Any, List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 
 from ..services.config_service import (
@@ -15,6 +15,8 @@ from ..services.config_service import (
 )
 from ..services.watcher_service import get_watcher_service
 from ..logging_config import get_logger
+from ..middleware.auth_middleware import get_current_user
+from ..models.db_models import User
 
 router = APIRouter(prefix="/api/config", tags=["config"])
 logger = get_logger(__name__)
@@ -43,7 +45,7 @@ class MigrateResponse(BaseModel):
 
 
 @router.get("/")
-async def get_config() -> Git2JiraConfig:
+async def get_config(user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Get current configuration.
 
     Returns:
@@ -54,7 +56,7 @@ async def get_config() -> Git2JiraConfig:
 
 
 @router.post("/scan-directories")
-async def add_scan_directory(request: AddScanDirectoryRequest) -> Git2JiraConfig:
+async def add_scan_directory(request: AddScanDirectoryRequest, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Add a new scan directory.
 
     Args:
@@ -68,7 +70,7 @@ async def add_scan_directory(request: AddScanDirectoryRequest) -> Git2JiraConfig
 
 
 @router.delete("/scan-directories")
-async def remove_scan_directory(request: RemoveScanDirectoryRequest) -> Git2JiraConfig:
+async def remove_scan_directory(request: RemoveScanDirectoryRequest, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Remove a scan directory.
 
     Args:
@@ -82,7 +84,7 @@ async def remove_scan_directory(request: RemoveScanDirectoryRequest) -> Git2Jira
 
 
 @router.put("/ui-preferences")
-async def update_ui_preferences(request: UpdateUIPreferencesRequest) -> Git2JiraConfig:
+async def update_ui_preferences(request: UpdateUIPreferencesRequest, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Update UI preferences.
 
     Args:
@@ -96,7 +98,7 @@ async def update_ui_preferences(request: UpdateUIPreferencesRequest) -> Git2Jira
 
 
 @router.post("/migrate-from-env")
-async def migrate_from_env() -> MigrateResponse:
+async def migrate_from_env(user: User = Depends(get_current_user)) -> MigrateResponse:
     """Migrate configuration from legacy .git2jira.env file.
 
     Returns:
@@ -119,7 +121,7 @@ async def migrate_from_env() -> MigrateResponse:
 
 
 @router.post("/auto-discovery/toggle")
-async def toggle_auto_discovery(enabled: bool) -> Git2JiraConfig:
+async def toggle_auto_discovery(enabled: bool, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Enable or disable auto-discovery.
 
     Args:
@@ -136,7 +138,7 @@ async def toggle_auto_discovery(enabled: bool) -> Git2JiraConfig:
 
 
 @router.get("/scan-paths")
-async def get_scan_paths() -> Dict[str, Any]:
+async def get_scan_paths(user: User = Depends(get_current_user)) -> Dict[str, Any]:
     """Get all enabled scan directory paths.
 
     Returns:
@@ -152,7 +154,7 @@ async def get_scan_paths() -> Dict[str, Any]:
 
 
 @router.post("/auto-discovery/start")
-async def start_auto_discovery() -> Dict[str, Any]:
+async def start_auto_discovery(user: User = Depends(get_current_user)) -> Dict[str, Any]:
     """Start the auto-discovery watcher service.
 
     Returns:
@@ -165,7 +167,7 @@ async def start_auto_discovery() -> Dict[str, Any]:
 
 
 @router.post("/auto-discovery/stop")
-async def stop_auto_discovery() -> Dict[str, Any]:
+async def stop_auto_discovery(user: User = Depends(get_current_user)) -> Dict[str, Any]:
     """Stop the auto-discovery watcher service.
 
     Returns:
@@ -178,7 +180,7 @@ async def stop_auto_discovery() -> Dict[str, Any]:
 
 
 @router.get("/auto-discovery/status")
-async def get_auto_discovery_status() -> Dict[str, Any]:
+async def get_auto_discovery_status(user: User = Depends(get_current_user)) -> Dict[str, Any]:
     """Get auto-discovery service status.
 
     Returns:
@@ -189,7 +191,7 @@ async def get_auto_discovery_status() -> Dict[str, Any]:
 
 
 @router.post("/auto-discovery/discover")
-async def trigger_manual_discovery() -> Dict[str, Any]:
+async def trigger_manual_discovery(user: User = Depends(get_current_user)) -> Dict[str, Any]:
     """Manually trigger a discovery scan.
 
     Returns:
@@ -238,7 +240,7 @@ class UpdateJiraConfigRequest(BaseModel):
 
 
 @router.get("/jira")
-async def get_jira_config() -> JiraConfig:
+async def get_jira_config(user: User = Depends(get_current_user)) -> JiraConfig:
     """Get Jira configuration.
 
     Returns:
@@ -250,7 +252,7 @@ async def get_jira_config() -> JiraConfig:
 
 
 @router.put("/jira")
-async def update_jira_config(request: UpdateJiraConfigRequest) -> Git2JiraConfig:
+async def update_jira_config(request: UpdateJiraConfigRequest, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Update Jira configuration.
 
     Args:
@@ -267,7 +269,7 @@ async def update_jira_config(request: UpdateJiraConfigRequest) -> Git2JiraConfig
 
 
 @router.post("/jira/projects")
-async def add_jira_project(request: AddJiraProjectRequest) -> Git2JiraConfig:
+async def add_jira_project(request: AddJiraProjectRequest, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Add a new Jira project.
 
     Args:
@@ -292,7 +294,7 @@ async def add_jira_project(request: AddJiraProjectRequest) -> Git2JiraConfig:
 
 
 @router.put("/jira/projects/{project_key}")
-async def update_jira_project(project_key: str, request: UpdateJiraProjectRequest) -> Git2JiraConfig:
+async def update_jira_project(project_key: str, request: UpdateJiraProjectRequest, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Update an existing Jira project.
 
     Args:
@@ -317,7 +319,7 @@ async def update_jira_project(project_key: str, request: UpdateJiraProjectReques
 
 
 @router.delete("/jira/projects/{project_key}")
-async def remove_jira_project(project_key: str) -> Git2JiraConfig:
+async def remove_jira_project(project_key: str, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Remove a Jira project.
 
     Args:
@@ -342,7 +344,7 @@ async def remove_jira_project(project_key: str) -> Git2JiraConfig:
 
 
 @router.post("/jira/projects/{project_key}/set-default")
-async def set_default_jira_project(project_key: str) -> Git2JiraConfig:
+async def set_default_jira_project(project_key: str, user: User = Depends(get_current_user)) -> Git2JiraConfig:
     """Set a project as the default for new tickets.
 
     Args:

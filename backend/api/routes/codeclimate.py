@@ -23,6 +23,8 @@ from ..models.codeclimate_models import (
     CodeClimateSyncResult,
 )
 from ..services.codeclimate_client import CodeClimateClient
+from ..middleware.auth_middleware import get_current_user
+from ..models.db_models import User
 
 router = APIRouter(prefix="/api/codeclimate", tags=["codeclimate"])
 
@@ -38,6 +40,7 @@ def get_codeclimate_client() -> CodeClimateClient:
 @router.get("/health")
 async def check_codeclimate_connection(
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> CodeClimateConnectionStatus:
     """Check CodeClimate API connection status."""
     result = client.check_connection()
@@ -47,6 +50,7 @@ async def check_codeclimate_connection(
 @router.get("/orgs")
 async def get_orgs(
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> list[CodeClimateOrg]:
     """Get all CodeClimate organizations accessible to the user."""
     orgs = client.get_orgs()
@@ -57,6 +61,7 @@ async def get_orgs(
 async def get_repos(
     org_id: Optional[str] = None,
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> list[CodeClimateRepo]:
     """Get CodeClimate repositories, optionally filtered by organization."""
     repos = client.get_repos(org_id=org_id)
@@ -67,6 +72,7 @@ async def get_repos(
 async def get_repo(
     repo_id: str,
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> CodeClimateRepo:
     """Get detailed information about a specific CodeClimate repository."""
     repo = client.get_repo(repo_id)
@@ -79,6 +85,7 @@ async def get_repo(
 async def get_repo_snapshot(
     repo_id: str,
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> CodeClimateSnapshot:
     """Get the latest quality snapshot for a repository."""
     snapshot = client.get_repo_snapshot(repo_id)
@@ -91,6 +98,7 @@ async def get_repo_snapshot(
 async def get_test_coverage(
     repo_id: str,
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> CodeClimateTestCoverage:
     """Get test coverage report for a repository."""
     coverage = client.get_test_coverage(repo_id)
@@ -105,6 +113,7 @@ async def get_repo_issues(
     category: Optional[str] = None,
     limit: int = 100,
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> list[CodeClimateIssue]:
     """Get code quality issues for a repository."""
     issues = client.get_issues(repo_id, category=category, limit=limit)
@@ -115,6 +124,7 @@ async def get_repo_issues(
 async def get_repo_stats(
     repo_id: str,
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> CodeClimateStats:
     """Get comprehensive quality statistics for a repository."""
     stats = client.get_repo_stats(repo_id)
@@ -126,6 +136,7 @@ async def enable_codeclimate_integration(
     request: EnableCodeClimateIntegrationRequest,
     db: Session = Depends(get_db),
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> dict:
     """Enable CodeClimate integration for a repository."""
     # Auto-detect repo info if not provided
@@ -179,6 +190,7 @@ async def enable_codeclimate_integration(
 async def disable_codeclimate_integration(
     repo_id: str,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> dict:
     """Disable CodeClimate integration for a repository."""
     stmt = select(CodeClimateIntegration).where(
@@ -198,6 +210,7 @@ async def disable_codeclimate_integration(
 @router.get("/integrations")
 async def list_codeclimate_integrations(
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[dict]:
     """List all CodeClimate integrations."""
     stmt = select(CodeClimateIntegration)
@@ -225,6 +238,7 @@ async def sync_codeclimate_data(
     repo_id: str,
     db: Session = Depends(get_db),
     client: CodeClimateClient = Depends(get_codeclimate_client),
+    user: User = Depends(get_current_user),
 ) -> CodeClimateSyncResult:
     """Sync CodeClimate data (snapshots, coverage) for a repository."""
     stmt = select(CodeClimateIntegration).where(
@@ -294,6 +308,7 @@ async def get_repo_snapshots(
     repo_id: str,
     limit: int = 10,
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ) -> list[dict]:
     """Get cached CodeClimate snapshots for a repository."""
     stmt = select(CodeClimateIntegration).where(
