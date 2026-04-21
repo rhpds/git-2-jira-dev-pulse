@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, org, analytics, audit, webhooks, notifications, admin, search, oauth, activity, twofa, sessions, schedules, reports, favorites, invitations, integrations, filter_presets, standups, flow_analytics, impact_graph, health_scores, ws, recommendations, team
+from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, github_orgs, linear, codeclimate, auth, org, analytics, audit, webhooks, notifications, admin, search, oauth, activity, twofa, sessions, schedules, reports, favorites, invitations, integrations, filter_presets, standups, flow_analytics, impact_graph, health_scores, ws, recommendations, team
 from .exceptions import Git2JiraException
 from .logging_config import setup_logging, get_logger
 from .database import init_db, get_db
@@ -108,6 +108,7 @@ app.include_router(export.router)
 app.include_router(config.router)
 app.include_router(themes.router)
 app.include_router(github.router)
+app.include_router(github_orgs.router)
 app.include_router(linear.router)
 app.include_router(codeclimate.router)
 app.include_router(auth.router)
