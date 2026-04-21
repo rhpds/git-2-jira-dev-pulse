@@ -40,6 +40,11 @@ from ..middleware.auth_middleware import get_current_user
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
+class TwoFactorRequired(BaseModel):
+    requires_2fa: bool = True
+    temp_token: str
+
+
 @router.post("/register")
 async def register(
     request: UserRegisterRequest,
@@ -74,11 +79,15 @@ async def register(
 async def login(
     request: UserLoginRequest,
     db: Session = Depends(get_db),
-) -> TokenResponse:
+):
     """Authenticate and get access tokens."""
     user = authenticate_user(db, request.email, request.password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")
+
+    if user.totp_enabled:
+        temp_token = create_access_token(user.id, org_id=None)
+        return TwoFactorRequired(temp_token=temp_token)
 
     org_info = get_user_organization(db, user.id)
     org_id = org_info[0].id if org_info else None
