@@ -35,11 +35,10 @@ def _generate_text_report(
 
     lines = []
     lines.append("=" * 60)
-    lines.append(f"  DevPulse Pro - Organization Report")
+    lines.append(f"  DevPulse - Organization Report")
     lines.append("=" * 60)
     lines.append("")
     lines.append(f"  Organization:  {org_name}")
-    lines.append(f"  Plan:          {plan}")
     lines.append(f"  Report Period: {start_date.strftime('%Y-%m-%d')} to {now.strftime('%Y-%m-%d')}")
     lines.append(f"  Generated:     {now.strftime('%Y-%m-%d %H:%M UTC')}")
     lines.append("")

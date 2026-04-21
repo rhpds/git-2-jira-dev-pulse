@@ -48,7 +48,6 @@ export function CommandPalette() {
     // Settings
     { id: "set-profile", label: "Edit Profile", description: "Update your profile settings", category: "settings", action: () => navigate("/settings") },
     { id: "set-security", label: "Security Settings", description: "Manage 2FA and sessions", category: "settings", action: () => navigate("/settings") },
-    { id: "set-billing", label: "Billing", description: "Manage subscription and billing", category: "settings", action: () => navigate("/settings") },
     { id: "set-schedules", label: "Scan Schedules", description: "Manage automated scans", category: "settings", action: () => navigate("/settings") },
   ];
 

@@ -149,7 +149,7 @@ async def invite_member(
         if current_count >= subscription.seats_limit:
             raise HTTPException(
                 status_code=403,
-                detail=f"Seat limit reached ({subscription.seats_limit}). Upgrade your plan to add more members.",
+                detail=f"Seat limit reached ({subscription.seats_limit}).",
             )
 
     # Find or error on user
