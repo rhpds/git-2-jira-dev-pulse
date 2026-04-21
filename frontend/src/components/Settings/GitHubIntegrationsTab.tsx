@@ -105,17 +105,28 @@ export function GitHubIntegrationsTab() {
   };
 
   const handleEnable = () => {
-    const request: any = {
-      repo_path: repoPath,
-      sync_enabled: true,
-    };
+    let owner = githubOwner;
+    let repo = githubRepo;
+    let path = repoPath;
 
-    if (!autoDetect) {
-      request.github_owner = githubOwner;
-      request.github_repo = githubRepo;
+    // Parse GitHub URL or owner/repo format
+    const urlMatch = path.match(/github\.com\/([^/]+)\/([^/]+)/);
+    if (urlMatch) {
+      owner = owner || urlMatch[1];
+      repo = repo || urlMatch[2].replace(/\.git$/, "");
+      path = `github:${owner}/${repo}`;
+    } else if (path.includes("/") && !path.startsWith("/")) {
+      const parts = path.split("/");
+      owner = owner || parts[0];
+      repo = repo || parts[1];
+      path = `github:${owner}/${repo}`;
     }
 
-    enableMutation.mutate(request);
+    enableMutation.mutate({
+      repo_path: path,
+      github_owner: owner || undefined,
+      github_repo: repo || undefined,
+    });
   };
 
   const handleDisable = (repoPath: string) => {
@@ -307,19 +318,19 @@ export function GitHubIntegrationsTab() {
         ]}
       >
         <Form>
-          <FormGroup label="Repository Path" isRequired fieldId="repo-path">
+          <FormGroup label="GitHub Repository" isRequired fieldId="repo-path">
             <TextInput
               id="repo-path"
               value={repoPath}
               onChange={(_event, value) => setRepoPath(value)}
-              placeholder="/path/to/your/repo"
+              placeholder="owner/repo or https://github.com/owner/repo"
             />
           </FormGroup>
 
           <FormGroup fieldId="auto-detect">
             <Switch
               id="auto-detect"
-              label="Auto-detect GitHub repository from git remote"
+              label="Auto-detect owner and repo from input"
               isChecked={autoDetect}
               onChange={(_event, checked) => setAutoDetect(checked)}
             />
