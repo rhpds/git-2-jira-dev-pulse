@@ -62,19 +62,19 @@ AUTH_PATHS = {"/api/auth/login", "/api/auth/register", "/api/oauth/github/callba
 
 
 def _get_client_key(request: Request) -> str:
-    """Get a rate limit key for the request (IP + user if authenticated)."""
-    # Use X-Forwarded-For for proxied requests, fall back to client host
+    """Get a rate limit key for the request."""
+    client_ip = request.client.host if request.client else "unknown"
     forwarded = request.headers.get("X-Forwarded-For")
-    ip = forwarded.split(",")[0].strip() if forwarded else (request.client.host if request.client else "unknown")
+    if forwarded:
+        ips = [ip.strip() for ip in forwarded.split(",")]
+        client_ip = ips[-1] if ips else client_ip
 
-    # If authenticated, include user ID for per-user limiting
     auth = request.headers.get("Authorization", "")
     if auth.startswith("Bearer "):
-        # Use a hash of the token to identify the user without decoding
-        token_prefix = auth[7:17]  # First 10 chars of token
-        return f"user:{token_prefix}:{ip}"
+        token_prefix = auth[7:17]
+        return f"user:{token_prefix}:{client_ip}"
 
-    return f"ip:{ip}"
+    return f"ip:{client_ip}"
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
