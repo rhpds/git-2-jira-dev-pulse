@@ -13,7 +13,6 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..models.db_models import User, Organization, OrganizationMember, Subscription, APIKey
-from ..models.billing_models import PLAN_LIMITS
 from ..logging_config import get_logger
 
 logger = get_logger(__name__)
@@ -110,14 +109,12 @@ def register_user(
     db.add(membership)
 
     # Create free subscription
-    free_plan = PLAN_LIMITS["free"]
     subscription = Subscription(
-        org_id=org.id,
+        organization_id=org.id,
         plan="free",
         status="active",
-        seats_limit=free_plan["seats"],
-        repos_limit=free_plan["repos"],
-        integrations_limit=free_plan["integrations"],
+        seats_limit=999,
+        repos_limit=999,
     )
     db.add(subscription)
     db.commit()

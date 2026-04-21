@@ -9,12 +9,8 @@ from jose import JWTError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..models.db_models import User, Subscription, FeatureFlag
-from ..models.billing_models import PLAN_LIMITS
-from ..services.auth_service import decode_token, get_user_by_id, get_user_organization, get_org_subscription, validate_api_key
-
-# Plan hierarchy for comparison
-PLAN_HIERARCHY = ["free", "pro", "team", "business", "enterprise"]
+from ..models.db_models import User, FeatureFlag
+from ..services.auth_service import decode_token, get_user_by_id, validate_api_key
 
 security = HTTPBearer(auto_error=False)
 
@@ -64,58 +60,16 @@ async def get_optional_user(
 
 
 def require_plan(min_plan: str):
-    """Dependency that requires a minimum subscription plan."""
-    min_idx = PLAN_HIERARCHY.index(min_plan)
-
-    async def check_plan(
-        user: User = Depends(get_current_user),
-        db: Session = Depends(get_db),
-    ):
-        org_info = get_user_organization(db, user.id)
-        if not org_info:
-            raise HTTPException(status_code=403, detail="No organization found")
-
-        org, _role = org_info
-        subscription = get_org_subscription(db, org.id)
-
-        current_plan = subscription.plan if subscription else "free"
-        current_idx = PLAN_HIERARCHY.index(current_plan)
-
-        if current_idx < min_idx:
-            raise HTTPException(
-                status_code=403,
-                detail=f"This feature requires the {min_plan.title()} plan or higher. You are on the {current_plan.title()} plan.",
-            )
-
+    """Plan gating removed -- all features available."""
+    async def check_plan(user: User = Depends(get_current_user)):
         return user
-
     return check_plan
 
 
 def require_feature(feature_key: str):
-    """Dependency that checks if a feature is available on the user's plan."""
-
-    async def check_feature(
-        user: User = Depends(get_current_user),
-        db: Session = Depends(get_db),
-    ):
-        org_info = get_user_organization(db, user.id)
-        if not org_info:
-            raise HTTPException(status_code=403, detail="No organization found")
-
-        org, _role = org_info
-        subscription = get_org_subscription(db, org.id)
-        current_plan = subscription.plan if subscription else "free"
-
-        plan_config = PLAN_LIMITS.get(current_plan, PLAN_LIMITS["free"])
-        if feature_key not in plan_config["features"]:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Feature '{feature_key}' is not available on your {current_plan.title()} plan.",
-            )
-
+    """Feature gating removed -- all features available."""
+    async def check_feature(user: User = Depends(get_current_user)):
         return user
-
     return check_feature
 
 
@@ -144,20 +98,3 @@ def require_org_role(min_role: str = "member"):
         return user
 
     return check_role
-
-
-async def get_user_subscription(
-    user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-) -> tuple[User, Subscription]:
-    """Get the current user and their org subscription."""
-    org_info = get_user_organization(db, user.id)
-    if not org_info:
-        raise HTTPException(status_code=403, detail="No organization found")
-
-    org, _role = org_info
-    subscription = get_org_subscription(db, org.id)
-    if not subscription:
-        raise HTTPException(status_code=403, detail="No subscription found")
-
-    return user, subscription

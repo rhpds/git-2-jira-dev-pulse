@@ -27,10 +27,6 @@ class Settings(BaseSettings):
     jwt_secret_key: str = ""
     auth_enabled: bool = False  # Opt-in auth for backward compatibility
 
-    # Stripe settings
-    stripe_secret_key: str = ""
-    stripe_webhook_secret: str = ""
-
     model_config = {
         "env_file": str(Path.home() / ".git2jira.env"),
         "env_file_encoding": "utf-8",

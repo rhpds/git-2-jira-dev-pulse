@@ -12,7 +12,6 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models.db_models import User, Organization, OrganizationMember, Subscription
-from ..models.billing_models import PLAN_LIMITS
 from ..services.auth_service import (
     create_access_token,
     create_refresh_token,
@@ -177,14 +176,12 @@ async def github_callback(
             )
             db.add(membership)
 
-            free_plan = PLAN_LIMITS["free"]
             subscription = Subscription(
-                org_id=org.id,
+                organization_id=org.id,
                 plan="free",
                 status="active",
-                seats_limit=free_plan["seats"],
-                repos_limit=free_plan["repos"],
-                integrations_limit=free_plan["integrations"],
+                seats_limit=999,
+                repos_limit=999,
             )
             db.add(subscription)
 

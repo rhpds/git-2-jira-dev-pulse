@@ -1,10 +1,12 @@
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
-from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, billing, org, analytics, audit, webhooks, notifications, admin, search, oauth, activity, twofa, sessions, schedules, reports, favorites, invitations, integrations, filter_presets, standups, flow_analytics, impact_graph, health_scores, ws, recommendations, team
+from .routes import folders, git_analysis, health, jira_tickets, history, templates, export, config, themes, github, linear, codeclimate, auth, org, analytics, audit, webhooks, notifications, admin, search, oauth, activity, twofa, sessions, schedules, reports, favorites, invitations, integrations, filter_presets, standups, flow_analytics, impact_graph, health_scores, ws, recommendations, team
 from .exceptions import Git2JiraException
 from .logging_config import setup_logging, get_logger
 from .database import init_db, get_db
@@ -107,7 +109,6 @@ app.include_router(github.router)
 app.include_router(linear.router)
 app.include_router(codeclimate.router)
 app.include_router(auth.router)
-app.include_router(billing.router)
 app.include_router(org.router)
 app.include_router(analytics.router)
 app.include_router(audit.router)
@@ -132,6 +133,19 @@ app.include_router(health_scores.router)
 app.include_router(ws.router)
 app.include_router(recommendations.router)
 app.include_router(team.router)
+
+# Serve built frontend from ./static (populated by Dockerfile.prod multi-stage build)
+_static_dir = Path(__file__).resolve().parent.parent / "static"
+if _static_dir.is_dir():
+    app.mount("/assets", StaticFiles(directory=str(_static_dir / "assets")), name="static-assets")
+
+    @app.get("/{full_path:path}")
+    async def spa_catch_all(full_path: str):
+        """Serve the React SPA for any non-API route."""
+        file_path = _static_dir / full_path
+        if file_path.is_file() and file_path.resolve().is_relative_to(_static_dir.resolve()):
+            return FileResponse(file_path)
+        return FileResponse(_static_dir / "index.html")
 
 
 # Exception handlers
