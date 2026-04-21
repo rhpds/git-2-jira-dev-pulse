@@ -305,3 +305,53 @@ class GitHubClient:
                 return parts[0], parts[1]
 
         return None
+
+    def get_org_info(self, org: str) -> dict[str, Any]:
+        """Get organization information."""
+        try:
+            data = self._request("GET", f"/orgs/{org}")
+            return {
+                "login": data["login"],
+                "name": data.get("name", ""),
+                "avatar_url": data.get("avatar_url", ""),
+                "description": data.get("description", ""),
+                "public_repos": data.get("public_repos", 0),
+            }
+        except Exception as e:
+            return {"error": str(e)}
+
+    def list_org_repos(
+        self, org: str, per_page: int = 100, page: int = 1
+    ) -> list[dict[str, Any]]:
+        """List repositories for a GitHub organization."""
+        try:
+            repos = self._request(
+                "GET",
+                f"/orgs/{org}/repos",
+                params={
+                    "per_page": per_page,
+                    "page": page,
+                    "sort": "pushed",
+                    "direction": "desc",
+                },
+            )
+            return [
+                {
+                    "id": repo["id"],
+                    "name": repo["name"],
+                    "full_name": repo["full_name"],
+                    "description": repo.get("description", ""),
+                    "url": repo["html_url"],
+                    "default_branch": repo.get("default_branch", "main"),
+                    "private": repo["private"],
+                    "language": repo.get("language", ""),
+                    "pushed_at": repo.get("pushed_at", ""),
+                    "updated_at": repo.get("updated_at", ""),
+                    "stars": repo.get("stargazers_count", 0),
+                    "forks": repo.get("forks_count", 0),
+                    "open_issues": repo.get("open_issues_count", 0),
+                }
+                for repo in repos
+            ]
+        except Exception as e:
+            return []
