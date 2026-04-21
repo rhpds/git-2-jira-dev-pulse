@@ -181,7 +181,7 @@ async def github_callback(
             db.add(membership)
 
             subscription = Subscription(
-                organization_id=org.id,
+                org_id=org.id,
                 plan="free",
                 status="active",
                 seats_limit=999,

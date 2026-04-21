@@ -113,7 +113,7 @@ def register_user(
 
     # Create free subscription
     subscription = Subscription(
-        organization_id=org.id,
+        org_id=org.id,
         plan="free",
         status="active",
         seats_limit=999,
