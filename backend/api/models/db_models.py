@@ -299,7 +299,6 @@ class Organization(Base):
     name = Column(String(200), nullable=False)
     slug = Column(String(100), nullable=False, unique=True, index=True)
     owner_id = Column(Integer, ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
-    stripe_customer_id = Column(String(100), nullable=True, unique=True, index=True)
     created_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
     updated_at = Column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
@@ -343,8 +342,6 @@ class Subscription(Base):
     org_id = Column(Integer, ForeignKey("organizations.id", ondelete="CASCADE"), nullable=False, unique=True)
     plan = Column(String(20), nullable=False, default="free")  # free, pro, team, business, enterprise
     status = Column(String(20), nullable=False, default="active")  # active, trialing, past_due, canceled, paused
-    stripe_subscription_id = Column(String(100), nullable=True, unique=True, index=True)
-    stripe_price_id = Column(String(100), nullable=True)
     current_period_start = Column(DateTime, nullable=True)
     current_period_end = Column(DateTime, nullable=True)
     trial_end = Column(DateTime, nullable=True)
