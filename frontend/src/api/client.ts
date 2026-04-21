@@ -510,3 +510,59 @@ export async function getCodeClimateStats(repoId: string): Promise<{
   const { data } = await api.get(`/codeclimate/repos/${repoId}/stats`);
   return data;
 }
+
+// GitHub Org Discovery API
+export interface GitHubOrgInfo {
+  id: number;
+  org_login: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  description: string | null;
+  public_repos: number | null;
+  last_synced: string | null;
+  created_at: string;
+}
+
+export interface GitHubOrgRepo {
+  id: number;
+  name: string;
+  full_name: string;
+  description: string | null;
+  url: string;
+  default_branch: string;
+  private: boolean;
+  language: string | null;
+  pushed_at: string | null;
+  stars: number;
+  forks: number;
+  open_issues: number;
+  is_added: boolean;
+}
+
+export async function addGitHubOrg(orgLogin: string): Promise<GitHubOrgInfo> {
+  const { data } = await api.post("/github-orgs/", { org_login: orgLogin });
+  return data;
+}
+
+export async function listGitHubOrgs(): Promise<GitHubOrgInfo[]> {
+  const { data } = await api.get("/github-orgs/");
+  return data;
+}
+
+export async function removeGitHubOrg(orgLogin: string): Promise<void> {
+  await api.delete(`/github-orgs/${orgLogin}`);
+}
+
+export async function listOrgRepos(orgLogin: string, page = 1): Promise<GitHubOrgRepo[]> {
+  const { data } = await api.get(`/github-orgs/${orgLogin}/repos`, { params: { page } });
+  return data;
+}
+
+export async function addRepoFromGitHub(owner: string, repo: string): Promise<{
+  success: boolean;
+  integration_id: number;
+  full_name: string;
+}> {
+  const { data } = await api.post("/github-orgs/add-repo", { owner, repo });
+  return data;
+}
