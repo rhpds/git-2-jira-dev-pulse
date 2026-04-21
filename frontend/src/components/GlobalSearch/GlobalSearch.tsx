@@ -80,10 +80,10 @@ export function GlobalSearch() {
   };
 
   const typeIcons: Record<string, string> = {
-    audit_log: "\ud83d\udccb",
-    member: "\ud83d\udc64",
-    webhook: "\ud83d\udd17",
-    notification: "\ud83d\udd14",
+    audit_log: "📋",
+    member: "👤",
+    webhook: "🔗",
+    notification: "🔔",
   };
 
   const handleSelect = (result: SearchResult) => {
@@ -100,7 +100,7 @@ export function GlobalSearch() {
         ref={inputRef}
         type="search"
         aria-label="Global search"
-        placeholder="Search... (\u2318K)"
+        placeholder="Search... (⌘K)"
         value={query}
         onChange={(_e, val) => {
           setQuery(val);
@@ -118,6 +118,7 @@ export function GlobalSearch() {
       {/* Results Dropdown */}
       {isOpen && query.length >= 2 && (
         <div
+          role="listbox"
           style={{
             position: "absolute",
             top: "100%",
@@ -153,7 +154,16 @@ export function GlobalSearch() {
           {results.map((result) => (
             <div
               key={`${result.type}-${result.id}`}
+              role="option"
+              tabIndex={0}
+              aria-selected={false}
               onClick={() => handleSelect(result)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleSelect(result);
+                }
+              }}
               style={{
                 padding: "0.75rem 1rem",
                 cursor: "pointer",
@@ -169,7 +179,7 @@ export function GlobalSearch() {
               }}
             >
               <div style={{ display: "flex", gap: "0.5rem", alignItems: "flex-start" }}>
-                <span>{typeIcons[result.type] || "\ud83d\udd0d"}</span>
+                <span>{typeIcons[result.type] || "🔍"}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
                     <span style={{

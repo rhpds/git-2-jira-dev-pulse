@@ -66,7 +66,7 @@ export function RepoListView({
       style={{ padding: "0.75rem 0.5rem", cursor: "pointer", userSelect: "none", whiteSpace: "nowrap" }}
       onClick={() => toggleSort(field)}
     >
-      {label} {sortField === field ? (sortDir === "asc" ? "\u25B2" : "\u25BC") : ""}
+      {label} {sortField === field ? (sortDir === "asc" ? "▲" : "▼") : ""}
     </th>
   );
 
@@ -114,10 +114,14 @@ export function RepoListView({
                 {favorites && (
                   <td style={{ padding: "0.5rem" }}>
                     <span
+                      role="button"
+                      tabIndex={0}
+                      aria-label={isFav ? "Remove from favorites" : "Add to favorites"}
                       style={{ cursor: "pointer", fontSize: "1.1rem", color: isFav ? "#eab308" : "var(--pf-t--global--text--color--subtle)" }}
                       onClick={(e) => { e.stopPropagation(); onToggleFavorite?.(repo.path, repo.name); }}
+                      onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); e.stopPropagation(); onToggleFavorite?.(repo.path, repo.name); } }}
                     >
-                      {isFav ? "\u2605" : "\u2606"}
+                      {isFav ? "★" : "☆"}
                     </span>
                   </td>
                 )}
