@@ -3,14 +3,14 @@ from __future__ import annotations
 
 from typing import Optional
 
-from fastapi import Depends, HTTPException, Header, Request
+from fastapi import Depends, HTTPException, Header
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError
 from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models.db_models import User, FeatureFlag
-from ..services.auth_service import decode_token, get_user_by_id, validate_api_key
+from ..services.auth_service import decode_token, get_user_by_id, get_user_organization, validate_api_key
 
 security = HTTPBearer(auto_error=False)
 
