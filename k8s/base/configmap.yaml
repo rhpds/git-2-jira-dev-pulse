@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: devpulse-config
+  labels:
+    app: devpulse
+data:
+  JIRA_URL: "https://your-jira.atlassian.net"
+  JIRA_DEFAULT_PROJECT: "MYPROJECT"
+  REPOS_BASE_PATH: "/home/devpulse/repos"
+  LOG_LEVEL: "INFO"
+  AUTH_ENABLED: "true"
+  PYTHONUNBUFFERED: "1"

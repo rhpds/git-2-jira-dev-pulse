@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devpulse
+  labels:
+    app: devpulse
+    app.kubernetes.io/name: devpulse
+    app.kubernetes.io/component: server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: devpulse
+  template:
+    metadata:
+      labels:
+        app: devpulse
+    spec:
+      containers:
+        - name: devpulse
+          image: devpulse:latest
+          ports:
+            - containerPort: 9000
+              protocol: TCP
+          envFrom:
+            - configMapRef:
+                name: devpulse-config
+            - secretRef:
+                name: devpulse-secrets
+          volumeMounts:
+            - name: data
+              mountPath: /home/devpulse/.git2jira
+          livenessProbe:
+            httpGet:
+              path: /api/healthz
+              port: 9000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+            timeoutSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 9000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+            timeoutSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+          securityContext:
+            runAsNonRoot: true
+            allowPrivilegeEscalation: false
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: devpulse-data
