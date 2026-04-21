@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -77,21 +78,22 @@ app = FastAPI(
 )
 
 # Add middleware (order matters - CORS should be first, logging last)
+ocp_origin = os.getenv("CORS_ORIGIN", "")
+cors_origins = [
+    "http://localhost:6100",
+    "http://127.0.0.1:6100",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
+if ocp_origin:
+    cors_origins.append(ocp_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:6100",
-        "http://127.0.0.1:6100",
-        "http://localhost:6000",  # Keep for backwards compatibility
-        "http://127.0.0.1:6000",
-        "http://localhost:5175",
-        "http://127.0.0.1:5175",
-        "http://localhost:5173",
-        "http://127.0.0.1:5173"
-    ],
+    allow_origins=cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "X-Api-Key"],
 )
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(RateLimitMiddleware)
