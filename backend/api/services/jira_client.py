@@ -11,15 +11,19 @@ from ..models.jira_models import (
 
 
 class JiraClient:
-    def __init__(self, server: str, token: str):
+    def __init__(self, server: str, token: str, email: str = ""):
         self.server = server
         self.token = token
+        self.email = email
         self._client: JIRA | None = None
 
     @property
     def client(self) -> JIRA:
         if self._client is None:
-            self._client = JIRA(server=self.server, token_auth=self.token)
+            if self.email:
+                self._client = JIRA(server=self.server, basic_auth=(self.email, self.token))
+            else:
+                self._client = JIRA(server=self.server, token_auth=self.token)
         return self._client
 
     def check_connection(self) -> dict:

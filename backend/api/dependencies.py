@@ -30,6 +30,7 @@ def get_jira_client() -> JiraClient:
     return JiraClient(
         server=settings.jira_url,
         token=settings.jira_api_token,
+        email=settings.jira_email,
     )
 
 

@@ -5,8 +5,9 @@ metadata:
   labels:
     app: devpulse
 data:
-  JIRA_URL: "https://your-jira.atlassian.net"
-  JIRA_DEFAULT_PROJECT: "MYPROJECT"
+  JIRA_URL: "https://redhat.atlassian.net"
+  JIRA_EMAIL: "slack-google-jira@redhat.com"
+  JIRA_DEFAULT_PROJECT: "RHDPOPS"
   DB_PATH: "/home/devpulse/.git2jira/devpulse.db"
   REPOS_BASE_PATH: "/home/devpulse/repos"
   LOG_LEVEL: "INFO"

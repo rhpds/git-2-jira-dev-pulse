@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     jira_url: str = "https://your-jira.atlassian.net"
     jira_api_token: str = ""
+    jira_email: str = ""
     jira_default_project: str = "MYPROJECT"
     jira_default_assignee: str = ""
     repos_base_path: str = str(Path.home() / "repos")
