@@ -33,13 +33,7 @@ const baseNavItems = [
   { path: "/results", label: "Results" },
   { path: "/history", label: "History" },
   { path: "/activity", label: "Activity" },
-  { path: "/standups", label: "Standups" },
-  { path: "/flow", label: "Flow" },
-  { path: "/impact", label: "Impact" },
-  { path: "/health", label: "Health" },
-  { path: "/recommendations", label: "Recommendations" },
   { path: "/team", label: "Team" },
-  { path: "/integrations", label: "Integrations" },
   { path: "/settings", label: "Settings" },
 ];
 

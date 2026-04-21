@@ -16,14 +16,8 @@ const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
 const OnboardingPage = lazy(() => import("./pages/OnboardingPage"));
 const OAuthCallbackPage = lazy(() => import("./pages/OAuthCallbackPage"));
 const ActivityFeedPage = lazy(() => import("./pages/ActivityFeedPage"));
-const IntegrationsPage = lazy(() => import("./pages/IntegrationsPage"));
 const ShortcutsPage = lazy(() => import("./pages/ShortcutsPage"));
 const ChangelogPage = lazy(() => import("./pages/ChangelogPage"));
-const StandupPage = lazy(() => import("./pages/StandupPage"));
-const FlowAnalyticsPage = lazy(() => import("./pages/FlowAnalyticsPage"));
-const ImpactGraphPage = lazy(() => import("./pages/ImpactGraphPage"));
-const HealthScoresPage = lazy(() => import("./pages/HealthScoresPage"));
-const RecommendationsPage = lazy(() => import("./pages/RecommendationsPage"));
 const TeamPage = lazy(() => import("./pages/TeamPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const RegisterPage = lazy(() => import("./pages/RegisterPage"));
@@ -56,14 +50,8 @@ export default function App() {
                     <Route path="/settings" element={<SettingsPage />} />
                     <Route path="/admin" element={<AdminDashboardPage />} />
                     <Route path="/activity" element={<ActivityFeedPage />} />
-                    <Route path="/integrations" element={<IntegrationsPage />} />
                     <Route path="/shortcuts" element={<ShortcutsPage />} />
                     <Route path="/changelog" element={<ChangelogPage />} />
-                    <Route path="/standups" element={<StandupPage />} />
-                    <Route path="/flow" element={<FlowAnalyticsPage />} />
-                    <Route path="/impact" element={<ImpactGraphPage />} />
-                    <Route path="/health" element={<HealthScoresPage />} />
-                    <Route path="/recommendations" element={<RecommendationsPage />} />
                     <Route path="/team" element={<TeamPage />} />
                   </Route>
                 </Routes>
