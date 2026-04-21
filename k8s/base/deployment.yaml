@@ -18,7 +18,34 @@ spec:
       labels:
         app: devpulse
     spec:
+      serviceAccountName: devpulse
       containers:
+        - name: oauth-proxy
+          image: registry.redhat.io/openshift4/ose-oauth-proxy-rhel9:latest
+          args:
+            - --https-address=:8443
+            - --provider=openshift
+            - --openshift-service-account=devpulse
+            - --upstream=http://localhost:9000
+            - --tls-cert=/etc/tls/private/tls.crt
+            - --tls-key=/etc/tls/private/tls.key
+            - --cookie-secret=AUTO
+            - --pass-user-headers=true
+            - --pass-access-token=false
+          ports:
+            - containerPort: 8443
+              protocol: TCP
+              name: proxy
+          volumeMounts:
+            - name: proxy-tls
+              mountPath: /etc/tls/private
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
         - name: devpulse
           image: image-registry.openshift-image-registry.svc:5000/devpulse-dev/devpulse:latest
           ports:
@@ -60,3 +87,6 @@ spec:
         - name: data
           persistentVolumeClaim:
             claimName: devpulse-data
+        - name: proxy-tls
+          secret:
+            secretName: devpulse-proxy-tls

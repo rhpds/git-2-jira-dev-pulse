@@ -11,4 +11,5 @@ data:
   REPOS_BASE_PATH: "/home/devpulse/repos"
   LOG_LEVEL: "INFO"
   AUTH_ENABLED: "true"
+  TRUST_PROXY_HEADERS: "true"
   PYTHONUNBUFFERED: "1"

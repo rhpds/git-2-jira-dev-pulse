@@ -10,7 +10,7 @@ spec:
     name: devpulse
     weight: 100
   port:
-    targetPort: http
+    targetPort: proxy
   tls:
-    termination: edge
+    termination: reencrypt
     insecureEdgeTerminationPolicy: Redirect
