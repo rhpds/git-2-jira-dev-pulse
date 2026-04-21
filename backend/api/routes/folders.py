@@ -9,6 +9,8 @@ from ..models.git_models import AnalyzeRequest, WorkSummary, RepoStatus
 from ..services.folder_scanner import FolderScanner
 from ..services.git_analyzer import GitAnalyzer
 from ..logging_config import get_logger
+from ..middleware.auth_middleware import get_current_user
+from ..models.db_models import User
 
 logger = get_logger(__name__)
 
@@ -25,6 +27,7 @@ def list_folders(
     ),
     sort_desc: bool = Query(False, description="Sort in descending order"),
     scanner: FolderScanner = Depends(get_folder_scanner),
+    user: User = Depends(get_current_user),
 ):
     """
     List git repositories with optional filtering and sorting.
@@ -64,6 +67,7 @@ def analyze_folders(
     use_cache: bool = Query(True, description="Use cached analysis results"),
     parallel: bool = Query(True, description="Analyze repos in parallel"),
     analyzer: GitAnalyzer = Depends(get_git_analyzer),
+    user: User = Depends(get_current_user),
 ):
     """
     Analyze multiple git repositories.
@@ -116,6 +120,7 @@ def analyze_folders(
 @router.post("/clear-cache")
 def clear_analysis_cache(
     repo_path: Optional[str] = Query(None, description="Specific repo path to clear, or all if omitted"),
+    user: User = Depends(get_current_user),
 ):
     """
     Clear the git analysis cache.
