@@ -57,41 +57,6 @@ export interface SubscriptionInfo {
   cancel_at: string | null;
 }
 
-export interface PlanInfo {
-  id: string;
-  name: string;
-  price_monthly: number;
-  seats: number;
-  repos: number;
-  integrations: number;
-  features: string[];
-  is_current: boolean;
-}
-
-export interface BillingOverview {
-  subscription: {
-    plan: string;
-    plan_name: string;
-    status: string;
-    price_monthly: number;
-    current_period_start: string | null;
-    current_period_end: string | null;
-    trial_end: string | null;
-    cancel_at: string | null;
-  } | null;
-  usage: {
-    repos_scanned: number;
-    repos_limit: number;
-    tickets_created: number;
-    api_calls: number;
-    integrations_active: number;
-    integrations_limit: number;
-    seats_used: number;
-    seats_limit: number;
-  };
-  plans: PlanInfo[];
-}
-
 export interface APIKeyInfo {
   id: number;
   name: string;
@@ -134,6 +99,11 @@ export async function refreshToken(
   const { data } = await api.post("/auth/refresh", {
     refresh_token: refreshTokenValue,
   });
+  return data;
+}
+
+export async function proxySession(): Promise<TokenResponse> {
+  const { data } = await api.post("/auth/proxy-session");
   return data;
 }
 
@@ -184,38 +154,6 @@ export async function revokeAPIKey(
   keyId: number
 ): Promise<{ success: boolean }> {
   const { data } = await api.delete(`/auth/api-keys/${keyId}`);
-  return data;
-}
-
-// Billing API functions
-export async function getBillingPlans(): Promise<PlanInfo[]> {
-  const { data } = await api.get("/billing/plans");
-  return data;
-}
-
-export async function getBillingOverview(): Promise<BillingOverview> {
-  const { data } = await api.get("/billing/overview");
-  return data;
-}
-
-export async function createCheckout(
-  plan: string,
-  billingPeriod: string = "monthly"
-): Promise<{ checkout_url: string; session_id: string }> {
-  const { data } = await api.post("/billing/checkout", {
-    plan,
-    billing_period: billingPeriod,
-  });
-  return data;
-}
-
-export async function openCustomerPortal(): Promise<{ portal_url: string }> {
-  const { data } = await api.post("/billing/portal");
-  return data;
-}
-
-export async function getStripeStatus(): Promise<{ configured: boolean }> {
-  const { data } = await api.get("/billing/stripe-status");
   return data;
 }
 
