@@ -19,14 +19,7 @@ import {
 } from "@patternfly/react-core";
 import { FilterIcon } from "@patternfly/react-icons";
 import { useState, useEffect } from "react";
-import axios from "axios";
-
-const API = axios.create({ baseURL: "http://localhost:9000" });
-API.interceptors.request.use((cfg) => {
-  const token = localStorage.getItem("access_token");
-  if (token) cfg.headers.Authorization = `Bearer ${token}`;
-  return cfg;
-});
+import { apiClient } from "../../api/client";
 
 interface FilterPreset {
   id: number;
@@ -78,7 +71,7 @@ export function RepoFilters({
   const [showSaveInput, setShowSaveInput] = useState(false);
 
   useEffect(() => {
-    API.get("/api/filter-presets/")
+    apiClient.get("/api/filter-presets/")
       .then((res) => setPresets(res.data.presets || []))
       .catch(() => {});
   }, []);
@@ -94,7 +87,7 @@ export function RepoFilters({
   const savePreset = async () => {
     if (!saveName.trim()) return;
     try {
-      const res = await API.post("/api/filter-presets/", {
+      const res = await apiClient.post("/api/filter-presets/", {
         name: saveName,
         search_term: searchTerm,
         activity_filter: activityFilter,
@@ -111,7 +104,7 @@ export function RepoFilters({
 
   const deletePreset = async (id: number) => {
     try {
-      await API.delete(`/api/filter-presets/${id}`);
+      await apiClient.delete(`/api/filter-presets/${id}`);
       setPresets((prev) => prev.filter((p) => p.id !== id));
     } catch {
       // ignore
