@@ -109,11 +109,6 @@ export default function AppLayout() {
                   >
                     <span style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                       {user.full_name}
-                      {user.subscription && (
-                        <Label isCompact color="blue">
-                          {user.subscription.plan}
-                        </Label>
-                      )}
                     </span>
                   </MenuToggle>
                 )}

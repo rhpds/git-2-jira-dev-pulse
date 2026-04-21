@@ -85,7 +85,7 @@ export default function RegisterPage() {
                 color: "var(--pf-t--global--text--color--subtle)",
               }}
             >
-              Start your free trial with 5 repositories
+              Create your account to get started
             </p>
           </StackItem>
 
