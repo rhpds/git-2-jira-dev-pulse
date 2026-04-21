@@ -21,6 +21,7 @@ import { VisualPreferencesTab } from "../components/Settings/VisualPreferencesTa
 import { AdvancedTab } from "../components/Settings/AdvancedTab";
 import { JiraSettingsTab } from "../components/Settings/JiraSettingsTab";
 import { GitHubIntegrationsTab } from "../components/Settings/GitHubIntegrationsTab";
+import { GitHubOrgsTab } from "../components/Settings/GitHubOrgsTab";
 import { LinearIntegrationsTab } from "../components/Settings/LinearIntegrationsTab";
 import { CodeClimateIntegrationsTab } from "../components/Settings/CodeClimateIntegrationsTab";
 import { TeamTab } from "../components/Settings/TeamTab";
@@ -35,7 +36,7 @@ import { ScheduleTab } from "../components/Settings/ScheduleTab";
 import { InviteLinksTab } from "../components/Settings/InviteLinksTab";
 import { getConfig } from "../api/client";
 
-type SettingsTabKey = "profile" | "team" | "invites" | "directories" | "discovery" | "jira" | "github" | "linear" | "codeclimate" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "security" | "sessions" | "schedules" | "account";
+type SettingsTabKey = "profile" | "team" | "invites" | "directories" | "discovery" | "jira" | "github" | "github-orgs" | "linear" | "codeclimate" | "visual" | "advanced" | "audit" | "webhooks" | "notifications" | "security" | "sessions" | "schedules" | "account";
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<SettingsTabKey>("profile");
@@ -148,6 +149,15 @@ export default function SettingsPage() {
               >
                 {activeTab === "github" && (
                   <GitHubIntegrationsTab />
+                )}
+              </Tab>
+
+              <Tab
+                eventKey="github-orgs"
+                title={<TabTitleText>GitHub Orgs</TabTitleText>}
+              >
+                {activeTab === "github-orgs" && (
+                  <GitHubOrgsTab />
                 )}
               </Tab>
 
