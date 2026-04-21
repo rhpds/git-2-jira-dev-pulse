@@ -23,23 +23,28 @@ export default function OAuthCallbackPage() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const accessToken = searchParams.get("access_token");
-    const refreshToken = searchParams.get("refresh_token");
+    const code = searchParams.get("code");
 
-    if (accessToken && refreshToken) {
-      // Store tokens
-      localStorage.setItem("dp_access_token", accessToken);
-      localStorage.setItem("dp_refresh_token", refreshToken);
-      setAuthToken(accessToken);
-
-      // Refresh user profile and redirect
-      refreshUser()
+    if (code) {
+      fetch("/api/oauth/exchange", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code }),
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error("Code exchange failed");
+          return res.json();
+        })
+        .then((data) => {
+          localStorage.setItem("dp_access_token", data.access_token);
+          localStorage.setItem("dp_refresh_token", data.refresh_token);
+          setAuthToken(data.access_token);
+          return refreshUser();
+        })
         .then(() => navigate("/"))
-        .catch(() => {
-          setError("Failed to load profile after login");
-        });
+        .catch(() => setError("OAuth login failed"));
     } else {
-      setError("OAuth callback missing tokens");
+      setError("OAuth callback missing authorization code");
     }
   }, [searchParams, navigate, refreshUser]);
 

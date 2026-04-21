@@ -3,8 +3,10 @@ from __future__ import annotations
 
 import os
 import secrets
+import time
 
 import httpx
+from cachetools import TTLCache
 from fastapi import APIRouter, HTTPException, Depends, Query
 from fastapi.responses import RedirectResponse
 from sqlalchemy import select
@@ -12,6 +14,7 @@ from sqlalchemy.orm import Session
 
 from ..database import get_db
 from ..models.db_models import User, Organization, OrganizationMember, Subscription
+from ..models.auth_models import TokenResponse
 from ..services.auth_service import (
     create_access_token,
     create_refresh_token,
@@ -30,6 +33,7 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:6100")
 
 # In-memory state store for CSRF protection
 _oauth_states: dict[str, bool] = {}
+_auth_codes: TTLCache = TTLCache(maxsize=1000, ttl=120)
 
 
 @router.get("/github/authorize")
@@ -197,9 +201,26 @@ async def github_callback(
     access_token = create_access_token(user.id, org_id=org_id)
     refresh_token = create_refresh_token(user.id)
 
-    # Redirect to frontend with tokens
-    return RedirectResponse(
-        url=f"{FRONTEND_URL}/oauth/callback?access_token={access_token}&refresh_token={refresh_token}&expires_in={ACCESS_TOKEN_EXPIRE_MINUTES * 60}"
+    auth_code = secrets.token_urlsafe(32)
+    _auth_codes[auth_code] = {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+        "created": time.time(),
+    }
+    return RedirectResponse(url=f"{FRONTEND_URL}/oauth/callback?code={auth_code}")
+
+
+@router.post("/exchange")
+async def exchange_code(code: str):
+    """Exchange a one-time auth code for tokens."""
+    token_data = _auth_codes.pop(code, None)
+    if not token_data:
+        raise HTTPException(status_code=400, detail="Invalid or expired auth code")
+    return TokenResponse(
+        access_token=token_data["access_token"],
+        refresh_token=token_data["refresh_token"],
+        expires_in=token_data["expires_in"],
     )
 
 
