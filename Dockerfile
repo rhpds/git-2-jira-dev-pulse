@@ -5,7 +5,7 @@ WORKDIR /app/frontend
 COPY frontend/package*.json ./
 RUN npm ci
 COPY frontend/ ./
-RUN npm run build
+RUN npx vite build
 
 # Stage 2: Python backend + static frontend
 FROM python:3.12-slim AS production
@@ -27,8 +27,12 @@ COPY backend/ ./
 # Copy built frontend
 COPY --from=frontend-build /app/frontend/dist ./static
 
-# Create non-root user
-RUN useradd -m -r devpulse && chown -R devpulse:devpulse /app
+# Create non-root user and data directory
+# OCP runs with arbitrary UIDs in the root group, so we need group write
+RUN useradd -m -r -g 0 devpulse && \
+    mkdir -p /home/devpulse/.git2jira && \
+    chown -R devpulse:0 /app /home/devpulse && \
+    chmod -R g=u /app /home/devpulse
 USER devpulse
 
 # Environment

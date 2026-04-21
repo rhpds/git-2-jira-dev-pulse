@@ -7,6 +7,7 @@ metadata:
 data:
   JIRA_URL: "https://your-jira.atlassian.net"
   JIRA_DEFAULT_PROJECT: "MYPROJECT"
+  DB_PATH: "/home/devpulse/.git2jira/devpulse.db"
   REPOS_BASE_PATH: "/home/devpulse/repos"
   LOG_LEVEL: "INFO"
   AUTH_ENABLED: "true"

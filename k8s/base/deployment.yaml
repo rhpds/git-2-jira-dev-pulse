@@ -8,6 +8,8 @@ metadata:
     app.kubernetes.io/component: server
 spec:
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: devpulse
@@ -18,7 +20,7 @@ spec:
     spec:
       containers:
         - name: devpulse
-          image: devpulse:latest
+          image: image-registry.openshift-image-registry.svc:5000/devpulse-dev/devpulse:latest
           ports:
             - containerPort: 9000
               protocol: TCP

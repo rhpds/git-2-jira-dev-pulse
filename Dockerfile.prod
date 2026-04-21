@@ -29,8 +29,12 @@ COPY backend/ ./
 # Copy built frontend
 COPY --from=frontend-build /app/frontend/dist ./static
 
-# Create non-root user
-RUN useradd -m -r devpulse && chown -R devpulse:devpulse /app
+# Create non-root user and data directory
+# OCP runs with arbitrary UIDs in the root group, so we need group write
+RUN useradd -m -r -g 0 devpulse && \
+    mkdir -p /home/devpulse/.git2jira && \
+    chown -R devpulse:0 /app /home/devpulse && \
+    chmod -R g=u /app /home/devpulse
 USER devpulse
 
 # Environment

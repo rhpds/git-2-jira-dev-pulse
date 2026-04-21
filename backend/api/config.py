@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     since_days_default: int = 30
 
     # Database settings
-    db_path: str = str(Path.home() / ".git2jira.db")
+    db_path: str = str(Path.home() / ".git2jira" / "devpulse.db")
 
     # Cache settings
     cache_ttl_seconds: int = 300
