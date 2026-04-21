@@ -143,7 +143,7 @@ export function RepoListView({
                 </td>
                 <td style={{ padding: "0.5rem" }}>
                   {repo.has_remote && (
-                    <Button variant="link" isSmall onClick={() => onOpenPullModal(repo)}>
+                    <Button variant="link" size="sm" onClick={() => onOpenPullModal(repo)}>
                       Pull
                     </Button>
                   )}

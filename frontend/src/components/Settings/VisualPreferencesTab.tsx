@@ -148,7 +148,7 @@ export function VisualPreferencesTab({ config }: VisualPreferencesTabProps) {
                   variant="link"
                   icon={<UploadIcon />}
                   onClick={() => setShowUploadModal(true)}
-                  isSmall
+                  size="sm"
                 >
                   Upload Custom
                 </Button>

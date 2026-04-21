@@ -85,7 +85,7 @@ export function PullBranchModal({
               </Label>
               <Button
                 variant="secondary"
-                isSmall
+                size="sm"
                 isLoading={pulling}
                 isDisabled={pulling}
                 onClick={() => onPull(rb.branch)}
