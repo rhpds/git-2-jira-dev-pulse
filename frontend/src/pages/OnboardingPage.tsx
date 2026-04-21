@@ -115,7 +115,7 @@ export default function OnboardingPage() {
                       fontWeight: 800,
                     }}
                   >
-                    DevPulse Pro
+                    DevPulse
                   </div>
                   <Title headingLevel="h2" size="xl">
                     Welcome{user?.full_name ? `, ${user.full_name}` : ""}!

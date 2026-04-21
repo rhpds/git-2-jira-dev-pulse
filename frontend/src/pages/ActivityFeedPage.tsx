@@ -253,7 +253,7 @@ export default function ActivityFeedPage() {
                   </div>
                 ) : activities.length === 0 ? (
                   <div style={{ textAlign: "center", padding: "2rem", color: "var(--pf-t--global--text--color--subtle)" }}>
-                    No activity yet. Actions will appear here as your team uses DevPulse Pro.
+                    No activity yet. Actions will appear here as your team uses DevPulse.
                   </div>
                 ) : (
                   <div>

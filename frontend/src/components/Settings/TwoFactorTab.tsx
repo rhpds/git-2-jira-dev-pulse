@@ -194,7 +194,7 @@ export function TwoFactorTab() {
                     Step 1: Scan the QR code
                   </h4>
                   <p style={{ fontSize: "0.85rem", color: "var(--pf-t--global--text--color--subtle)", marginBottom: "1rem" }}>
-                    Open your authenticator app and scan this QR code to add DevPulse Pro.
+                    Open your authenticator app and scan this QR code to add DevPulse.
                   </p>
                   <div
                     style={{

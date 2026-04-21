@@ -76,7 +76,7 @@ export default function RegisterPage() {
         <Stack hasGutter>
           <StackItem>
             <Title headingLevel="h1" size="2xl" style={{ textAlign: "center" }}>
-              Create your DevPulse Pro account
+              Create your DevPulse account
             </Title>
             <p
               style={{

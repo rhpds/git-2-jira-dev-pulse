@@ -173,7 +173,7 @@ async def test_webhook(
     test_payload = {
         "event": "test.ping",
         "organization": org.name,
-        "message": "This is a test webhook delivery from DevPulse Pro",
+        "message": "This is a test webhook delivery from DevPulse",
     }
     delivery = await deliver_webhook(db, wh, "test.ping", test_payload)
     return {

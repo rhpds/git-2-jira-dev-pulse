@@ -61,7 +61,7 @@ async def setup_2fa(
     # Generate provisioning URI
     provisioning_uri = totp.provisioning_uri(
         name=user.email,
-        issuer_name="DevPulse Pro",
+        issuer_name="DevPulse",
     )
 
     # Generate QR code as base64

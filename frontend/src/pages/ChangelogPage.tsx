@@ -148,7 +148,6 @@ const releases: Release[] = [
     highlights: [
       "Multi-tenant organization support",
       "Team member management with role-based access",
-      "Seat limits tied to subscription plans",
     ],
   },
   {
@@ -158,9 +157,7 @@ const releases: Release[] = [
     type: "minor",
     highlights: [
       "JWT authentication with registration and login",
-      "Subscription plans (Free, Pro, Team, Business, Enterprise)",
       "API key management for programmatic access",
-      "Feature flags tied to subscription tiers",
     ],
   },
   {
@@ -200,7 +197,7 @@ export default function ChangelogPage() {
               Changelog
             </Title>
             <p style={{ marginTop: "0.5rem", color: "var(--pf-t--global--text--color--subtle)" }}>
-              What's new in DevPulse Pro
+              What's new in DevPulse
             </p>
           </StackItem>
 

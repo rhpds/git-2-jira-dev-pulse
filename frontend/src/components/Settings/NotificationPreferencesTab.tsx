@@ -53,8 +53,8 @@ const TYPE_LABELS: Record<string, { label: string; description: string }> = {
     description: "When integrations connect, disconnect, or have issues",
   },
   subscription_changed: {
-    label: "Subscription Changes",
-    description: "When your plan or billing changes",
+    label: "Account Changes",
+    description: "When your account settings change",
   },
   webhook_failure: {
     label: "Webhook Failures",

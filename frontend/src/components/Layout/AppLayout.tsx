@@ -58,7 +58,7 @@ export default function AppLayout() {
             color: "var(--pf-t--global--text--color--regular)",
             whiteSpace: "nowrap",
           }}>
-            DevPulse Pro
+            DevPulse
           </span>
         </MastheadBrand>
       </MastheadMain>

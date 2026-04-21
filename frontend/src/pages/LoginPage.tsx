@@ -81,7 +81,7 @@ export default function LoginPage() {
 
   return (
     <PFLoginPage
-      loginTitle="Sign in to DevPulse Pro"
+      loginTitle="Sign in to DevPulse"
       loginSubtitle="Enter your credentials to access your dashboard"
       signUpForAccountMessage={
         <span>
