@@ -16,6 +16,7 @@ import {
   login as apiLogin,
   register as apiRegister,
   refreshToken as apiRefreshToken,
+  proxySession as apiProxySession,
   getProfile,
   setAuthToken,
   clearAuthToken,
@@ -114,9 +115,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setAuthToken(token);
       refreshUser();
     } else {
-      setState((prev) => ({ ...prev, isLoading: false }));
+      // Try proxy-session (OCP oauth-proxy flow) before showing login
+      apiProxySession()
+        .then((tokens) => {
+          handleTokens(tokens.access_token, tokens.refresh_token);
+          return getProfile();
+        })
+        .then((profile) => {
+          setState({
+            user: profile,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        })
+        .catch(() => {
+          setState((prev) => ({ ...prev, isLoading: false }));
+        });
     }
-  }, [refreshUser]);
+  }, [refreshUser, handleTokens]);
 
   const login = async (email: string, password: string) => {
     setState((prev) => ({ ...prev, isLoading: true, error: null }));

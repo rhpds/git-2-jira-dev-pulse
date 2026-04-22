@@ -35,7 +35,7 @@ from ..services.auth_service import (
     create_api_key,
     ACCESS_TOKEN_EXPIRE_MINUTES,
 )
-from ..middleware.auth_middleware import get_current_user
+from ..middleware.auth_middleware import get_current_user, TRUST_PROXY_HEADERS, _get_or_create_proxy_user
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -61,6 +61,35 @@ async def register(
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+    org_info = get_user_organization(db, user.id)
+    org_id = org_info[0].id if org_info else None
+
+    access_token = create_access_token(user.id, org_id=org_id)
+    refresh_token = create_refresh_token(user.id)
+
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_in=ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+    )
+
+
+@router.post("/proxy-session")
+async def proxy_session(
+    request: Request,
+    db: Session = Depends(get_db),
+) -> TokenResponse:
+    """Exchange proxy auth headers for JWT tokens (OCP oauth-proxy flow)."""
+    if not TRUST_PROXY_HEADERS:
+        raise HTTPException(status_code=404, detail="Not found")
+
+    email = request.headers.get("X-Forwarded-Email") or request.headers.get("X-Forwarded-User")
+    if not email:
+        raise HTTPException(status_code=401, detail="No proxy authentication headers")
+
+    name = request.headers.get("X-Forwarded-Preferred-Username", "")
+    user = _get_or_create_proxy_user(db, email, name)
 
     org_info = get_user_organization(db, user.id)
     org_id = org_info[0].id if org_info else None
